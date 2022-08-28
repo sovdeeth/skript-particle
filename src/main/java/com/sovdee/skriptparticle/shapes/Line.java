@@ -26,7 +26,6 @@ public class Line extends Shape {
         super();
         this.start = start;
         this.end = end;
-        this.points = getRotatedPoints(generatePoints());
     }
 
     public Line(Vector start, Vector end, double stepSize) {
@@ -34,14 +33,12 @@ public class Line extends Shape {
         this.start = start;
         this.end = end;
         this.stepSize = stepSize;
-        this.points = getRotatedPoints(generatePoints());
     }
 
     public Line(Location startLoc, Location endLoc) {
         super();
         setStartLocation(startLoc);
         this.end = endLoc.toVector().subtract(startLoc.toVector());
-        this.points = getRotatedPoints(generatePoints());
     }
 
     public Line(Location startLoc, Location endLoc, double stepSize) {
@@ -49,14 +46,12 @@ public class Line extends Shape {
         setStartLocation(startLoc);
         this.end = endLoc.toVector().subtract(startLoc.toVector());
         this.stepSize = stepSize;
-        this.points = getRotatedPoints(generatePoints());
     }
 
     public Line(Vector direction, double length) {
         super();
         this.start = new Vector(0, 0, 0);
         this.end = direction.normalize().multiply(length);
-        this.points = getRotatedPoints(generatePoints());
     }
 
     public Line(Vector direction, double length, double stepSize) {
@@ -64,7 +59,6 @@ public class Line extends Shape {
         this.start = new Vector(0, 0, 0);
         this.end = direction.normalize().multiply(length);
         this.stepSize = stepSize;
-        this.points = getRotatedPoints(generatePoints());
     }
 
     public Line(Vector start, Vector end, double stepSize, Vector normal, double rotation) {
@@ -74,7 +68,6 @@ public class Line extends Shape {
         this.setNormal(normal);
         this.setRotation(rotation);
         this.stepSize = stepSize;
-        this.points = getRotatedPoints(generatePoints());
     }
 
     public Line(Location startLoc, Vector end, double stepSize, Vector normal, double rotation) {
@@ -84,7 +77,6 @@ public class Line extends Shape {
         this.setNormal(normal);
         this.setRotation(rotation);
         this.stepSize = stepSize;
-        this.points = getRotatedPoints(generatePoints());
     }
 
     @Override
@@ -112,6 +104,7 @@ public class Line extends Shape {
 
     public void setStart(Vector start) {
         this.start = start;
+        this.needsUpdate = true;
     }
 
     public Vector getEnd() {
@@ -120,6 +113,7 @@ public class Line extends Shape {
 
     public void setEnd(Vector end) {
         this.end = end;
+        this.needsUpdate = true;
     }
 
     public double getStepSize() {
@@ -128,11 +122,13 @@ public class Line extends Shape {
 
     public void setStepSize(double stepSize) {
         this.stepSize = stepSize;
+        this.needsUpdate = true;
     }
 
     public void setStartLocation(Location startLocation) {
         this.startLocation = startLocation;
         this.start = new Vector(0, 0, 0);
+        this.needsUpdate = true;
     }
 
     public Location getStartLocation() {

@@ -5,6 +5,7 @@ import ch.njol.skript.classes.Parser;
 import ch.njol.skript.classes.Serializer;
 import ch.njol.skript.lang.ParseContext;
 import ch.njol.skript.registrations.Classes;
+import ch.njol.skript.registrations.Converters;
 import ch.njol.yggdrasil.Fields;
 import org.bukkit.util.Vector;
 
@@ -37,20 +38,18 @@ public class Circle extends Shape {
     public Circle(double radius, Vector normal, double rotation) {
         super();
         this.radius = radius;
-        this.setNormal(normal);
-        this.setRotation(rotation);
         // default to 30 points per circle
         this.stepSize = Math.PI * 2 / 30;
-        this.points = getRotatedPoints(generatePoints());
+        this.setNormal(normal);
+        this.setRotation(rotation);
     }
 
     public Circle(double radius, double stepSize, Vector normal, double rotation) {
         super();
         this.radius = radius;
+        this.stepSize = stepSize;
         this.setNormal(normal);
         this.setRotation(rotation);
-        this.stepSize = stepSize;
-        this.points = getRotatedPoints(generatePoints());
     }
 
     public double getRadius() {
@@ -59,6 +58,7 @@ public class Circle extends Shape {
 
     public void setRadius(double radius) {
         this.radius = radius;
+        needsUpdate = true;
     }
 
     public double getStepSize() {
@@ -67,6 +67,7 @@ public class Circle extends Shape {
 
     public void setStepSize(double stepSize) {
         this.stepSize = stepSize;
+        needsUpdate = true;
     }
 
     @Override
@@ -155,5 +156,10 @@ public class Circle extends Shape {
                     }
 
                 }));
+
+        Converters.registerConverter(Circle.class, Shape.class, (circle) -> circle);
+
     }
+
+
 }

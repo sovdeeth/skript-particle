@@ -8,7 +8,11 @@ public class VectorMath {
     public static RotationValue getRotationValues(Vector normal) {
         // ensure normal is normalized, then get cross prod and angle from dot prod
         normal.normalize();
-        Vector cross = defaultNormal.getCrossProduct(normal);
+        if (normal.angle(defaultNormal) <= 0.001) {
+            return new RotationValue(defaultNormal, 0);
+        }
+
+        Vector cross = defaultNormal.getCrossProduct(normal).normalize();
         double angle = Math.acos(defaultNormal.dot(normal));
         return new RotationValue(cross, angle);
     }

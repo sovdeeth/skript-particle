@@ -17,11 +17,11 @@ public class SkriptParticle extends JavaPlugin {
         instance = this;
         addon = Skript.registerAddon(this);
         try {
-            addon.loadClasses("com.sovdee.skript_particles", "elements", "shapes");
+            addon.loadClasses("com.sovdee.skriptparticle", "elements", "shapes");
         } catch (IOException e) {
             e.printStackTrace();
         }
-        Bukkit.getLogger().info("Skript-Particles has been enabled.");
+        Bukkit.getLogger().info("Skript-Particle has been enabled.");
     }
 
     public SkriptParticle getInstance() {

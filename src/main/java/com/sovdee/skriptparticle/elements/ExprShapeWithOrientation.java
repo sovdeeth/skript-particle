@@ -16,7 +16,7 @@ import java.util.Arrays;
 public class ExprShapeWithOrientation extends PropertyExpression<Shape, Shape> {
 
     static {
-        Skript.registerExpression(ExprShapeWithOrientation.class, Shape.class, ExpressionType.PROPERTY, "%shapes% (with rotation|rotated) %number% [(degrees|rad:radians)]");
+        Skript.registerExpression(ExprShapeWithOrientation.class, Shape.class, ExpressionType.PROPERTY, "%shapes% (with orientation [at]|oriented [at|with]) %number% [(degrees|rad:radians)]");
     }
 
     private Expression<Number> rotationExpr;

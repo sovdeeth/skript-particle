@@ -1,5 +1,6 @@
 package com.sovdee.skriptparticle.shapes;
 
+import ch.njol.skript.Skript;
 import ch.njol.skript.classes.ClassInfo;
 import ch.njol.skript.classes.Parser;
 import ch.njol.skript.lang.ParseContext;
@@ -15,36 +16,44 @@ import java.util.List;
 public abstract class Shape{
     List<Vector> points;
     private Vector normal;
+    private Vector backupNormal;
     private double rotation;
-    private boolean isRotated;
+
+    protected boolean needsUpdate;
 
     public Shape() {
         this.points = new ArrayList<>();
         this.normal = new Vector(0, 1, 0);
+        this.backupNormal = normal.clone();
         this.rotation = 0.0;
-        this.isRotated = false;
+        this.needsUpdate = true;
     }
 
     public abstract List<Vector> generatePoints();
 
     public abstract Shape clone();
 
+    public void updatePoints(){
+        if (needsUpdate || !backupNormal.equals(normal.normalize())) {
+            points = getRotatedPoints(generatePoints());
+            needsUpdate = false;
+            backupNormal = normal.clone();
+        }
+    }
+
     public List<Vector> getRotatedPoints(List<Vector> points){
         VectorMath.RotationValue rotationValue = VectorMath.getRotationValues(normal);
+        Skript.info("normal: " + normal + " rotationValue.cross: " + rotationValue.cross + " rotationValue.angle: " + rotationValue.angle);
         for (Vector point : points) {
             point.rotateAroundAxis(rotationValue.cross, rotationValue.angle);
-            point.rotateAroundAxis(this.normal, this.rotation);
+            point.rotateAroundAxis(normal, rotation);
         }
-        // mark shape as rotated
-        this.isRotated = true;
         return points;
     }
 
     public Location[] getLocations(Location center){
         // only recalculate if the shape has been rotated since last calculation
-        if (!isRotated) {
-            this.points = getRotatedPoints(generatePoints());
-        }
+        updatePoints();
         // offset center by vectors to get locations
         Location[] locations = new Location[points.size()];
         for(int i = 0; i < points.size(); i++){
@@ -54,27 +63,38 @@ public abstract class Shape{
     }
 
     public List<Vector> getPoints() {
+        updatePoints();
         return points;
     }
 
     public void setNormal(Vector normal){
-        this.normal = normal.normalize();
-        // mark shape as needing to be rotated
-        this.isRotated = false;
+        this.normal = normal.clone().normalize();
+        needsUpdate = true;
     }
 
     public Vector getNormal(){
         return normal;
     }
 
+    public Vector getBackupNormal() {
+        return backupNormal;
+    }
+
     public void setRotation(double rotation){
         this.rotation = rotation;
-        // mark shape as needing to be rotated
-        this.isRotated = false;
+        needsUpdate = true;
     }
 
     public double getRotation(){
         return rotation;
+    }
+
+    public boolean needsUpdate() {
+        return needsUpdate;
+    }
+
+    public void setNeedsUpdate(boolean needsUpdate) {
+        this.needsUpdate = needsUpdate;
     }
 
     public String toString(){

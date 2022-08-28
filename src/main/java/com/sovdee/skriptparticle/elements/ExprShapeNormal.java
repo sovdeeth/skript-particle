@@ -1,5 +1,6 @@
 package com.sovdee.skriptparticle.elements;
 
+import ch.njol.skript.Skript;
 import ch.njol.skript.classes.Changer;
 import ch.njol.skript.expressions.base.SimplePropertyExpression;
 import com.sovdee.skriptparticle.shapes.Shape;
@@ -24,19 +25,24 @@ public class ExprShapeNormal extends SimplePropertyExpression<Shape, Vector> {
 
     @Override
     public void change(Event e, @Nullable Object[] delta, Changer.ChangeMode mode) {
-        if (delta == null || delta.length == 0)
-            return;
+        for (Shape shape : getExpr().getArray(e)) {
+            shape.setNeedsUpdate(true);
+        }
         switch (mode) {
             case SET:
+                if (delta == null || delta.length == 0)
+                    return;
                 for (Shape shape : getExpr().getArray(e)) {
-                    shape.setNormal((Vector) delta[0]);
+                    shape.setNormal(((Vector) delta[0]).normalize());
                 }
                 break;
             case RESET:
             case DELETE:
             case REMOVE_ALL:
                 for (Shape shape : getExpr().getArray(e)) {
+                    Skript.info("Pre-reset normal: " + shape.getNormal());
                     shape.setNormal(new Vector(0, 1, 0));
+                    Skript.info("Post-reset normal: " + shape.getNormal());
                 }
                 break;
         }

@@ -20,8 +20,11 @@ public class ExprShapeOrientation extends SimplePropertyExpression<Shape, Number
 
     @Override
     public void change(Event e, @Nullable Object[] delta, Changer.ChangeMode mode) {
-        if (delta == null || delta.length == 0)
+        if ((delta == null || delta.length == 0) && (mode == Changer.ChangeMode.ADD || mode == Changer.ChangeMode.SET))
             return;
+        for (Shape shape : getExpr().getArray(e)) {
+            shape.setNeedsUpdate(true);
+        }
         switch (mode) {
             case ADD:
                 for (Shape shape : getExpr().getArray(e)) {
