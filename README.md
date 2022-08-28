@@ -122,3 +122,10 @@ command magic-circle-3:
             wait 1 tick
         reset (normal vector of {magic-circle::*})
  ```
+ 
+ ![2022-08-28_00 10 57](https://user-images.githubusercontent.com/10354869/187062233-5f51ba7b-60f4-44f8-bf6b-862a4e2381fd.png)
+
+
+https://user-images.githubusercontent.com/10354869/187062241-d3c51f86-4129-4f8b-9ce3-2d0037779e4e.mp4
+
+
