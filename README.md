@@ -8,12 +8,12 @@
  ## Goals:
  - Shapes:
    - Regular polygons
+   - Arcs, sphere sections
    - Spheres (fibonacci and basic)
    - Ellipsoids
    - Arbitrary polygons from point list
    - Cuboids
    - Regular Polyhedra
-   - Custom Shapes (use new structure API)
    - Bezier Curves
    - Spirals
  - Drawing:
@@ -21,7 +21,14 @@
    - Dynamically change data within shape (gradients)
    - Fill in shapes
    - Options for who sees the particle (player specific)
- 
+ - Custom Shapes (use new structure API)
+   - compose of other shapes
+   - save particle data
+   - Basically allows you to compose a complex shape with a basic structure and call it with one line
+ - Animation
+   - Ability to stretch out drawing a shape over a timespan
+   - Ability to continuously draw a shape for a timespan
+   - Set up a pre-made animation in a custom structure, play back with one draw call 
  
  ## Syntax
  Currently, there are only a few syntaxes in Skript-Particle. Circles, Lines, rotation expressions, and the draw effect.
