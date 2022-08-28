@@ -12,9 +12,9 @@
  
  #### Circle
  ```
- "[(the|a)] circle [(with|of)] radius %number% [(and|[and] with) [a] step size [of] %-number% [(degrees|radians)]]"
-"[(the|a)] circle [(with|of)] radius %number% (and|[and] with) [a] particle count [of] %number%"
- "[(the|a)] circle [(with|of)] radius %number% (and|[and] with) %number% (points|particles)"
+ [(the|a)] circle [(with|of)] radius %number% [(and|[and] with) [a] step size [of] %-number% [(degrees|radians)]]
+ [(the|a)] circle [(with|of)] radius %number% (and|[and] with) [a] particle count [of] %number%
+ [(the|a)] circle [(with|of)] radius %number% (and|[and] with) %number% (points|particles)
  ```
  Circles only have a radius and a stepsize/particle count. Step sizes are in degrees by default. If a step size is omitted, the default value will be 12 degrees or 30 particles.
  
@@ -28,9 +28,9 @@
  
  #### Line
  ```
- "[(the|a)] line (from|between) %vector% (to|and) %vector% [with [a] step size [of] %-number% [meters]]"
- "[(the|a)] line (from|between) %location% (to|and) %location% [with [a] step size [of] %-number% [meters]]"
- "[(the|a)] line (in [the]|from) direction %vector% (and|[and] with) length %number% [with [a] step size [of] %-number% [meters]]"
+ [(the|a)] line (from|between) %vector% (to|and) %vector% [with [a] step size [of] %-number% [meters]]
+ [(the|a)] line (from|between) %location% (to|and) %location% [with [a] step size [of] %-number% [meters]]
+ [(the|a)] line (in [the]|from) direction %vector% (and|[and] with) length %number% [with [a] step size [of] %-number% [meters]]
  ```
  Lines have a start and end point and a step size, but they're more flexible than most shapes. Since lines are typically drawn from a location to another, rather than centered at some location like more other shapes, they can be defined in a few ways. The first and third syntaxes create relative lines, the first being between two points defined by vectors from a center point, and the second being from the center point in some direction for some length.
  
@@ -50,15 +50,15 @@
  
  #### Normal Vector
  ```
- "normal [vector] of %shapes%"
- "%shapes%'[s] normal [vector]
+ normal [vector] of %shapes%
+ %shapes%'[s] normal [vector]
  ```
  These vectors can be set, deleted, manipulated, and rotated like any other vector, and these changes will affect the rotation of the shape. 
  
  #### Orientation
  ```
- "orientation of %shapes%"
- "%shapes%'[s] orientation
+ orientation of %shapes%
+ %shapes%'[s] orientation
  ```
  Orientation is a degree value that corresponding to rotation around the normal vector. I'm considering changing the name but "rotation" is too broad and "yaw" conflicts with the normal idea of yaw. Suggestions welcome.
  
@@ -72,8 +72,8 @@
  ### Drawing
  Drawing is pretty simple. Select your shapes, the particle to draw with, and possibly the location to draw at. Currently, only basic SkBee particles are valid and they will be drawn with 0 speed or extra data. However, the plan is to incorporate all extra data so particles can be draw with uniform speeds, varying speeds, offsets, colours, and more.
  ```
- "draw %shapes% (with|using) %particle% [centered] at %location%"
- "draw %lines% (with|using) %particle%"
+ draw %shapes% (with|using) %particle% [centered] at %location%
+ draw %lines% (with|using) %particle%
  ```
  
  #### Examples
