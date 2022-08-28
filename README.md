@@ -5,6 +5,24 @@
  
  The goal for Skript-Particle is to provide easy-to-use, flexible, and powerful syntax to create particle shapes. The basic structure is a set of syntaxes that generate various shapes, like circles, lines, polygons, and more. These shapes generally are relative and aren't positioned anywhere until they are drawn. The drawing syntax takes a set of shapes, a particle, and a location and draws all the shapes relative to that location. This allows the definition of complex series of shapes that can be defined once and then drawn in many places with ease. Since shapes can be rotated as a group, it's also very simple to change the rotation and orientation of your complex series with a single line.
  
+ ## Goals:
+ - Shapes:
+   - Regular polygons
+   - Spheres (fibonacci and basic)
+   - Ellipsoids
+   - Arbitrary polygons from point list
+   - Cuboids
+   - Regular Polyhedra
+   - Custom Shapes (use new structure API)
+   - Bezier Curves
+   - Spirals
+ - Drawing:
+   - More particle options, like speed, colour, offset...
+   - Dynamically change data within shape (gradients)
+   - Fill in shapes
+   - Options for who sees the particle (player specific)
+ 
+ 
  ## Syntax
  Currently, there are only a few syntaxes in Skript-Particle. Circles, Lines, rotation expressions, and the draw effect.
  
