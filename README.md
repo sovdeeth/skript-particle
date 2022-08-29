@@ -72,12 +72,12 @@
 Complex shapes leverage the new Structure API to allow you to easily create new shapes using existing shapes. You can choose a particle, a normal, a rotation, all the normal stuff a shape can have. However, you can also add multiple shapes to the complex shape, which will all be drawn relative to however the complex shape is drawn. This makes defining particles effects and using them later even easier.
 
 ### Structure
-```ruby
+```bash
 [a] [new] complex shape [named|with [the] name|with [the] id] %string%:
-    particle: particle # optional
-    normal: vector # optional
-    orientation: number # optional
-    shapes: # required
+    particle:    particle # optional
+    normal:      vector   # optional
+    orientation: number   # optional
+    shapes:               # required
         add %shapes% to [the] [list of] shapes
 ```
 
