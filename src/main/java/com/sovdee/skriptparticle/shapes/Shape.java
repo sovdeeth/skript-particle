@@ -9,7 +9,6 @@ import com.sovdee.skriptparticle.util.VectorMath;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.util.Vector;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -160,38 +159,5 @@ public abstract class Shape{
             }
             return null;
         });
-
-        if (Classes.getExactClassInfo(Particle.class) == null) {
-            Classes.registerClass(new ClassInfo<>(Particle.class, "particle")
-                    .user("particles?")
-                    .name("Particle")
-                    .description("Represents a particle which can be used in the 'Particle Spawn' effect.",
-                            "Some particles require extra data, these are distinguished by their data type within the square brackets.",
-                            "DustOption, DustTransition and Vibration each have their own functions to build the appropriate data for these particles.")
-                    .parser(new Parser<>() {
-
-                        @SuppressWarnings("NullableProblems")
-                        @Nullable
-                        @Override
-                        public Particle parse(String s, ParseContext context) {
-                            return Particle.ASH;
-                        }
-
-                        @Override
-                        public @NotNull String toString(Particle particle, int flags) {
-                            return "temp";
-                        }
-
-                        @Override
-                        public @NotNull String toVariableNameString(Particle particle) {
-                            return "particle:" + toString(particle, 0);
-                        }
-                    }));
-        }
-
-
     }
-
-
-
 }

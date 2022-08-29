@@ -1,10 +1,6 @@
 /.idea/
 /.gradle/
 /.settings/
-/gradlew
-/settings.gradle
 /.gitattributes
 /build/
 /.git/
-/gradle/
-/gradlew.bat
