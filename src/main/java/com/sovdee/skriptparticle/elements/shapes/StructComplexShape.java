@@ -1,24 +1,20 @@
 package com.sovdee.skriptparticle.elements.shapes;
 
-import ch.njol.skript.ScriptLoader;
 import ch.njol.skript.Skript;
-import ch.njol.skript.config.SectionNode;
-import ch.njol.skript.events.bukkit.ScriptEvent;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.Literal;
 import ch.njol.skript.lang.SkriptParser;
 import ch.njol.skript.lang.Trigger;
-import ch.njol.skript.lang.util.SimpleEvent;
-import ch.njol.skript.lang.util.SimpleLiteral;
+import ch.njol.skript.lang.util.ContextlessEvent;
 import com.sovdee.skriptparticle.shapes.ComplexShape;
+import com.sovdee.skriptparticle.util.FlaggedExpressionStructureEntryData;
 import org.bukkit.Particle;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
 import org.skriptlang.skript.lang.structure.EntryContainer;
 import org.skriptlang.skript.lang.structure.Structure;
 import org.skriptlang.skript.lang.structure.StructureEntryValidator;
-import org.skriptlang.skript.lang.structure.util.ExpressionStructureEntryData;
-import org.skriptlang.skript.lang.structure.util.LiteralStructureEntryData;
+import org.skriptlang.skript.lang.structure.util.TriggerStructureEntryData;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -32,10 +28,11 @@ public class StructComplexShape extends Structure {
         Skript.registerStructure(
                 StructComplexShape.class,
                 StructureEntryValidator.builder()
-                        .addEntryData(new LiteralStructureEntryData<>("particle", null, true, Particle.class))
-                        .addEntryData(new ExpressionStructureEntryData<>("normal", new SimpleLiteral<>(new Vector(0,1,0), true), true, Vector.class, Event.class))
-                        .addEntryData(new LiteralStructureEntryData<>("orientation", 0, true, Number.class))
-                        .addSection("shapes", false)
+                        .addEntryData(new FlaggedExpressionStructureEntryData<>("particle", null, true, Particle.class, SkriptParser.ALL_FLAGS, ContextlessEvent.class))
+                        .addEntryData(new FlaggedExpressionStructureEntryData<>("normal", null, true, Vector.class, SkriptParser.ALL_FLAGS, ContextlessEvent.class))
+                        .addEntryData(new FlaggedExpressionStructureEntryData<>("orientation", null, true, Number.class, SkriptParser.ALL_FLAGS, ContextlessEvent.class))
+                        .addEntryData(new TriggerStructureEntryData("shapes", null,false, ContextlessEvent.class))
+//                        .addSection("shapes", false)
                         .build(),
                 "[a] [new] complex shape [named|with [the] name|with [the] id] %string%"
         );
@@ -56,17 +53,20 @@ public class StructComplexShape extends Structure {
     @Override
     public boolean load() {
         EntryContainer entryContainer = getEntryContainer();
+        Vector normal = ((Expression<Vector>) entryContainer.getOptional("normal", Expression.class, true)).getSingle(ContextlessEvent.get());
+        Number orientation = ((Expression<Number>) entryContainer.getOptional("orientation", Expression.class, true)).getSingle(ContextlessEvent.get());
+        Particle particle = ((Expression<Particle>) entryContainer.getOptional("particle", Expression.class, true)).getSingle(ContextlessEvent.get());
+
+
         shape = new ComplexShape(
-                ((Expression<Vector>) entryContainer.getOptional("normal", Expression.class, true)).getSingle(new ScriptEvent()),
-                entryContainer.getOptional("orientation", Number.class, true).doubleValue(),
-                entryContainer.getOptional("particle", Particle.class, true)
+                normal == null ? new Vector(0, 1, 0) : normal,
+                orientation == null ? 0 : orientation.doubleValue(),
+                particle
         );
 
         CUSTOM_SHAPES.put(shapeName, shape);
 
-        SectionNode shapeNode = entryContainer.get("shapes", SectionNode.class, true);
-        Trigger shapeTrigger = new Trigger(this.getParser().getCurrentScript(), "shape:" + shapeName, new SimpleEvent(), ScriptLoader.loadItems(shapeNode));
-        shapeTrigger.execute(new ScriptEvent());
+        entryContainer.get("shapes", Trigger.class, true).execute(ContextlessEvent.get());
 
         return true;
     }
