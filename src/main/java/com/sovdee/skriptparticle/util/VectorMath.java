@@ -8,8 +8,12 @@ public class VectorMath {
     public static RotationValue getRotationValues(Vector normal) {
         // ensure normal is normalized, then get cross prod and angle from dot prod
         normal.normalize();
+
+        // prevent NANs from parallel normals
         if (normal.angle(defaultNormal) <= 0.001) {
             return new RotationValue(defaultNormal, 0);
+        } else if (normal.angle(defaultNormal) >= Math.PI - 0.001) {
+            return new RotationValue(new Vector(1,0,0), Math.PI);
         }
 
         Vector cross = defaultNormal.getCrossProduct(normal).normalize();

@@ -18,7 +18,9 @@ import javax.annotation.Nullable;
 public class EffDrawShape extends Effect {
 
     static {
-        Skript.registerEffect(EffDrawShape.class, "draw %shapes% (with|using) %particle% [centered] at %location%", "draw %lines% (with|using) %particle%");
+        Skript.registerEffect(EffDrawShape.class,
+                "draw %shapes% [centered] at %location% [(with|using) %-particle%]",
+                "draw %lines% [(with|using) %-particle%]");
     }
 
     Expression<Shape> shapeExpr;
@@ -30,8 +32,13 @@ public class EffDrawShape extends Effect {
     @Override
     protected void execute(Event e) {
         Shape[] shapes = shapeExpr.getAll(e);
-        Particle particle = particleExpr.getSingle(e);
-        if (shapes.length == 0 || particle == null) return;
+        if (shapes.length == 0) return;
+
+        Particle particle = null;
+        if (particleExpr != null) {
+            particle = particleExpr.getSingle(e);
+            if (particle == null) return;
+        }
 
         Location location = null;
         World world = null;
@@ -44,6 +51,15 @@ public class EffDrawShape extends Effect {
 
         for (Shape shape : shapes) {
             if (shape == null) continue;
+
+            if (particle == null) {
+                if (shape.getParticle() != null) {
+                    particle = shape.getParticle();
+                } else {
+                    particle = Particle.FLAME;
+                }
+            }
+
             if (useLineLocations) {
                 location = ((Line) shape).getStartLocation();
                 if (location == null) {
@@ -61,18 +77,19 @@ public class EffDrawShape extends Effect {
 
     @Override
     public String toString(@Nullable Event e, boolean debug) {
-        return "Draw shape " + shapeExpr.getSingle(e) + " at " + locationExpr.getSingle(e) + " using " + particleExpr.getSingle(e);
+        return "Draw shape " + shapeExpr.getSingle(e) + " at " + locationExpr.getSingle(e);
     }
 
     @Override
     public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, SkriptParser.ParseResult parseResult) {
         shapeExpr = (Expression<Shape>) exprs[0];
-        particleExpr = (Expression<Particle>) exprs[1];
-        if (matchedPattern == 0)
-            locationExpr = (Expression<Location>) exprs[2];
-        else
+        if (matchedPattern == 0) {
+            locationExpr = (Expression<Location>) exprs[1];
+            particleExpr = (Expression<Particle>) exprs[2];
+        } else {
             useLineLocations = true;
-
+            particleExpr = (Expression<Particle>) exprs[1];
+        }
         return true;
     }
 }

@@ -17,7 +17,7 @@ repositories {
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.19.2-R0.1-SNAPSHOT")
-    implementation 'com.github.SkriptLang:Skript:2.6.3'
+    implementation "com.github.SkriptLang:Skript:structure-api-SNAPSHOT"
 }
 
 java {

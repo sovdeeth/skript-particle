@@ -1,6 +1,5 @@
 package com.sovdee.skriptparticle.shapes;
 
-import ch.njol.skript.Skript;
 import ch.njol.skript.classes.ClassInfo;
 import ch.njol.skript.classes.Parser;
 import ch.njol.skript.lang.ParseContext;
@@ -8,8 +7,11 @@ import ch.njol.skript.registrations.Classes;
 import ch.njol.skript.registrations.Converters;
 import com.sovdee.skriptparticle.util.VectorMath;
 import org.bukkit.Location;
+import org.bukkit.Particle;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +20,7 @@ public abstract class Shape{
     private Vector normal;
     private Vector backupNormal;
     private double rotation;
+    private Particle particle;
 
     protected boolean needsUpdate;
 
@@ -35,7 +38,7 @@ public abstract class Shape{
 
     public void updatePoints(){
         if (needsUpdate || !backupNormal.equals(normal.normalize())) {
-            points = getRotatedPoints(generatePoints());
+            points = this.getRotatedPoints(this.generatePoints());
             needsUpdate = false;
             backupNormal = normal.clone();
         }
@@ -43,7 +46,6 @@ public abstract class Shape{
 
     public List<Vector> getRotatedPoints(List<Vector> points){
         VectorMath.RotationValue rotationValue = VectorMath.getRotationValues(normal);
-        Skript.info("normal: " + normal + " rotationValue.cross: " + rotationValue.cross + " rotationValue.angle: " + rotationValue.angle);
         for (Vector point : points) {
             point.rotateAroundAxis(rotationValue.cross, rotationValue.angle);
             point.rotateAroundAxis(normal, rotation);
@@ -63,7 +65,7 @@ public abstract class Shape{
     }
 
     public List<Vector> getPoints() {
-        updatePoints();
+        this.updatePoints();
         return points;
     }
 
@@ -89,6 +91,14 @@ public abstract class Shape{
         return rotation;
     }
 
+    public void setParticle(@Nullable Particle particle) {
+        this.particle = particle;
+    }
+
+    public Particle getParticle() {
+        return particle;
+    }
+
     public boolean needsUpdate() {
         return needsUpdate;
     }
@@ -98,7 +108,7 @@ public abstract class Shape{
     }
 
     public String toString(){
-        return "Shape with " + points.size() + " points";
+        return "Shape with " + getPoints().size() + " points";
     }
 
     static {
@@ -109,7 +119,7 @@ public abstract class Shape{
                 .parser(new Parser<>() {
 
                     @Override
-                    public Circle parse(String input, ParseContext context) {
+                    public Shape parse(String input, ParseContext context) {
                         return null;
                     }
 
@@ -125,7 +135,7 @@ public abstract class Shape{
 
                     @Override
                     public String toVariableNameString(Shape shape) {
-                        return "shape:vector(" + shape.getNormal().getX() + "," + shape.getNormal().getY() + "," + shape.getNormal().getZ() + ")," + shape.getRotation();
+                        return "shape:" + shape.getParticle() + ",vector(" + shape.getNormal().getX() + "," + shape.getNormal().getY() + "," + shape.getNormal().getZ() + ")," + shape.getRotation();
                     }
                 })
         );
@@ -136,6 +146,52 @@ public abstract class Shape{
             }
             return null;
         });
+
+        Converters.registerConverter(Shape.class, Line.class, (shape) -> {
+            if (shape instanceof Line) {
+                return (Line) shape;
+            }
+            return null;
+        });
+
+        Converters.registerConverter(Shape.class, ComplexShape.class, (shape) -> {
+            if (shape instanceof ComplexShape) {
+                return (ComplexShape) shape;
+            }
+            return null;
+        });
+
+        if (Classes.getExactClassInfo(Particle.class) == null) {
+            Classes.registerClass(new ClassInfo<>(Particle.class, "particle")
+                    .user("particles?")
+                    .name("Particle")
+                    .description("Represents a particle which can be used in the 'Particle Spawn' effect.",
+                            "Some particles require extra data, these are distinguished by their data type within the square brackets.",
+                            "DustOption, DustTransition and Vibration each have their own functions to build the appropriate data for these particles.")
+                    .parser(new Parser<>() {
+
+                        @SuppressWarnings("NullableProblems")
+                        @Nullable
+                        @Override
+                        public Particle parse(String s, ParseContext context) {
+                            return Particle.ASH;
+                        }
+
+                        @Override
+                        public @NotNull String toString(Particle particle, int flags) {
+                            return "temp";
+                        }
+
+                        @Override
+                        public @NotNull String toVariableNameString(Particle particle) {
+                            return "particle:" + toString(particle, 0);
+                        }
+                    }));
+        }
+
+
     }
+
+
 
 }
