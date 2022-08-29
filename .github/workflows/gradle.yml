@@ -35,3 +35,9 @@ jobs:
       uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
       with:
         arguments: build
+    - name: Upload Nightly Build
+      uses: actions/upload-artifact@v3
+      if: success()
+      with:
+          name: skript-particles-1.0-SNAPSHOT
+          path: build/libs/*
