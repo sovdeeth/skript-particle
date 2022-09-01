@@ -5,9 +5,9 @@ import ch.njol.skript.classes.Parser;
 import ch.njol.skript.lang.ParseContext;
 import ch.njol.skript.registrations.Classes;
 import ch.njol.skript.registrations.Converters;
+import com.sovdee.skriptparticle.particles.CustomParticle;
 import com.sovdee.skriptparticle.util.VectorMath;
 import org.bukkit.Location;
-import org.bukkit.Particle;
 import org.bukkit.util.Vector;
 
 import javax.annotation.Nullable;
@@ -19,7 +19,7 @@ public abstract class Shape{
     private Vector normal;
     private Vector backupNormal;
     private double rotation;
-    private Particle particle;
+    private CustomParticle particle;
 
     protected boolean needsUpdate;
 
@@ -90,11 +90,11 @@ public abstract class Shape{
         return rotation;
     }
 
-    public void setParticle(@Nullable Particle particle) {
+    public void setParticle(@Nullable CustomParticle particle) {
         this.particle = particle;
     }
 
-    public Particle getParticle() {
+    public CustomParticle getParticle() {
         return particle;
     }
 

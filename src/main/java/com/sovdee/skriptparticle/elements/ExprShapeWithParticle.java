@@ -6,8 +6,8 @@ import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.ExpressionType;
 import ch.njol.skript.lang.SkriptParser;
 import ch.njol.util.Kleenean;
+import com.sovdee.skriptparticle.particles.CustomParticle;
 import com.sovdee.skriptparticle.shapes.Shape;
-import org.bukkit.Particle;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
@@ -18,9 +18,9 @@ import java.util.Arrays;
 public class ExprShapeWithParticle extends PropertyExpression<Shape, Shape> {
 
     static {
-        Skript.registerExpression(ExprShapeWithNormal.class, Shape.class, ExpressionType.PROPERTY,"%shapes% with particle %particle%");
+        Skript.registerExpression(ExprShapeWithNormal.class, Shape.class, ExpressionType.PROPERTY,"%shapes% with particle %customparticle%");
     }
-    private Expression<Particle> particleExpr;
+    private Expression<CustomParticle> particleExpr;
 
     @Override
     @NotNull
@@ -32,7 +32,7 @@ public class ExprShapeWithParticle extends PropertyExpression<Shape, Shape> {
             source[i] = source[i].clone();
 
             if (particleExpr != null) {
-                Particle particle = particleExpr.getSingle(e);
+                CustomParticle particle = particleExpr.getSingle(e);
                 if (particle == null)
                     continue;
                 source[i].setParticle(particle);
@@ -56,7 +56,7 @@ public class ExprShapeWithParticle extends PropertyExpression<Shape, Shape> {
     @Override
     public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, SkriptParser.ParseResult parseResult) {
         setExpr((Expression<Shape>) exprs[0]);
-        particleExpr = (Expression<Particle>) exprs[1];
+        particleExpr = (Expression<CustomParticle>) exprs[1];
         return true;
     }
 }

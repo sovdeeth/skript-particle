@@ -4,7 +4,7 @@ import ch.njol.skript.classes.ClassInfo;
 import ch.njol.skript.classes.Parser;
 import ch.njol.skript.lang.ParseContext;
 import ch.njol.skript.registrations.Classes;
-import org.bukkit.Particle;
+import com.sovdee.skriptparticle.particles.CustomParticle;
 import org.bukkit.util.Vector;
 
 import javax.annotation.Nullable;
@@ -24,7 +24,7 @@ public class ComplexShape extends Shape {
         setRotation(rotation);
     }
 
-    public ComplexShape(Vector normal, double rotation, @Nullable Particle particle) {
+    public ComplexShape(Vector normal, double rotation, @Nullable CustomParticle particle) {
         super();
         setNormal(normal);
         setRotation(rotation);

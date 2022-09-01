@@ -6,6 +6,7 @@ import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser;
 import ch.njol.skript.log.ErrorQuality;
 import ch.njol.util.Kleenean;
+import com.sovdee.skriptparticle.particles.CustomParticle;
 import com.sovdee.skriptparticle.shapes.Line;
 import com.sovdee.skriptparticle.shapes.Shape;
 import org.bukkit.Location;
@@ -19,13 +20,13 @@ public class EffDrawShape extends Effect {
 
     static {
         Skript.registerEffect(EffDrawShape.class,
-                "draw %shapes% [centered] at %location% [(with|using) %-particle%]",
-                "draw %lines% [(with|using) %-particle%]");
+                "draw [shape[s]] %shapes% [centered] at %location% [(with|using) %-customparticle%]",
+                "draw [shape[s]] %lines% [(with|using) %-customparticle%]");
     }
 
     Expression<Shape> shapeExpr;
     Expression<Location> locationExpr;
-    Expression<Particle> particleExpr;
+    Expression<CustomParticle> particleExpr;
 
     private boolean useLineLocations;
 
@@ -34,7 +35,7 @@ public class EffDrawShape extends Effect {
         Shape[] shapes = shapeExpr.getAll(e);
         if (shapes.length == 0) return;
 
-        Particle particle = null;
+        CustomParticle particle = null;
         if (particleExpr != null) {
             particle = particleExpr.getSingle(e);
             if (particle == null) return;
@@ -56,7 +57,7 @@ public class EffDrawShape extends Effect {
                 if (shape.getParticle() != null) {
                     particle = shape.getParticle();
                 } else {
-                    particle = Particle.FLAME;
+                    particle = new CustomParticle(Particle.FLAME, 0);
                 }
             }
 
@@ -66,11 +67,10 @@ public class EffDrawShape extends Effect {
                     Skript.error("Line has no start location. Please use the 'centered at' draw syntax or define the line with a start location.", ErrorQuality.SEMANTIC_ERROR);
                     return;
                 };
-                world = location.getWorld();
             }
             Location[] locs = shape.getLocations(location);
             for (Location loc : locs) {
-                world.spawnParticle(particle, loc, 0, 0, 0, 0, 0);
+                particle.drawParticle(loc);
             }
         }
     }
@@ -85,10 +85,10 @@ public class EffDrawShape extends Effect {
         shapeExpr = (Expression<Shape>) exprs[0];
         if (matchedPattern == 0) {
             locationExpr = (Expression<Location>) exprs[1];
-            particleExpr = (Expression<Particle>) exprs[2];
+            particleExpr = (Expression<CustomParticle>) exprs[2];
         } else {
             useLineLocations = true;
-            particleExpr = (Expression<Particle>) exprs[1];
+            particleExpr = (Expression<CustomParticle>) exprs[1];
         }
         return true;
     }

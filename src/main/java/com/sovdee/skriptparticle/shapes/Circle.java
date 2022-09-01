@@ -137,7 +137,11 @@ public class Circle extends Shape {
 
                     @Override
                     public Circle deserialize(Fields fields) throws StreamCorruptedException {
-                        return new Circle(fields.getPrimitive("radius", Double.class), fields.getPrimitive("stepSize", Double.class), fields.getObject("normal", Vector.class), fields.getPrimitive("rotation", Double.class));
+                        double radius = fields.getPrimitive("radius", Double.class);
+                        double stepSize = fields.getPrimitive("stepSize", Double.class);
+                        Vector normal = fields.getObject("normal", Vector.class);
+                        double rotation = fields.getPrimitive("rotation", Double.class);
+                        return new Circle(radius, stepSize, normal, rotation);
                     }
 
                     @Override

@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nullable;
 
 public class ExprShapeOrientation extends SimplePropertyExpression<Shape, Number> {
+
     static {
         register(ExprShapeOrientation.class, Number.class, "orientation","shapes");
     }

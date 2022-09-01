@@ -6,9 +6,9 @@ import ch.njol.skript.lang.Literal;
 import ch.njol.skript.lang.SkriptParser;
 import ch.njol.skript.lang.Trigger;
 import ch.njol.skript.lang.util.ContextlessEvent;
+import com.sovdee.skriptparticle.particles.CustomParticle;
 import com.sovdee.skriptparticle.shapes.ComplexShape;
 import com.sovdee.skriptparticle.util.FlaggedExpressionStructureEntryData;
-import org.bukkit.Particle;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
 import org.skriptlang.skript.lang.structure.EntryContainer;
@@ -28,7 +28,7 @@ public class StructComplexShape extends Structure {
         Skript.registerStructure(
                 StructComplexShape.class,
                 StructureEntryValidator.builder()
-                        .addEntryData(new FlaggedExpressionStructureEntryData<>("particle", null, true, Particle.class, SkriptParser.ALL_FLAGS, ContextlessEvent.class))
+                        .addEntryData(new FlaggedExpressionStructureEntryData<>("particle", null, true, CustomParticle.class, SkriptParser.ALL_FLAGS, ContextlessEvent.class))
                         .addEntryData(new FlaggedExpressionStructureEntryData<>("normal", null, true, Vector.class, SkriptParser.ALL_FLAGS, ContextlessEvent.class))
                         .addEntryData(new FlaggedExpressionStructureEntryData<>("orientation", null, true, Number.class, SkriptParser.ALL_FLAGS, ContextlessEvent.class))
                         .addEntryData(new TriggerStructureEntryData("shapes", null,false, ContextlessEvent.class))
@@ -55,7 +55,7 @@ public class StructComplexShape extends Structure {
         EntryContainer entryContainer = getEntryContainer();
         Vector normal = ((Expression<Vector>) entryContainer.getOptional("normal", Expression.class, true)).getSingle(ContextlessEvent.get());
         Number orientation = ((Expression<Number>) entryContainer.getOptional("orientation", Expression.class, true)).getSingle(ContextlessEvent.get());
-        Particle particle = ((Expression<Particle>) entryContainer.getOptional("particle", Expression.class, true)).getSingle(ContextlessEvent.get());
+        CustomParticle particle = ((Expression<CustomParticle>) entryContainer.getOptional("particle", Expression.class, true)).getSingle(ContextlessEvent.get());
 
 
         shape = new ComplexShape(

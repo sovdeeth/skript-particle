@@ -17,7 +17,7 @@ public class SkriptParticle extends JavaPlugin {
         instance = this;
         addon = Skript.registerAddon(this);
         try {
-            addon.loadClasses("com.sovdee.skriptparticle", "elements", "shapes");
+            addon.loadClasses("com.sovdee.skriptparticle", "elements", "shapes", "particles");
         } catch (IOException e) {
             e.printStackTrace();
         }

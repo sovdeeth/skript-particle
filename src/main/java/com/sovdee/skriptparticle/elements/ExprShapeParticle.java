@@ -2,22 +2,22 @@ package com.sovdee.skriptparticle.elements;
 
 import ch.njol.skript.classes.Changer;
 import ch.njol.skript.expressions.base.SimplePropertyExpression;
+import com.sovdee.skriptparticle.particles.CustomParticle;
 import com.sovdee.skriptparticle.shapes.Shape;
-import org.bukkit.Particle;
 import org.bukkit.event.Event;
 
 import javax.annotation.Nullable;
 
-public class ExprShapeParticle extends SimplePropertyExpression<Shape, Particle> {
+public class ExprShapeParticle extends SimplePropertyExpression<Shape, CustomParticle> {
 
     static {
-        register(ExprShapeParticle.class, Particle.class, "particle", "shapes");
+        register(ExprShapeParticle.class, CustomParticle.class, "particle", "shapes");
     }
 
     @Override
     public @Nullable Class<?>[] acceptChange(Changer.ChangeMode mode) {
         if (mode == Changer.ChangeMode.SET || mode == Changer.ChangeMode.DELETE || mode == Changer.ChangeMode.RESET || mode == Changer.ChangeMode.REMOVE_ALL)
-            return new Class[]{Particle.class};
+            return new Class[]{CustomParticle.class};
         return new Class[0];
     }
 
@@ -27,7 +27,7 @@ public class ExprShapeParticle extends SimplePropertyExpression<Shape, Particle>
         switch (mode) {
             case SET:
                 for (Shape shape : getExpr().getArray(e))
-                    shape.setParticle((Particle) delta[0]);
+                    shape.setParticle((CustomParticle) delta[0]);
                 break;
             case RESET:
             case DELETE:
@@ -46,12 +46,12 @@ public class ExprShapeParticle extends SimplePropertyExpression<Shape, Particle>
     }
 
     @Override
-    public @Nullable Particle convert(Shape shape) {
+    public @Nullable CustomParticle convert(Shape shape) {
         return shape.getParticle();
     }
 
     @Override
-    public Class<? extends Particle> getReturnType() {
-        return Particle.class;
+    public Class<? extends CustomParticle> getReturnType() {
+        return CustomParticle.class;
     }
 }
