@@ -1,6 +1,5 @@
 package com.sovdee.skriptparticle.shapes;
 
-import ch.njol.skript.Skript;
 import ch.njol.skript.classes.ClassInfo;
 import ch.njol.skript.classes.Parser;
 import ch.njol.skript.lang.ParseContext;
@@ -50,7 +49,6 @@ public abstract class Shape implements Cloneable {
     }
 
     public List<Vector> getOffsetPoints(List<Vector> points){
-        Skript.info("Offsetting points by " + getOffset().toString());
         for (Vector point : points) {
             point.add(getOffset());
         }
