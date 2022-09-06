@@ -22,17 +22,17 @@ public class ExprShapeParticle extends SimplePropertyExpression<Shape, CustomPar
     }
 
     @Override
-    public void change(Event e, @Nullable Object[] delta, Changer.ChangeMode mode) {
+    public void change(Event event, @Nullable Object[] delta, Changer.ChangeMode mode) {
         if (delta == null || delta.length == 0) return;
         switch (mode) {
             case SET:
-                for (Shape shape : getExpr().getArray(e))
+                for (Shape shape : getExpr().getArray(event))
                     shape.setParticle((CustomParticle) delta[0]);
                 break;
             case RESET:
             case DELETE:
             case REMOVE_ALL:
-                for (Shape shape : getExpr().getArray(e))
+                for (Shape shape : getExpr().getArray(event))
                     shape.setParticle(null);
                 break;
             default:

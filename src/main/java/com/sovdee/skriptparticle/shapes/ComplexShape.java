@@ -5,6 +5,7 @@ import ch.njol.skript.classes.Parser;
 import ch.njol.skript.lang.ParseContext;
 import ch.njol.skript.registrations.Classes;
 import com.sovdee.skriptparticle.particles.CustomParticle;
+import org.bukkit.Location;
 import org.bukkit.util.Vector;
 
 import javax.annotation.Nullable;
@@ -18,17 +19,32 @@ public class ComplexShape extends Shape {
         super();
     }
 
-    public ComplexShape(Vector normal, double rotation) {
+    public ComplexShape(ShapePosition position, @Nullable CustomParticle particle, @Nullable Location center) {
         super();
-        setNormal(normal);
-        setRotation(rotation);
+        this.setShapePosition(position);
+        setParticle(particle);
+        setCenter(center);
     }
 
-    public ComplexShape(Vector normal, double rotation, @Nullable CustomParticle particle) {
-        super();
-        setNormal(normal);
-        setRotation(rotation);
-        setParticle(particle);
+    @Override
+    public void updatePoints(){
+        for (Shape shape : shapes) {
+            if (shape.needsUpdate || !shape.getBackupNormal().equals(shape.getNormal().normalize())) {
+                this.needsUpdate = true;
+                break;
+            }
+        }
+
+        if (needsUpdate || !getBackupNormal().equals(getNormal().normalize())) {
+            // generate points, then rotate them to the correct orientation. Then offset them to the final correct position.
+            // this means rotations are always around the center of the shape, and not the point at which it's drawn.
+
+            // Creating a complex shape will rotate the points around the center of the shape, then offset them,
+            // then rotate them around the center of the complex shape.
+            points = this.getOffsetPoints(this.getRotatedPoints(this.generatePoints()));
+            needsUpdate = false;
+            getShapePosition().updateBackupNormal();
+        }
     }
 
     @Override
@@ -42,7 +58,7 @@ public class ComplexShape extends Shape {
 
     @Override
     public Shape clone() {
-        ComplexShape clone = new ComplexShape(getNormal(), getRotation(), getParticle());
+        ComplexShape clone = new ComplexShape(getShapePosition(), getParticle(), getCenter());
         for (Shape shape : shapes) {
             clone.shapes.add(shape.clone());
         }
@@ -93,7 +109,7 @@ public class ComplexShape extends Shape {
 
                     @Override
                     public String toVariableNameString(ComplexShape shape) {
-                        return "complexshape:" + shape.getParticle() + ",vector(" + shape.getNormal().getX() + "," + shape.getNormal().getY() + "," + shape.getNormal().getZ() + ")," + shape.getRotation();
+                        return "complexshape:" + shape.getUUID();
                     }
                 })
         );

@@ -24,7 +24,7 @@ public class ExprShapeWithNormal extends PropertyExpression<Shape, Shape> {
 
     @Override
     @NotNull
-    protected Shape[] get(Event e, Shape[] source) {
+    protected Shape[] get(Event event, Shape[] source) {
         for (int i = 0; i < source.length; i++) {
             if (source[i] == null)
                 continue;
@@ -32,7 +32,7 @@ public class ExprShapeWithNormal extends PropertyExpression<Shape, Shape> {
             source[i] = source[i].clone();
 
             if (normalExpr != null) {
-                Vector normal = normalExpr.getSingle(e);
+                Vector normal = normalExpr.getSingle(event);
                 if (normal == null)
                     continue;
                 source[i].setNormal(normal);
@@ -49,8 +49,8 @@ public class ExprShapeWithNormal extends PropertyExpression<Shape, Shape> {
 
     @Override
     @NotNull
-    public String toString(@Nullable Event e, boolean debug) {
-        return Arrays.toString(getExpr().getAll(e)) + " with normal vector " + (normalExpr != null ? normalExpr.getSingle(e) : new Vector(0,1,0));
+    public String toString(@Nullable Event event, boolean debug) {
+        return Arrays.toString(getExpr().getAll(event)) + " with normal vector " + (normalExpr != null ? normalExpr.getSingle(event) : new Vector(0,1,0));
     }
 
     @Override

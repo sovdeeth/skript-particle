@@ -1,5 +1,6 @@
 package com.sovdee.skriptparticle.shapes;
 
+import ch.njol.skript.Skript;
 import ch.njol.skript.classes.ClassInfo;
 import ch.njol.skript.classes.Parser;
 import ch.njol.skript.lang.ParseContext;
@@ -13,22 +14,22 @@ import org.bukkit.util.Vector;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
-public abstract class Shape{
-    List<Vector> points;
-    private Vector normal;
-    private Vector backupNormal;
-    private double rotation;
+public abstract class Shape implements Cloneable {
+    protected List<Vector> points;
+    private ShapePosition shapePosition;
     private CustomParticle particle;
-
+    private Location center;
     protected boolean needsUpdate;
+    private final UUID uuid;
 
     public Shape() {
         this.points = new ArrayList<>();
-        this.normal = new Vector(0, 1, 0);
-        this.backupNormal = normal.clone();
-        this.rotation = 0.0;
+        this.shapePosition = new ShapePosition();
         this.needsUpdate = true;
+        this.center = null;
+        this.uuid = UUID.randomUUID();
     }
 
     public abstract List<Vector> generatePoints();
@@ -36,29 +37,45 @@ public abstract class Shape{
     public abstract Shape clone();
 
     public void updatePoints(){
-        if (needsUpdate || !backupNormal.equals(normal.normalize())) {
-            points = this.getRotatedPoints(this.generatePoints());
+        if (needsUpdate || !getBackupNormal().equals(getNormal().normalize())) {
+            // generate points, then rotate them to the correct orientation. Then offset them to the final correct position.
+            // this means rotations are always around the center of the shape, and not the point at which it's drawn.
+
+            // Creating a complex shape will rotate the points around the center of the shape, then offset them,
+            // then rotate them around the center of the complex shape.
+            points = this.getOffsetPoints(this.getRotatedPoints(this.generatePoints()));
             needsUpdate = false;
-            backupNormal = normal.clone();
+            shapePosition.updateBackupNormal();
         }
     }
 
-    public List<Vector> getRotatedPoints(List<Vector> points){
-        VectorMath.RotationValue rotationValue = VectorMath.getRotationValues(normal);
+    public List<Vector> getOffsetPoints(List<Vector> points){
+        Skript.info("Offsetting points by " + getOffset().toString());
         for (Vector point : points) {
-            point.rotateAroundAxis(rotationValue.cross, rotationValue.angle);
-            point.rotateAroundAxis(normal, rotation);
+            point.add(getOffset());
         }
         return points;
     }
 
-    public Location[] getLocations(Location center){
+    public List<Vector> getRotatedPoints(List<Vector> points){
+        VectorMath.RotationValue rotationValue = VectorMath.getRotationValues(getNormal());
+        for (Vector point : points) {
+            point.rotateAroundAxis(rotationValue.cross, rotationValue.angle);
+            point.rotateAroundAxis(getNormal(), getRotation());
+        }
+        return points;
+    }
+
+    public List<Location> getLocations(){
+        return getLocations(center);
+    }
+    public List<Location> getLocations(Location center){
         // only recalculate if the shape has been rotated since last calculation
         updatePoints();
         // offset center by vectors to get locations
-        Location[] locations = new Location[points.size()];
-        for(int i = 0; i < points.size(); i++){
-            locations[i] = center.clone().add(points.get(i));
+        List<Location> locations = new ArrayList<>();
+        for (Vector point : points) {
+            locations.add(center.clone().add(point));
         }
         return locations;
     }
@@ -69,25 +86,25 @@ public abstract class Shape{
     }
 
     public void setNormal(Vector normal){
-        this.normal = normal.clone().normalize();
+        shapePosition.setNormal(normal.clone().normalize());
         needsUpdate = true;
     }
 
     public Vector getNormal(){
-        return normal;
+        return shapePosition.getNormal();
     }
 
     public Vector getBackupNormal() {
-        return backupNormal;
+        return shapePosition.getBackupNormal();
     }
 
     public void setRotation(double rotation){
-        this.rotation = rotation;
+        shapePosition.setRotation(rotation);
         needsUpdate = true;
     }
 
     public double getRotation(){
-        return rotation;
+        return shapePosition.getRotation();
     }
 
     public void setParticle(@Nullable CustomParticle particle) {
@@ -104,6 +121,35 @@ public abstract class Shape{
 
     public void setNeedsUpdate(boolean needsUpdate) {
         this.needsUpdate = needsUpdate;
+    }
+
+    public Location getCenter() {
+        return center;
+    }
+
+    public void setCenter(Location center) {
+        this.center = center;
+    }
+
+    public UUID getUUID() {
+        return uuid;
+    }
+
+    public Vector getOffset() {
+        return shapePosition.getOffsetVector();
+    }
+
+    public void setOffset(Vector offsetVector) {
+        shapePosition.setOffsetVector(offsetVector);
+        needsUpdate = true;
+    }
+
+    public ShapePosition getShapePosition() {
+        return shapePosition;
+    }
+
+    public void setShapePosition(ShapePosition shapePosition) {
+        this.shapePosition = shapePosition;
     }
 
     public String toString(){
@@ -134,7 +180,7 @@ public abstract class Shape{
 
                     @Override
                     public String toVariableNameString(Shape shape) {
-                        return "shape:" + shape.getParticle() + ",vector(" + shape.getNormal().getX() + "," + shape.getNormal().getY() + "," + shape.getNormal().getZ() + ")," + shape.getRotation();
+                        return "shape:" + shape.getUUID();
                     }
                 })
         );

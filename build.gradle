@@ -24,7 +24,7 @@ java {
     toolchain.languageVersion.set(JavaLanguageVersion.of(17))
 }
 
-task buildAndRun(type: Copy) {
+task copyJar(type: Copy) {
     from "build/libs/skript-particles-1.0-SNAPSHOT.jar"
     into "e:/PaperServer/plugins"
 }

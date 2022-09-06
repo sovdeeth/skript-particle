@@ -1,9 +1,7 @@
 package com.sovdee.skriptparticle.shapes;
 
 import ch.njol.skript.classes.ClassInfo;
-import ch.njol.skript.classes.Parser;
 import ch.njol.skript.classes.Serializer;
-import ch.njol.skript.lang.ParseContext;
 import ch.njol.skript.registrations.Classes;
 import ch.njol.skript.registrations.Converters;
 import ch.njol.yggdrasil.Fields;
@@ -13,8 +11,6 @@ import java.io.NotSerializableException;
 import java.io.StreamCorruptedException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class Circle extends Shape {
 
@@ -32,24 +28,15 @@ public class Circle extends Shape {
         super();
         this.radius = radius;
         this.stepSize = stepSize;
-        this.points = getRotatedPoints(generatePoints());
+        this.points = getPoints();
     }
 
-    public Circle(double radius, Vector normal, double rotation) {
-        super();
-        this.radius = radius;
-        // default to 30 points per circle
-        this.stepSize = Math.PI * 2 / 30;
-        this.setNormal(normal);
-        this.setRotation(rotation);
-    }
-
-    public Circle(double radius, double stepSize, Vector normal, double rotation) {
+    public Circle (double radius, double stepSize, ShapePosition position){
         super();
         this.radius = radius;
         this.stepSize = stepSize;
-        this.setNormal(normal);
-        this.setRotation(rotation);
+        this.setShapePosition(position);
+        this.points = getPoints();
     }
 
     public double getRadius() {
@@ -82,7 +69,8 @@ public class Circle extends Shape {
 
     @Override
     public Shape clone() {
-        return new Circle(this.radius, this.stepSize, this.getNormal(), this.getRotation());
+        Circle circle = new Circle(this.radius, this.stepSize, this.getShapePosition().clone());
+        return circle;
     }
 
     public String toString(){
@@ -95,34 +83,6 @@ public class Circle extends Shape {
                 .name("Circle")
                 .description("Represents a circle particle shape.")
                 .examples("on load:", "\tset {_circle} to a circle with radius of 2")
-//                .defaultExpression(new EventValueExpression<>(Circle.class))
-                .parser(new Parser<>() {
-                    Pattern pattern = Pattern.compile("^circle:(-?\\d+\\.?\\d*),(\\d+\\.?\\d*),vector\\((-?\\d+\\.?\\d*),(-?\\d+\\.?\\d*),(-?\\d+\\.?\\d*)\\),(-?\\d+\\.?\\d*)$", Pattern.CASE_INSENSITIVE);
-
-                    @Override
-                    public Circle parse(String input, ParseContext context) {
-                        Matcher matcher = pattern.matcher(input);
-                        if (matcher.matches()) {
-                            return new Circle(Double.parseDouble(matcher.group(1)), Double.parseDouble(matcher.group(2)), new Vector(Double.parseDouble(matcher.group(3)), Double.parseDouble(matcher.group(4)), Double.parseDouble(matcher.group(5))), Double.parseDouble(matcher.group(6)));
-                        }
-                        return null;
-                    }
-
-                    @Override
-                    public boolean canParse(ParseContext context) {
-                        return true;
-                    }
-
-                    @Override
-                    public String toString(Circle o, int flags) {
-                        return o.toString();
-                    }
-
-                    @Override
-                    public String toVariableNameString(Circle circle) {
-                        return "circle:" + circle.getRadius() + "," + circle.getStepSize() + ",vector(" + circle.getNormal().getX() + "," + circle.getNormal().getY() + "," + circle.getNormal().getZ() + ")," + circle.getRotation();
-                    }
-                })
                 .serializer(new Serializer<>() {
 
                     @Override
@@ -130,8 +90,7 @@ public class Circle extends Shape {
                         Fields fields = new Fields();
                         fields.putPrimitive("radius", circle.getRadius());
                         fields.putPrimitive("stepSize", circle.getStepSize());
-                        fields.putObject("normal", circle.getNormal());
-                        fields.putPrimitive("rotation", circle.getRotation());
+                        circle.getShapePosition().serialize(fields);
                         return fields;
                     }
 
@@ -139,9 +98,8 @@ public class Circle extends Shape {
                     public Circle deserialize(Fields fields) throws StreamCorruptedException {
                         double radius = fields.getPrimitive("radius", Double.class);
                         double stepSize = fields.getPrimitive("stepSize", Double.class);
-                        Vector normal = fields.getObject("normal", Vector.class);
-                        double rotation = fields.getPrimitive("rotation", Double.class);
-                        return new Circle(radius, stepSize, normal, rotation);
+                        ShapePosition shapePosition = ShapePosition.deserialize(fields);
+                        return new Circle(radius, stepSize, shapePosition);
                     }
 
                     @Override

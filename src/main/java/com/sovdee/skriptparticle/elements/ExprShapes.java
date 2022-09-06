@@ -18,18 +18,18 @@ import javax.annotation.Nullable;
 public class ExprShapes extends SimpleExpression<Shape> {
 
     static {
-        Skript.registerExpression(ExprShapes.class, Shape.class, ExpressionType.COMBINED, "[the] [list of] shapes [list]");
+        Skript.registerExpression(ExprShapes.class, Shape.class, ExpressionType.SIMPLE, "[the] [list of] shapes [list]");
     }
 
     private ComplexShape shape;
 
     @Override
     public @Nullable Class<?>[] acceptChange(Changer.ChangeMode mode) {
-        return new Class[]{Shape.class};
+        return new Class[]{Shape[].class};
     }
 
     @Override
-    public void change(Event e, @Nullable Object[] delta, Changer.ChangeMode mode) {
+    public void change(Event event, @Nullable Object[] delta, Changer.ChangeMode mode) {
         if (delta == null || delta.length == 0)
             return;
         if (shape == null)
@@ -70,7 +70,7 @@ public class ExprShapes extends SimpleExpression<Shape> {
     }
 
     @Override
-    public @NotNull String toString(@Nullable Event e, boolean debug) {
+    public @NotNull String toString(@Nullable Event event, boolean debug) {
         return null;
     }
 

@@ -26,14 +26,14 @@ public class ExprShapeWithOrientation extends PropertyExpression<Shape, Shape> {
 
     @Override
     @NotNull
-    protected Shape[] get(Event e, Shape[] source) {
+    protected Shape[] get(Event event, Shape[] source) {
         for (int i = 0; i < source.length; i++) {
             if (source[i] == null)
                 continue;
 
             source[i] = source[i].clone();
             if (rotationExpr != null) {
-                Number rotation = rotationExpr.getSingle(e);
+                Number rotation = rotationExpr.getSingle(event);
 
                 if (rotation == null)
                     continue;
@@ -56,8 +56,8 @@ public class ExprShapeWithOrientation extends PropertyExpression<Shape, Shape> {
 
     @Override
     @NotNull
-    public String toString(@Nullable Event e, boolean debug) {
-        return Arrays.toString(getExpr().getAll(e)) + " with rotation " + (rotationExpr != null ? rotationExpr.getSingle(e) : 0) + " degrees";
+    public String toString(@Nullable Event event, boolean debug) {
+        return Arrays.toString(getExpr().getAll(event)) + " with rotation " + (rotationExpr != null ? rotationExpr.getSingle(event) : 0) + " degrees";
     }
 
     @Override

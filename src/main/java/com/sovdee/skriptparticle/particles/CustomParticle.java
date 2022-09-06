@@ -118,6 +118,10 @@ public class CustomParticle {
         this.force = force;
     }
 
+    public CustomParticle clone(){
+        return new CustomParticle(particle, count, offset, extra, data, force);
+    }
+
     static {
         Classes.registerClass(new ClassInfo<>(CustomParticle.class, "customparticle")
                 .user("customparticles?")

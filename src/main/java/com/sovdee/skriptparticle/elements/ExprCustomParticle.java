@@ -29,12 +29,12 @@ public class ExprCustomParticle extends SimpleExpression<CustomParticle> {
     private Expression<Number> extraExpr;
 
     @Override
-    protected @Nullable CustomParticle[] get(Event e) {
-        int count = (countExpr != null && countExpr.getSingle(e) != null) ? countExpr.getSingle(e).intValue() : 1;
-        Particle particle = particleExpr.getSingle(e) != null ? particleExpr.getSingle(e) : Particle.FLAME;
-        Object data = dataExpr != null ? dataExpr.getSingle(e) : null;
-        Vector offset = offsetExpr != null ? offsetExpr.    getSingle(e) : null;
-        double extra = (extraExpr != null && extraExpr.getSingle(e) != null) ? extraExpr.getSingle(e).doubleValue() : 0;
+    protected @Nullable CustomParticle[] get(Event event) {
+        int count = (countExpr != null && countExpr.getSingle(event) != null) ? countExpr.getSingle(event).intValue() : 1;
+        Particle particle = particleExpr.getSingle(event) != null ? particleExpr.getSingle(event) : Particle.FLAME;
+        Object data = dataExpr != null ? dataExpr.getSingle(event) : null;
+        Vector offset = offsetExpr != null ? offsetExpr.    getSingle(event) : null;
+        double extra = (extraExpr != null && extraExpr.getSingle(event) != null) ? extraExpr.getSingle(event).doubleValue() : 0;
         return new CustomParticle[]{new CustomParticle(particle, count, offset, extra, data)};
     }
 
@@ -49,8 +49,8 @@ public class ExprCustomParticle extends SimpleExpression<CustomParticle> {
     }
 
     @Override
-    public @NotNull String toString(@Nullable Event e, boolean debug) {
-        return "custom particle " + (particleExpr.getSingle(e));
+    public @NotNull String toString(@Nullable Event event, boolean debug) {
+        return "custom particle";
     }
 
     @Override

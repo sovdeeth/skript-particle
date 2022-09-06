@@ -7,21 +7,19 @@ import ch.njol.skript.lang.SkriptParser;
 import ch.njol.skript.log.ErrorQuality;
 import ch.njol.util.Kleenean;
 import com.sovdee.skriptparticle.particles.CustomParticle;
-import com.sovdee.skriptparticle.shapes.Line;
 import com.sovdee.skriptparticle.shapes.Shape;
 import org.bukkit.Location;
 import org.bukkit.Particle;
-import org.bukkit.World;
 import org.bukkit.event.Event;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 public class EffDrawShape extends Effect {
 
     static {
         Skript.registerEffect(EffDrawShape.class,
-                "draw [shape[s]] %shapes% [centered] at %location% [(with|using) %-customparticle%]",
-                "draw [shape[s]] %lines% [(with|using) %-customparticle%]");
+                "draw [shape[s]] %shapes% [location:[centered] at %-location%] [particle:(with|using) %-customparticle%]");
     }
 
     Expression<Shape> shapeExpr;
@@ -31,24 +29,17 @@ public class EffDrawShape extends Effect {
     private boolean useLineLocations;
 
     @Override
-    protected void execute(Event e) {
-        Shape[] shapes = shapeExpr.getAll(e);
+    protected void execute(Event event) {
+        Shape[] shapes = shapeExpr.getAll(event);
         if (shapes.length == 0) return;
 
         CustomParticle particle = null;
         if (particleExpr != null) {
-            particle = particleExpr.getSingle(e);
+            particle = particleExpr.getSingle(event);
             if (particle == null) return;
         }
 
-        Location location = null;
-        World world = null;
-
-        if (!useLineLocations) {
-            location = locationExpr.getSingle(e);
-            if (location == null) return;
-            world = location.getWorld();
-        }
+        Location location = locationExpr != null ? locationExpr.getSingle(event) : null;
 
         for (Shape shape : shapes) {
             if (shape == null) continue;
@@ -61,14 +52,15 @@ public class EffDrawShape extends Effect {
                 }
             }
 
-            if (useLineLocations) {
-                location = ((Line) shape).getStartLocation();
+            if (location == null){
+                location = shape.getCenter();
                 if (location == null) {
-                    Skript.error("Line has no start location. Please use the 'centered at' draw syntax or define the line with a start location.", ErrorQuality.SEMANTIC_ERROR);
+                    Skript.error("Shape has no location. Please use the 'centered at' draw syntax or define the shape with a location.", ErrorQuality.SEMANTIC_ERROR);
                     return;
-                };
+                }
             }
-            Location[] locs = shape.getLocations(location);
+
+            List<Location> locs = shape.getLocations(location);
             for (Location loc : locs) {
                 particle.drawParticle(loc);
             }
@@ -76,20 +68,17 @@ public class EffDrawShape extends Effect {
     }
 
     @Override
-    public String toString(@Nullable Event e, boolean debug) {
-        return "Draw shape " + shapeExpr.getSingle(e) + " at " + locationExpr.getSingle(e);
+    public String toString(@Nullable Event event, boolean debug) {
+        return "Draw shape " + shapeExpr.getSingle(event);
     }
 
     @Override
     public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, SkriptParser.ParseResult parseResult) {
         shapeExpr = (Expression<Shape>) exprs[0];
-        if (matchedPattern == 0) {
+        if (parseResult.hasTag("location"))
             locationExpr = (Expression<Location>) exprs[1];
+        if (parseResult.hasTag("particle"))
             particleExpr = (Expression<CustomParticle>) exprs[2];
-        } else {
-            useLineLocations = true;
-            particleExpr = (Expression<CustomParticle>) exprs[1];
-        }
         return true;
     }
 }

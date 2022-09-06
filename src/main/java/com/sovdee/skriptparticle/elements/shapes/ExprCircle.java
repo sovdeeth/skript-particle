@@ -27,7 +27,7 @@ public class ExprCircle extends SimpleExpression<Circle> {
     private Circle circle;
 
     @Override
-    public String toString(@Nullable Event e, boolean debug) {
+    public String toString(@Nullable Event event, boolean debug) {
         return circle.toString();
     }
 
@@ -58,8 +58,8 @@ public class ExprCircle extends SimpleExpression<Circle> {
 
 
     @Override
-    protected Circle[] get(Event e) {
-        Number r = radius.getSingle(e);
+    protected Circle[] get(Event event) {
+        Number r = radius.getSingle(event);
         if (r == null || r.doubleValue() <= 0) {
             Skript.error("The radius of the circle must be greater than 0; defaulting to 1. (radius: " + r + ")");
             r = 1;
@@ -70,7 +70,7 @@ public class ExprCircle extends SimpleExpression<Circle> {
             return new Circle[]{circle};
         }
 
-        Number s = stepSizeOrParticleCount.getSingle(e);
+        Number s = stepSizeOrParticleCount.getSingle(event);
         if (s != null && s.doubleValue() <= 0) {
             Skript.error("The " + (!countFlag ? "step size" : "particle count") + " of the circle must be greater than 0; defaulting to " + (!countFlag ? "12 degrees" : "30 particles") + ". (" + (!countFlag ? "step size" : "particle count") + ": " + s + ")");
             s = (!countFlag ? 12 : 30);

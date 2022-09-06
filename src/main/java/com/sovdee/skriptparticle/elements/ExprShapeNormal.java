@@ -23,22 +23,22 @@ public class ExprShapeNormal extends SimplePropertyExpression<Shape, Vector> {
     }
 
     @Override
-    public void change(Event e, @Nullable Object[] delta, Changer.ChangeMode mode) {
-        for (Shape shape : getExpr().getArray(e)) {
+    public void change(Event event, @Nullable Object[] delta, Changer.ChangeMode mode) {
+        for (Shape shape : getExpr().getArray(event)) {
             shape.setNeedsUpdate(true);
         }
         switch (mode) {
             case SET:
                 if (delta == null || delta.length == 0)
                     return;
-                for (Shape shape : getExpr().getArray(e)) {
+                for (Shape shape : getExpr().getArray(event)) {
                     shape.setNormal(((Vector) delta[0]).normalize());
                 }
                 break;
             case RESET:
             case DELETE:
             case REMOVE_ALL:
-                for (Shape shape : getExpr().getArray(e)) {
+                for (Shape shape : getExpr().getArray(event)) {
                     shape.setNormal(new Vector(0, 1, 0));
                 }
                 break;

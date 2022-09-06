@@ -20,32 +20,32 @@ public class ExprShapeOrientation extends SimplePropertyExpression<Shape, Number
     }
 
     @Override
-    public void change(Event e, @Nullable Object[] delta, Changer.ChangeMode mode) {
+    public void change(Event event, @Nullable Object[] delta, Changer.ChangeMode mode) {
         if ((delta == null || delta.length == 0) && (mode == Changer.ChangeMode.ADD || mode == Changer.ChangeMode.SET))
             return;
-        for (Shape shape : getExpr().getArray(e)) {
+        for (Shape shape : getExpr().getArray(event)) {
             shape.setNeedsUpdate(true);
         }
         switch (mode) {
             case ADD:
-                for (Shape shape : getExpr().getArray(e)) {
+                for (Shape shape : getExpr().getArray(event)) {
                     shape.setRotation(shape.getRotation() + Math.toRadians(((Number) delta[0]).doubleValue()));
                 }
                 break;
             case REMOVE:
-                for (Shape shape : getExpr().getArray(e)) {
+                for (Shape shape : getExpr().getArray(event)) {
                     shape.setRotation(shape.getRotation() - Math.toRadians(((Number) delta[0]).doubleValue()));
                 }
                 break;
             case SET:
-                for (Shape shape : getExpr().getArray(e)) {
+                for (Shape shape : getExpr().getArray(event)) {
                     shape.setRotation(Math.toRadians(((Number) delta[0]).doubleValue()));
                 }
                 break;
             case RESET:
             case DELETE:
             case REMOVE_ALL:
-                for (Shape shape : getExpr().getArray(e)) {
+                for (Shape shape : getExpr().getArray(event)) {
                     shape.setRotation(0);
                 }
                 break;

@@ -21,8 +21,8 @@ public class ExprComplexShape extends SimpleExpression<ComplexShape> {
     private Expression<String> nameExpr;
 
     @Override
-    protected @Nullable ComplexShape[] get(Event e) {
-        return new ComplexShape[]{StructComplexShape.getCustomShapes().getOrDefault(nameExpr.getSingle(e), null)};
+    protected @Nullable ComplexShape[] get(Event event) {
+        return new ComplexShape[]{StructComplexShape.getCustomShapes().getOrDefault(nameExpr.getSingle(event), null)};
     }
 
     @Override
@@ -36,8 +36,8 @@ public class ExprComplexShape extends SimpleExpression<ComplexShape> {
     }
 
     @Override
-    public @NotNull String toString(@Nullable Event e, boolean debug) {
-        return "Complex shape with name " + nameExpr.toString(e, debug);
+    public @NotNull String toString(@Nullable Event event, boolean debug) {
+        return "Complex shape with name " + nameExpr.toString(event, debug);
     }
 
     @Override

@@ -6,7 +6,6 @@ import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.ExpressionType;
 import ch.njol.skript.lang.SkriptParser;
 import ch.njol.util.Kleenean;
-import com.sovdee.skriptparticle.particles.CustomParticle;
 import com.sovdee.skriptparticle.shapes.Shape;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
@@ -15,30 +14,32 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nullable;
 import java.util.Arrays;
 
-public class ExprShapeWithParticle extends PropertyExpression<Shape, Shape> {
+public class ExprShapeWithOffset extends PropertyExpression<Shape, Shape> {
 
     static {
-        Skript.registerExpression(ExprShapeWithNormal.class, Shape.class, ExpressionType.PROPERTY,"%shapes% with particle %customparticle%");
+        Skript.registerExpression(ExprShapeWithOffset.class, Shape.class, ExpressionType.PROPERTY,"%shapes% with offset [vector] %vector%");
     }
-    private Expression<CustomParticle> particleExpr;
+    private Expression<Vector> offsetExpr;
+
 
     @Override
     @NotNull
     protected Shape[] get(Event event, Shape[] source) {
+        Shape[] newShapes = new Shape[source.length];
         for (int i = 0; i < source.length; i++) {
             if (source[i] == null)
                 continue;
 
-            source[i] = source[i].clone();
+            newShapes[i] = source[i].clone();
 
-            if (particleExpr != null) {
-                CustomParticle particle = particleExpr.getSingle(event);
-                if (particle == null)
+            if (offsetExpr != null) {
+                Vector offset = offsetExpr.getSingle(event);
+                if (offset == null)
                     continue;
-                source[i].setParticle(particle);
+                newShapes[i].setOffset(offset);
             }
         }
-        return source;
+        return newShapes;
     }
 
     @Override
@@ -50,13 +51,13 @@ public class ExprShapeWithParticle extends PropertyExpression<Shape, Shape> {
     @Override
     @NotNull
     public String toString(@Nullable Event event, boolean debug) {
-        return Arrays.toString(getExpr().getAll(event)) + " with particle " + (particleExpr != null ? particleExpr.getSingle(event) : new Vector(0,1,0));
+        return Arrays.toString(getExpr().getAll(event)) + " with offset vector " + (offsetExpr != null ? offsetExpr.getSingle(event) : new Vector(0,0,0));
     }
 
     @Override
     public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, SkriptParser.ParseResult parseResult) {
         setExpr((Expression<Shape>) exprs[0]);
-        particleExpr = (Expression<CustomParticle>) exprs[1];
+        offsetExpr = (Expression<Vector>) exprs[1];
         return true;
     }
 }

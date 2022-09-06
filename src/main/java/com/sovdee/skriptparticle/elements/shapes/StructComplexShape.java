@@ -8,7 +8,9 @@ import ch.njol.skript.lang.Trigger;
 import ch.njol.skript.lang.util.ContextlessEvent;
 import com.sovdee.skriptparticle.particles.CustomParticle;
 import com.sovdee.skriptparticle.shapes.ComplexShape;
+import com.sovdee.skriptparticle.shapes.ShapePosition;
 import com.sovdee.skriptparticle.util.FlaggedExpressionStructureEntryData;
+import org.bukkit.Location;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
 import org.skriptlang.skript.lang.structure.EntryContainer;
@@ -29,8 +31,10 @@ public class StructComplexShape extends Structure {
                 StructComplexShape.class,
                 StructureEntryValidator.builder()
                         .addEntryData(new FlaggedExpressionStructureEntryData<>("particle", null, true, CustomParticle.class, SkriptParser.ALL_FLAGS, ContextlessEvent.class))
-                        .addEntryData(new FlaggedExpressionStructureEntryData<>("normal", null, true, Vector.class, SkriptParser.ALL_FLAGS, ContextlessEvent.class))
+                        .addEntryData(new FlaggedExpressionStructureEntryData<>("normal vector", null, true, Vector.class, SkriptParser.ALL_FLAGS, ContextlessEvent.class))
+                        .addEntryData(new FlaggedExpressionStructureEntryData<>("offset vector", null, true, Vector.class, SkriptParser.ALL_FLAGS, ContextlessEvent.class))
                         .addEntryData(new FlaggedExpressionStructureEntryData<>("orientation", null, true, Number.class, SkriptParser.ALL_FLAGS, ContextlessEvent.class))
+                        .addEntryData(new FlaggedExpressionStructureEntryData<>("center location", null, true, Location.class, SkriptParser.ALL_FLAGS, ContextlessEvent.class))
                         .addEntryData(new TriggerStructureEntryData("shapes", null,false, ContextlessEvent.class))
 //                        .addSection("shapes", false)
                         .build(),
@@ -53,16 +57,22 @@ public class StructComplexShape extends Structure {
     @Override
     public boolean load() {
         EntryContainer entryContainer = getEntryContainer();
-        Vector normal = ((Expression<Vector>) entryContainer.getOptional("normal", Expression.class, true)).getSingle(ContextlessEvent.get());
-        Number orientation = ((Expression<Number>) entryContainer.getOptional("orientation", Expression.class, true)).getSingle(ContextlessEvent.get());
-        CustomParticle particle = ((Expression<CustomParticle>) entryContainer.getOptional("particle", Expression.class, true)).getSingle(ContextlessEvent.get());
+        Expression<Vector> normalExpr = ((Expression<Vector>) entryContainer.getOptional("normal vector", Expression.class, true));
+        Expression<Vector> offsetExpr = ((Expression<Vector>) entryContainer.getOptional("offset vector", Expression.class, true));
+        Expression<Number> orientationExpr = ((Expression<Number>) entryContainer.getOptional("orientation", Expression.class, true));
+        Expression<Location> centerExpr = ((Expression<Location>) entryContainer.getOptional("center location", Expression.class, true));
+        Expression<CustomParticle> particleExpr = ((Expression<CustomParticle>) entryContainer.getOptional("particle", Expression.class, true));
 
+        ShapePosition position = new ShapePosition(
+                normalExpr == null ? new Vector(0, 1, 0) : normalExpr.getSingle(ContextlessEvent.get()),
+                offsetExpr == null ? new Vector(0, 0, 0) : offsetExpr.getSingle(ContextlessEvent.get()),
+                orientationExpr == null ? 0 : (orientationExpr.getSingle(ContextlessEvent.get())) == null ? 0 : orientationExpr.getSingle(ContextlessEvent.get()).doubleValue()
+                );
 
         shape = new ComplexShape(
-                normal == null ? new Vector(0, 1, 0) : normal,
-                orientation == null ? 0 : orientation.doubleValue(),
-                particle
-        );
+                position,
+                particleExpr == null ? null : particleExpr.getSingle(ContextlessEvent.get()),
+                centerExpr == null ? null : centerExpr.getSingle(ContextlessEvent.get()));
 
         CUSTOM_SHAPES.put(shapeName, shape);
 
@@ -72,7 +82,7 @@ public class StructComplexShape extends Structure {
     }
 
     @Override
-    public String toString(@Nullable Event e, boolean debug) {
+    public String toString(@Nullable Event event, boolean debug) {
         return "Custom shape";
     }
 

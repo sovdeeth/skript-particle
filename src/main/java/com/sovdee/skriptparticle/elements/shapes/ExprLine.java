@@ -35,34 +35,34 @@ public class ExprLine extends SimpleExpression<Line> {
     private int matchedPattern = 0;
 
     @Override
-    protected Line[] get(Event e) {
+    protected Line[] get(Event event) {
         Line line = null;
         switch (matchedPattern) {
             case 0:
-                if (startExpr.getSingle(e) == null || endExpr.getSingle(e) == null)
+                if (startExpr.getSingle(event) == null || endExpr.getSingle(event) == null)
                     return new Line[0];
 
-                line = new Line(startExpr.getSingle(e), endExpr.getSingle(e));
+                line = new Line(startExpr.getSingle(event), endExpr.getSingle(event));
                 break;
             case 1:
-                if (startLocExpr.getSingle(e) == null || endLocExpr.getSingle(e) == null)
+                if (startLocExpr.getSingle(event) == null || endLocExpr.getSingle(event) == null)
                     return new Line[0];
 
-                line = new Line(startLocExpr.getSingle(e), endLocExpr.getSingle(e));
+                line = new Line(startLocExpr.getSingle(event), endLocExpr.getSingle(event));
                 break;
             case 2:
-                if (directionExpr.getSingle(e) == null || lengthExpr.getSingle(e) == null)
+                if (directionExpr.getSingle(event) == null || lengthExpr.getSingle(event) == null)
                     return new Line[0];
 
-                line = new Line(directionExpr.getSingle(e), lengthExpr.getSingle(e).doubleValue());
+                line = new Line(directionExpr.getSingle(event), lengthExpr.getSingle(event).doubleValue());
                 break;
         }
-        if (stepSizeExpr != null && stepSizeExpr.getSingle(e) != null) {
-            if (stepSizeExpr.getSingle(e).doubleValue() <= 0) {
-                Skript.error("Step size must be greater than 0. (step size: " + stepSizeExpr.getSingle(e) + ")");
+        if (stepSizeExpr != null && stepSizeExpr.getSingle(event) != null) {
+            if (stepSizeExpr.getSingle(event).doubleValue() <= 0) {
+                Skript.error("Step size must be greater than 0. (step size: " + stepSizeExpr.getSingle(event) + ")");
                 return new Line[0];
             }
-            line.setStepSize(stepSizeExpr.getSingle(e).doubleValue());
+            line.setStepSize(stepSizeExpr.getSingle(event).doubleValue());
             line.generatePoints();
         }
         return new Line[]{line};
@@ -79,20 +79,20 @@ public class ExprLine extends SimpleExpression<Line> {
     }
 
     @Override
-    public String toString(@Nullable Event e, boolean debug) {
+    public String toString(@Nullable Event event, boolean debug) {
         String str = "";
         switch (matchedPattern) {
             case 0:
-                str = "the line from " + startExpr.getSingle(e) + " to " + endExpr.getSingle(e);
+                str = "the line from " + startExpr.getSingle(event) + " to " + endExpr.getSingle(event);
                 break;
             case 1:
-                str = "the line from " + startLocExpr.getSingle(e) + " to " + endLocExpr.getSingle(e);
+                str = "the line from " + startLocExpr.getSingle(event) + " to " + endLocExpr.getSingle(event);
                 break;
             case 2:
-                str = "the line in direction " + directionExpr.getSingle(e) + " with length " + lengthExpr.getSingle(e);
+                str = "the line in direction " + directionExpr.getSingle(event) + " with length " + lengthExpr.getSingle(event);
                 break;
         }
-        return str + (stepSizeExpr != null ? " with step size " + stepSizeExpr.getSingle(e) : "");
+        return str + (stepSizeExpr != null ? " with step size " + stepSizeExpr.getSingle(event) : "");
     }
 
     @Override
