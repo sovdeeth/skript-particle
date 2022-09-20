@@ -15,52 +15,39 @@ import java.util.List;
 public class Circle extends Shape {
 
     private double radius;
-    private double stepSize;
+    private double stepSize = Math.PI * 2 / 30;
+
+    public Circle (){
+        super();
+        this.radius = 1;
+    }
+
     public Circle (double radius){
         super();
         this.radius = radius;
-        // default to 30 points per circle
-        this.stepSize = Math.PI * 2 / 30;
-        this.points = getRotatedPoints(generatePoints());
     }
 
-    public Circle (double radius, double stepSize){
-        super();
-        this.radius = radius;
-        this.stepSize = stepSize;
-        this.points = getPoints();
-    }
-
-    public Circle (double radius, double stepSize, ShapePosition position){
-        super();
-        this.radius = radius;
-        this.stepSize = stepSize;
-        this.setShapePosition(position);
-        this.points = getPoints();
-    }
-
-    public double getRadius() {
+    public double radius() {
         return radius;
     }
 
-    public void setRadius(double radius) {
+    public Circle radius(double radius) {
         this.radius = radius;
-        needsUpdate = true;
+        return this;
     }
 
-    public double getStepSize() {
+    public double stepSize() {
         return stepSize;
     }
 
-    public void setStepSize(double stepSize) {
+    public Circle stepSize(double stepSize) {
         this.stepSize = stepSize;
-        needsUpdate = true;
+        return this;
     }
 
     @Override
     public List<Vector> generatePoints() {
         this.points = new ArrayList<>();
-        // simple flat circle, rotation is handled by the Shape class
         for (double theta = 0; theta < 2 * Math.PI; theta += this.stepSize) {
             points.add(new Vector(Math.cos(theta) * radius, 0, Math.sin(theta) * radius));
         }
@@ -69,12 +56,13 @@ public class Circle extends Shape {
 
     @Override
     public Shape clone() {
-        Circle circle = new Circle(this.radius, this.stepSize, this.getShapePosition().clone());
+        Circle circle = new Circle(this.radius).stepSize(this.stepSize);
+        this.copyTo(circle);
         return circle;
     }
 
     public String toString(){
-        return "Circle with radius " + this.radius + " and stepSize " + this.stepSize + " and normal " + this.getNormal() + " and rotation " + this.getRotation();
+        return "Circle with radius " + this.radius + " and stepSize " + this.stepSize;
     }
 
     static {
@@ -88,9 +76,9 @@ public class Circle extends Shape {
                     @Override
                     public Fields serialize(Circle circle) {
                         Fields fields = new Fields();
-                        fields.putPrimitive("radius", circle.getRadius());
-                        fields.putPrimitive("stepSize", circle.getStepSize());
-                        circle.getShapePosition().serialize(fields);
+                        fields.putPrimitive("radius", circle.radius);
+                        fields.putPrimitive("stepSize", circle.stepSize);
+                        circle.serialize(fields);
                         return fields;
                     }
 
@@ -98,8 +86,9 @@ public class Circle extends Shape {
                     public Circle deserialize(Fields fields) throws StreamCorruptedException {
                         double radius = fields.getPrimitive("radius", Double.class);
                         double stepSize = fields.getPrimitive("stepSize", Double.class);
-                        ShapePosition shapePosition = ShapePosition.deserialize(fields);
-                        return new Circle(radius, stepSize, shapePosition);
+                        Circle circle = new Circle(radius).stepSize(stepSize);
+                        Shape.deserialize(fields, circle);
+                        return circle;
                     }
 
                     @Override

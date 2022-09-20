@@ -33,12 +33,12 @@ public class ExprShapeLocations extends SimpleExpression<Location> {
         ArrayList<Location> locations = new ArrayList<>();
         for (Shape shape : shapes) {
             if (shape == null) continue;
-            if (center == null && shape.getCenter() == null) {
+            if (center == null && shape.center() == null) {
                 return null;
             } else if (center != null) {
-                locations.addAll(shape.getLocations(center));
+                locations.addAll(shape.locations(center));
             } else {
-                locations.addAll(shape.getLocations());
+                locations.addAll(shape.locations());
             }
         }
         return locations.toArray(new Location[0]);

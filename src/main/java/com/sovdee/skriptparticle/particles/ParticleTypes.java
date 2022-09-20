@@ -7,9 +7,11 @@ import ch.njol.skript.lang.function.Functions;
 import ch.njol.skript.lang.function.Parameter;
 import ch.njol.skript.lang.function.SimpleJavaFunction;
 import ch.njol.skript.registrations.Classes;
+import ch.njol.skript.registrations.Converters;
 import ch.njol.skript.registrations.DefaultClasses;
 import ch.njol.skript.util.Color;
 import ch.njol.skript.util.Timespan;
+import com.destroystokyo.paper.ParticleBuilder;
 import com.sovdee.skriptparticle.util.ParticleUtil;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -63,6 +65,40 @@ public class ParticleTypes {
                         }
                     }));
         }
+
+        // Particle Builder class
+        if (Classes.getExactClassInfo(ParticleBuilder.class) == null) {
+            Classes.registerClass(new ClassInfo<>(ParticleBuilder.class, "particlebuilder")
+                    .user("particlebuilders?")
+                    .name("Particle Builder")
+                    .description("Represents a particle with extra data, including offset, count, data, and more.")
+                    .parser(new Parser<>() {
+
+                        @SuppressWarnings("NullableProblems")
+                        @Nullable
+                        @Override
+                        public ParticleBuilder parse(String s, ParseContext context) {
+                            Particle p = ParticleUtil.parse(s.replace(" ", "_"));
+                            if (p == null)
+                                return null;
+                            return new ParticleBuilder(p);
+                        }
+
+                        @Override
+                        public @NotNull String toString(ParticleBuilder particle, int flags) {
+                            return "" + ParticleUtil.getName(particle.particle());
+                        }
+
+                        @Override
+                        public @NotNull String toVariableNameString(ParticleBuilder particle) {
+                            return "particle:" + toString(particle, 0);
+                        }
+                    })
+            );
+        }
+
+        Converters.registerConverter(ParticleBuilder.class, Particle.class, ParticleBuilder::particle);
+        Converters.registerConverter(Particle.class, ParticleBuilder.class, ParticleBuilder::new);
 
         if (Classes.getExactClassInfo(DustOptions.class) == null) {
             Classes.registerClass(new ClassInfo<>(DustOptions.class, "dustoption")
@@ -142,7 +178,7 @@ public class ParticleTypes {
         }
 
 
-        // == FUNCTIONS ==
+
 
 
 

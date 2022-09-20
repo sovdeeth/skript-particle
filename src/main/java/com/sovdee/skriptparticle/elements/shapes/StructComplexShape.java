@@ -6,17 +6,16 @@ import ch.njol.skript.lang.Literal;
 import ch.njol.skript.lang.SkriptParser;
 import ch.njol.skript.lang.Trigger;
 import ch.njol.skript.lang.util.ContextlessEvent;
-import com.sovdee.skriptparticle.particles.CustomParticle;
+import com.destroystokyo.paper.ParticleBuilder;
 import com.sovdee.skriptparticle.shapes.ComplexShape;
 import com.sovdee.skriptparticle.shapes.ShapePosition;
-import com.sovdee.skriptparticle.util.FlaggedExpressionStructureEntryData;
 import org.bukkit.Location;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
 import org.skriptlang.skript.lang.structure.EntryContainer;
+import org.skriptlang.skript.lang.entry.util.ExpressionEntryData;
 import org.skriptlang.skript.lang.structure.Structure;
 import org.skriptlang.skript.lang.structure.StructureEntryValidator;
-import org.skriptlang.skript.lang.structure.util.TriggerStructureEntryData;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -30,12 +29,12 @@ public class StructComplexShape extends Structure {
         Skript.registerStructure(
                 StructComplexShape.class,
                 StructureEntryValidator.builder()
-                        .addEntryData(new FlaggedExpressionStructureEntryData<>("particle", null, true, CustomParticle.class, SkriptParser.ALL_FLAGS, ContextlessEvent.class))
-                        .addEntryData(new FlaggedExpressionStructureEntryData<>("normal vector", null, true, Vector.class, SkriptParser.ALL_FLAGS, ContextlessEvent.class))
-                        .addEntryData(new FlaggedExpressionStructureEntryData<>("offset vector", null, true, Vector.class, SkriptParser.ALL_FLAGS, ContextlessEvent.class))
-                        .addEntryData(new FlaggedExpressionStructureEntryData<>("orientation", null, true, Number.class, SkriptParser.ALL_FLAGS, ContextlessEvent.class))
-                        .addEntryData(new FlaggedExpressionStructureEntryData<>("center location", null, true, Location.class, SkriptParser.ALL_FLAGS, ContextlessEvent.class))
-                        .addEntryData(new TriggerStructureEntryData("shapes", null,false, ContextlessEvent.class))
+                        .addEntryData(new ExpressionEntryData<>("particle", null, true, ParticleBuilder.class, ContextlessEvent.class))
+//                        .addEntryData(new ExpressionEntryData<>("normal vector", null, true, Vector.class, ContextlessEvent.class))
+                        .addEntryData(new ExpressionEntryData<>("offset vector", null, true, Vector.class, ContextlessEvent.class))
+//                        .addEntryData(new ExpressionEntryData<>("orientation", null, true, Number.class, ContextlessEvent.class))
+                        .addEntryData(new ExpressionEntryData<>("center location", null, true, Location.class, ContextlessEvent.class))
+                        .addEntryData(new TriggerEntryData("shapes", null, false, ContextlessEvent.class))
 //                        .addSection("shapes", false)
                         .build(),
                 "[a] [new] complex shape [named|with [the] name|with [the] id] %string%"
@@ -57,22 +56,23 @@ public class StructComplexShape extends Structure {
     @Override
     public boolean load() {
         EntryContainer entryContainer = getEntryContainer();
-        Expression<Vector> normalExpr = ((Expression<Vector>) entryContainer.getOptional("normal vector", Expression.class, true));
+//        Expression<Vector> normalExpr = ((Expression<Vector>) entryContainer.getOptional("normal vector", Expression.class, true));
         Expression<Vector> offsetExpr = ((Expression<Vector>) entryContainer.getOptional("offset vector", Expression.class, true));
-        Expression<Number> orientationExpr = ((Expression<Number>) entryContainer.getOptional("orientation", Expression.class, true));
+//        Expression<Number> orientationExpr = ((Expression<Number>) entryContainer.getOptional("orientation", Expression.class, true));
         Expression<Location> centerExpr = ((Expression<Location>) entryContainer.getOptional("center location", Expression.class, true));
-        Expression<CustomParticle> particleExpr = ((Expression<CustomParticle>) entryContainer.getOptional("particle", Expression.class, true));
+        Expression<ParticleBuilder> particleExpr = ((Expression<ParticleBuilder>) entryContainer.getOptional("particle", Expression.class, true));
 
-        ShapePosition position = new ShapePosition(
-                normalExpr == null ? new Vector(0, 1, 0) : normalExpr.getSingle(ContextlessEvent.get()),
-                offsetExpr == null ? new Vector(0, 0, 0) : offsetExpr.getSingle(ContextlessEvent.get()),
-                orientationExpr == null ? 0 : (orientationExpr.getSingle(ContextlessEvent.get())) == null ? 0 : orientationExpr.getSingle(ContextlessEvent.get()).doubleValue()
-                );
 
-        shape = new ComplexShape(
-                position,
-                particleExpr == null ? null : particleExpr.getSingle(ContextlessEvent.get()),
-                centerExpr == null ? null : centerExpr.getSingle(ContextlessEvent.get()));
+        shape = new ComplexShape();
+        if (offsetExpr != null) {
+            shape.offset(offsetExpr.getSingle(ContextlessEvent.get()));
+        }
+        if (centerExpr != null) {
+            shape.center(centerExpr.getSingle(ContextlessEvent.get()));
+        }
+        if (particleExpr != null) {
+            shape.particle(particleExpr.getSingle(ContextlessEvent.get()));
+        }
 
         CUSTOM_SHAPES.put(shapeName, shape);
 

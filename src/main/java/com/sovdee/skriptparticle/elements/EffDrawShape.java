@@ -6,7 +6,7 @@ import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser;
 import ch.njol.skript.log.ErrorQuality;
 import ch.njol.util.Kleenean;
-import com.sovdee.skriptparticle.particles.CustomParticle;
+import com.destroystokyo.paper.ParticleBuilder;
 import com.sovdee.skriptparticle.shapes.Shape;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -19,21 +19,19 @@ public class EffDrawShape extends Effect {
 
     static {
         Skript.registerEffect(EffDrawShape.class,
-                "draw [shape[s]] %shapes% [location:[centered] at %-location%] [particle:(with|using) %-customparticle%]");
+                "draw [shape[s]] %shapes% [location:[centered] at %-location%] [particle:(with|using) %-particlebuilder%]");
     }
 
     Expression<Shape> shapeExpr;
     Expression<Location> locationExpr;
-    Expression<CustomParticle> particleExpr;
-
-    private boolean useLineLocations;
+    Expression<ParticleBuilder> particleExpr;
 
     @Override
     protected void execute(Event event) {
         Shape[] shapes = shapeExpr.getAll(event);
         if (shapes.length == 0) return;
 
-        CustomParticle particle = null;
+        ParticleBuilder particle = null;
         if (particleExpr != null) {
             particle = particleExpr.getSingle(event);
             if (particle == null) return;
@@ -48,7 +46,7 @@ public class EffDrawShape extends Effect {
                 if (shape.getParticle() != null) {
                     particle = shape.getParticle();
                 } else {
-                    particle = new CustomParticle(Particle.FLAME, 0);
+                    particle = new ParticleBuilder(Particle.FLAME).count(0);
                 }
             }
 
@@ -62,7 +60,7 @@ public class EffDrawShape extends Effect {
 
             List<Location> locs = shape.getLocations(location);
             for (Location loc : locs) {
-                particle.drawParticle(loc);
+                particle.location(loc).receivers(loc.getWorld().getPlayers()).spawn();
             }
         }
     }
@@ -78,7 +76,7 @@ public class EffDrawShape extends Effect {
         if (parseResult.hasTag("location"))
             locationExpr = (Expression<Location>) exprs[1];
         if (parseResult.hasTag("particle"))
-            particleExpr = (Expression<CustomParticle>) exprs[2];
+            particleExpr = (Expression<ParticleBuilder>) exprs[2];
         return true;
     }
 }

@@ -77,11 +77,11 @@ public class ExprCircle extends SimpleExpression<Circle> {
         }
 
         if (countFlag) {
-            circle = new Circle(r.doubleValue(), Math.PI * 2 / s.doubleValue());
+            circle = new Circle(r.doubleValue()).stepSize(Math.PI * 2 / s.doubleValue());
         } else {
             if (convertToRadians)
                 s = Math.PI * (s.doubleValue() / 180);
-            circle = new Circle(r.doubleValue(), s.doubleValue());
+            circle = new Circle(r.doubleValue()).stepSize(s.doubleValue());
         }
 
         return new Circle[]{circle};

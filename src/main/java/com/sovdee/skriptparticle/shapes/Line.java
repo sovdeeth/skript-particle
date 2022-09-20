@@ -20,7 +20,11 @@ public class Line extends Shape {
     private Vector end;
     private double stepSize = 0.25;
 
-    private Location startLocation;
+    public Line() {
+        super();
+        this.start = new Vector(0, 0, 0);
+        this.end = new Vector(0, 0, 0);
+    }
 
     public Line(Vector start, Vector end) {
         super();
@@ -28,54 +32,11 @@ public class Line extends Shape {
         this.end = end;
     }
 
-    public Line(Vector start, Vector end, double stepSize) {
+    public Line(Location start, Location end) {
         super();
-        this.start = start;
-        this.end = end;
-        this.stepSize = stepSize;
-    }
-
-    public Line(Location startLoc, Location endLoc) {
-        super();
-        setStartLocation(startLoc);
-        this.end = endLoc.toVector().subtract(startLoc.toVector());
-    }
-
-    public Line(Location startLoc, Location endLoc, double stepSize) {
-        super();
-        setStartLocation(startLoc);
-        this.end = endLoc.toVector().subtract(startLoc.toVector());
-        this.stepSize = stepSize;
-    }
-
-    public Line(Vector direction, double length) {
-        super();
+        this.center(start);
         this.start = new Vector(0, 0, 0);
-        this.end = direction.normalize().multiply(length);
-    }
-
-    public Line(Vector direction, double length, double stepSize) {
-        super();
-        this.start = new Vector(0, 0, 0);
-        this.end = direction.normalize().multiply(length);
-        this.stepSize = stepSize;
-    }
-
-    public Line(Vector start, Vector end, double stepSize, ShapePosition position) {
-        super();
-        this.setShapePosition(position);
-        this.start = start;
-        this.end = end;
-        this.stepSize = stepSize;
-    }
-
-    public Line(Location startLoc, Vector end, double stepSize, ShapePosition position) {
-        super();
-        this.setShapePosition(position);
-        this.setStartLocation(startLoc);
-        this.end = end;
-        this.stepSize = stepSize;
-
+        this.end = end.toVector().subtract(start.toVector());
     }
 
     @Override
@@ -94,54 +55,44 @@ public class Line extends Shape {
 
     @Override
     public Shape clone() {
-        return new Line(start.clone(), end.clone(), stepSize, getShapePosition().clone());
+        Line line = new Line(this.start, this.end).stepSize(this.stepSize);
+        this.copyTo(line);
+        return line;
     }
 
-    public Vector getStart() {
+    public Vector start() {
         return start;
     }
 
-    public void setStart(Vector start) {
+    public Line start(Vector start) {
         this.start = start;
-        this.needsUpdate = true;
+        return this;
     }
 
-    public Vector getEnd() {
+    public Vector end() {
         return end;
     }
 
-    public void setEnd(Vector end) {
+    public Line end(Vector end) {
         this.end = end;
-        this.needsUpdate = true;
+        return this;
     }
 
-    public double getStepSize() {
+    public double stepSize() {
         return stepSize;
     }
 
-    public void setStepSize(double stepSize) {
+    public Line stepSize(double stepSize) {
         this.stepSize = stepSize;
-        this.needsUpdate = true;
+        return this;
     }
 
-    public void setStartLocation(Location startLocation) {
-        this.startLocation = startLocation;
-        this.start = new Vector(0, 0, 0);
-        this.needsUpdate = true;
-    }
 
-    @Override
-    public Location getCenter() {
-        return startLocation;
-    }
 
-    @Override
-    public void setCenter(Location center) {
-        this.setStartLocation(center);
-    }
+
 
     public String toString(){
-        return "Line from " + (this.startLocation == null ? start : startLocation) + " to " + this.end + " and stepSize " + this.stepSize + " and normal " + this.getNormal() + " and rotation " + this.getRotation();
+        return "Line from " + this.start + " to " + this.end + " and stepSize " + this.stepSize;
     }
 
     static {
@@ -168,7 +119,7 @@ public class Line extends Shape {
 
                     @Override
                     public String toVariableNameString(Line line) {
-                        return "line:" + line.getUUID() ;
+                        return "line:" + line.uuid() ;
                     }
                 })
                 .serializer(new Serializer<>() {
@@ -176,19 +127,21 @@ public class Line extends Shape {
                     @Override
                     public Fields serialize(Line line) {
                         Fields fields = new Fields();
-                        fields.putObject("start", line.getStart());
-                        fields.putObject("end", line.getEnd());
-                        fields.putPrimitive("stepSize", line.getStepSize());
-                        line.getShapePosition().serialize(fields);
+                        fields.putObject("start", line.start);
+                        fields.putObject("end", line.end);
+                        fields.putPrimitive("stepSize", line.stepSize);
+                        line.serialize(fields);
                         return fields;
                     }
 
                     @Override
                     public Line deserialize(Fields fields) throws StreamCorruptedException {
-                        return new Line(fields.getObject("start", Vector.class),
-                                fields.getObject("end", Vector.class),
-                                fields.getPrimitive("stepSize", Double.class),
-                                ShapePosition.deserialize(fields));
+                        Vector start = fields.getObject("start", Vector.class);
+                        Vector end = fields.getObject("end", Vector.class);
+                        double stepSize = fields.getPrimitive("stepSize", double.class);
+                        Line line = new Line(start, end).stepSize(stepSize);
+                        Shape.deserialize(fields, line);
+                        return line;
                     }
 
                     @Override

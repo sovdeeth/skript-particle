@@ -24,9 +24,6 @@ public class ExprShapeNormal extends SimplePropertyExpression<Shape, Vector> {
 
     @Override
     public void change(Event event, @Nullable Object[] delta, Changer.ChangeMode mode) {
-        for (Shape shape : getExpr().getArray(event)) {
-            shape.setNeedsUpdate(true);
-        }
         switch (mode) {
             case SET:
                 if (delta == null || delta.length == 0)

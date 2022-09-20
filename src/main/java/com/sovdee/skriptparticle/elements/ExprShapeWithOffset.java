@@ -36,7 +36,7 @@ public class ExprShapeWithOffset extends PropertyExpression<Shape, Shape> {
                 Vector offset = offsetExpr.getSingle(event);
                 if (offset == null)
                     continue;
-                newShapes[i].setOffset(offset);
+                newShapes[i].offset(offset);
             }
         }
         return newShapes;

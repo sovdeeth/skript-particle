@@ -24,22 +24,19 @@ public class ExprShapeOffset extends SimplePropertyExpression<Shape, Vector> {
 
         @Override
         public void change(Event event, @Nullable Object[] delta, Changer.ChangeMode mode) {
-            for (Shape shape : getExpr().getArray(event)) {
-                shape.setNeedsUpdate(true);
-            }
             switch (mode) {
                 case SET:
                     if (delta == null || delta.length == 0)
                         return;
                     for (Shape shape : getExpr().getArray(event)) {
-                        shape.setOffset(((Vector) delta[0]));
+                        shape.offset(((Vector) delta[0]));
                     }
                     break;
                 case RESET:
                 case DELETE:
                 case REMOVE_ALL:
                     for (Shape shape : getExpr().getArray(event)) {
-                        shape.setOffset(new Vector(0, 0, 0));
+                        shape.offset(new Vector(0, 0, 0));
                     }
                     break;
             }
@@ -57,6 +54,6 @@ public class ExprShapeOffset extends SimplePropertyExpression<Shape, Vector> {
 
         @Override
         public @Nullable Vector convert(Shape shape) {
-            return shape.getOffset();
+            return shape.offset();
         }
 }

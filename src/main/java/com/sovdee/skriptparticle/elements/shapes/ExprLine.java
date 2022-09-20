@@ -54,7 +54,7 @@ public class ExprLine extends SimpleExpression<Line> {
                 if (directionExpr.getSingle(event) == null || lengthExpr.getSingle(event) == null)
                     return new Line[0];
 
-                line = new Line(directionExpr.getSingle(event), lengthExpr.getSingle(event).doubleValue());
+                line = new Line().end(directionExpr.getSingle(event).normalize().multiply(lengthExpr.getSingle(event).doubleValue()));
                 break;
         }
         if (stepSizeExpr != null && stepSizeExpr.getSingle(event) != null) {
@@ -62,7 +62,7 @@ public class ExprLine extends SimpleExpression<Line> {
                 Skript.error("Step size must be greater than 0. (step size: " + stepSizeExpr.getSingle(event) + ")");
                 return new Line[0];
             }
-            line.setStepSize(stepSizeExpr.getSingle(event).doubleValue());
+            line.stepSize(stepSizeExpr.getSingle(event).doubleValue());
             line.generatePoints();
         }
         return new Line[]{line};

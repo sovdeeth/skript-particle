@@ -5,154 +5,171 @@ import ch.njol.skript.classes.Parser;
 import ch.njol.skript.lang.ParseContext;
 import ch.njol.skript.registrations.Classes;
 import ch.njol.skript.registrations.Converters;
-import com.sovdee.skriptparticle.particles.CustomParticle;
-import com.sovdee.skriptparticle.util.VectorMath;
+import ch.njol.yggdrasil.Fields;
+import com.destroystokyo.paper.ParticleBuilder;
+import com.sovdee.skriptparticle.util.Quaternion;
 import org.bukkit.Location;
+import org.bukkit.Particle;
 import org.bukkit.util.Vector;
 
-import javax.annotation.Nullable;
+import java.io.StreamCorruptedException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 public abstract class Shape implements Cloneable {
     protected List<Vector> points;
-    private ShapePosition shapePosition;
-    private CustomParticle particle;
-    private Location center;
-    protected boolean needsUpdate;
+    protected Quaternion orientation;
+    private Quaternion previousOrientation;
+    protected double scale;
+    protected Vector offset;
+    protected Location center;
     private final UUID uuid;
+    protected ParticleBuilder particle = new ParticleBuilder(Particle.FLAME);
 
+    /*
+    * CHANGE TO BUILDER BASED SYSTEM
+     */
     public Shape() {
-        this.points = new ArrayList<>();
-        this.shapePosition = new ShapePosition();
-        this.needsUpdate = true;
-        this.center = null;
+        this.points = generatePoints();
+
+        this.orientation = new Quaternion(0, 1, 0, 0);
+        this.previousOrientation = new Quaternion(0, 1, 0, 0);
+
+        this.scale = 1;
+        this.offset = new Vector(0, 0, 0);
+        this.center = new Location(null, 0, 0, 0);
+
         this.uuid = UUID.randomUUID();
     }
 
+
     public abstract List<Vector> generatePoints();
 
+    public Shape orientPoints() {
+        if (orientation.equals(previousOrientation)) {
+            return this;
+        }
+        Quaternion rotation = orientation.multiply(previousOrientation.conjugate());
+        for (Vector point : points) {
+            rotation.transform(point);
+        }
+        this.previousOrientation = this.orientation.clone();
+        return this;
+    }
+
     public abstract Shape clone();
+    public Shape copyTo(Shape shape){
+        shape.orientation(this.orientation)
+                .previousOrientation(this.previousOrientation)
+                .scale(this.scale)
+                .offset(this.offset)
+                .center(this.center);
+        return shape;
+    };
 
-    public void updatePoints(){
-        if (needsUpdate || !getBackupNormal().equals(getNormal().normalize())) {
-            // generate points, then rotate them to the correct orientation. Then offset them to the final correct position.
-            // this means rotations are always around the center of the shape, and not the point at which it's drawn.
+    public List<Location> locations(){ return locations(this.center); }
 
-            // Creating a complex shape will rotate the points around the center of the shape, then offset them,
-            // then rotate them around the center of the complex shape.
-            points = this.getOffsetPoints(this.getRotatedPoints(this.generatePoints()));
-            needsUpdate = false;
-            shapePosition.updateBackupNormal();
-        }
-    }
-
-    public List<Vector> getOffsetPoints(List<Vector> points){
-        for (Vector point : points) {
-            point.add(getOffset());
-        }
-        return points;
-    }
-
-    public List<Vector> getRotatedPoints(List<Vector> points){
-        VectorMath.RotationValue rotationValue = VectorMath.getRotationValues(getNormal());
-        for (Vector point : points) {
-            point.rotateAroundAxis(rotationValue.cross, rotationValue.angle);
-            point.rotateAroundAxis(getNormal(), getRotation());
-        }
-        return points;
-    }
-
-    public List<Location> getLocations(){
-        return getLocations(center);
-    }
-    public List<Location> getLocations(Location center){
-        // only recalculate if the shape has been rotated since last calculation
-        updatePoints();
-        // offset center by vectors to get locations
-        List<Location> locations = new ArrayList<>();
-        for (Vector point : points) {
+    public List<Location> locations(Location center){
+        ArrayList<Location> locations = new ArrayList<>();
+        for (Vector point : calculatePoints()) {
             locations.add(center.clone().add(point));
         }
         return locations;
     }
 
-    public List<Vector> getPoints() {
-        this.updatePoints();
-        return points;
+    public List<Vector> calculatePoints() {
+        // ensure points exist
+        if (points == null || points.isEmpty()) {
+            points = generatePoints();
+        }
+        // ensure points are up-to-date
+        orientPoints();
+        ArrayList<Vector> positionedPoints = new ArrayList<>();
+        for (Vector point : points) {
+            positionedPoints.add(point.clone().multiply(scale).add(offset));
+        }
+        return positionedPoints;
     }
 
-    public void setNormal(Vector normal){
-        shapePosition.setNormal(normal.clone().normalize());
-        needsUpdate = true;
+    public Quaternion orientation() {
+        return orientation;
     }
 
-    public Vector getNormal(){
-        return shapePosition.getNormal();
+    public Shape orientation(Quaternion orientation) {
+        this.orientation = orientation;
+        return this;
     }
 
-    public Vector getBackupNormal() {
-        return shapePosition.getBackupNormal();
+    public Quaternion previousOrientation() {
+        return previousOrientation;
     }
 
-    public void setRotation(double rotation){
-        shapePosition.setRotation(rotation);
-        needsUpdate = true;
+    public Shape previousOrientation(Quaternion previousOrientation) {
+        this.previousOrientation = previousOrientation;
+        return this;
     }
 
-    public double getRotation(){
-        return shapePosition.getRotation();
+    public double scale() {
+        return scale;
     }
 
-    public void setParticle(@Nullable CustomParticle particle) {
-        this.particle = particle;
+    public Shape scale(double scale) {
+        this.scale = scale;
+        return this;
     }
 
-    public CustomParticle getParticle() {
-        return particle;
+    public Vector offset() {
+        return offset;
     }
 
-    public boolean needsUpdate() {
-        return needsUpdate;
+    public Shape offset(Vector offset) {
+        this.offset = offset;
+        return this;
     }
 
-    public void setNeedsUpdate(boolean needsUpdate) {
-        this.needsUpdate = needsUpdate;
-    }
-
-    public Location getCenter() {
+    public Location center() {
         return center;
     }
 
-    public void setCenter(Location center) {
+    public Shape center(Location center) {
         this.center = center;
+        return this;
     }
 
-    public UUID getUUID() {
+    public UUID uuid() {
         return uuid;
     }
 
-    public Vector getOffset() {
-        return shapePosition.getOffsetVector();
+    public ParticleBuilder particle() {
+        return particle;
     }
 
-    public void setOffset(Vector offsetVector) {
-        shapePosition.setOffsetVector(offsetVector);
-        needsUpdate = true;
+    public Shape particle(ParticleBuilder particle) {
+        this.particle = particle;
+        return this;
     }
 
-    public ShapePosition getShapePosition() {
-        return shapePosition;
+
+    public void serialize(Fields fields) {
+        orientation.serialize(fields, "o");
+        previousOrientation.serialize(fields, "po");
+        fields.putPrimitive("scale", scale);
+        fields.putObject("offset", offset);
+        fields.putObject("center", center);
     }
 
-    public void setShapePosition(ShapePosition shapePosition) {
-        this.shapePosition = shapePosition;
+    public static Shape deserialize(Fields fields, Shape shape) throws StreamCorruptedException {
+        shape.orientation = Quaternion.deserialize(fields, "o");
+        shape.previousOrientation = Quaternion.deserialize(fields, "po");
+        shape.scale = fields.getPrimitive("scale", double.class);
+        shape.offset = fields.getObject("offset", Vector.class);
+        shape.center = fields.getObject("center", Location.class);
+        return shape;
     }
 
-    public String toString(){
-        return "Shape with " + getPoints().size() + " points";
-    }
+
+
 
     static {
         Classes.registerClass(new ClassInfo<>(Shape.class, "shape")
@@ -178,7 +195,7 @@ public abstract class Shape implements Cloneable {
 
                     @Override
                     public String toVariableNameString(Shape shape) {
-                        return "shape:" + shape.getUUID();
+                        return "shape:" + shape.uuid();
                     }
                 })
         );

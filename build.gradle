@@ -5,6 +5,10 @@ plugins {
 group 'com.sovdee'
 version '1.0-SNAPSHOT'
 
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor 1, 'minutes'
+}
+
 repositories {
     mavenCentral()
     maven {
