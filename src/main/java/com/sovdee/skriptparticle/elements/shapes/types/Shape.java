@@ -1,4 +1,4 @@
-package com.sovdee.skriptparticle.shapes;
+package com.sovdee.skriptparticle.elements.shapes.types;
 
 import ch.njol.skript.classes.ClassInfo;
 import ch.njol.skript.classes.Parser;
@@ -25,7 +25,7 @@ public abstract class Shape implements Cloneable {
     protected Vector offset;
     protected Location center;
     private final UUID uuid;
-    protected ParticleBuilder particle = new ParticleBuilder(Particle.FLAME);
+    protected ParticleBuilder particle = new ParticleBuilder(Particle.FLAME).count(0);
 
     /*
     * CHANGE TO BUILDER BASED SYSTEM
@@ -33,8 +33,8 @@ public abstract class Shape implements Cloneable {
     public Shape() {
         this.points = generatePoints();
 
-        this.orientation = new Quaternion(0, 1, 0, 0);
-        this.previousOrientation = new Quaternion(0, 1, 0, 0);
+        this.orientation = new Quaternion(1, 0, 0, 0);
+        this.previousOrientation = new Quaternion(1, 0, 0, 0);
 
         this.scale = 1;
         this.offset = new Vector(0, 0, 0);
@@ -97,7 +97,7 @@ public abstract class Shape implements Cloneable {
     }
 
     public Shape orientation(Quaternion orientation) {
-        this.orientation = orientation;
+        this.orientation.set(orientation);
         return this;
     }
 
@@ -108,6 +108,18 @@ public abstract class Shape implements Cloneable {
     public Shape previousOrientation(Quaternion previousOrientation) {
         this.previousOrientation = previousOrientation;
         return this;
+    }
+
+    public Vector relativeYAxis() {
+        return orientation().transform(new Vector(0, 1, 0));
+    }
+
+    public Vector relativeXAxis() {
+        return orientation().transform(new Vector(1, 0, 0));
+    }
+
+    public Vector relativeZAxis() {
+        return orientation().transform(new Vector(0, 0, 1));
     }
 
     public double scale() {

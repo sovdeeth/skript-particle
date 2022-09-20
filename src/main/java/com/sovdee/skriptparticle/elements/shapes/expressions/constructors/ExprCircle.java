@@ -1,4 +1,4 @@
-package com.sovdee.skriptparticle.elements.shapes;
+package com.sovdee.skriptparticle.elements.shapes.expressions.constructors;
 
 import ch.njol.skript.Skript;
 import ch.njol.skript.lang.Expression;
@@ -7,7 +7,7 @@ import ch.njol.skript.lang.Literal;
 import ch.njol.skript.lang.SkriptParser;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
-import com.sovdee.skriptparticle.shapes.Circle;
+import com.sovdee.skriptparticle.elements.shapes.types.Circle;
 import org.bukkit.event.Event;
 
 import javax.annotation.Nullable;

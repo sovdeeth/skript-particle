@@ -1,8 +1,8 @@
-package com.sovdee.skriptparticle.elements;
+package com.sovdee.skriptparticle.elements.shapes.expressions.properties;
 
 import ch.njol.skript.classes.Changer;
 import ch.njol.skript.expressions.base.SimplePropertyExpression;
-import com.sovdee.skriptparticle.shapes.Shape;
+import com.sovdee.skriptparticle.elements.shapes.types.Shape;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class ExprShapeOffset extends SimplePropertyExpression<Shape, Vector> {
 
         static {
-            register(com.sovdee.skriptparticle.elements.ExprShapeNormal.class, Vector.class, "offset [vector]","shapes");
+            register(ExprShapeNormal.class, Vector.class, "offset [vector]","shapes");
         }
 
         @Override

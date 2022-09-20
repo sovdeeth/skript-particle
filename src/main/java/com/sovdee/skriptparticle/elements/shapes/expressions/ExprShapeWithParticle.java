@@ -1,4 +1,4 @@
-package com.sovdee.skriptparticle.elements;
+package com.sovdee.skriptparticle.elements.shapes.expressions;
 
 import ch.njol.skript.Skript;
 import ch.njol.skript.expressions.base.PropertyExpression;
@@ -7,7 +7,7 @@ import ch.njol.skript.lang.ExpressionType;
 import ch.njol.skript.lang.SkriptParser;
 import ch.njol.util.Kleenean;
 import com.destroystokyo.paper.ParticleBuilder;
-import com.sovdee.skriptparticle.shapes.Shape;
+import com.sovdee.skriptparticle.elements.shapes.types.Shape;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
@@ -18,7 +18,7 @@ import java.util.Arrays;
 public class ExprShapeWithParticle extends PropertyExpression<Shape, Shape> {
 
     static {
-        Skript.registerExpression(ExprShapeWithNormal.class, Shape.class, ExpressionType.PROPERTY,"%shapes% with particle %customparticle%");
+        Skript.registerExpression(ExprShapeWithParticle.class, Shape.class, ExpressionType.PROPERTY,"%shapes% with particle %customparticle%");
     }
     private Expression<ParticleBuilder> particleExpr;
 

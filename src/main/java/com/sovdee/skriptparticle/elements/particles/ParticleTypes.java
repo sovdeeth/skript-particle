@@ -1,4 +1,4 @@
-package com.sovdee.skriptparticle.particles;
+package com.sovdee.skriptparticle.elements.particles;
 
 import ch.njol.skript.classes.ClassInfo;
 import ch.njol.skript.classes.Parser;

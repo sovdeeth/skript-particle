@@ -1,9 +1,9 @@
-package com.sovdee.skriptparticle.elements;
+package com.sovdee.skriptparticle.elements.shapes.expressions.properties;
 
 import ch.njol.skript.classes.Changer;
 import ch.njol.skript.expressions.base.SimplePropertyExpression;
 import com.destroystokyo.paper.ParticleBuilder;
-import com.sovdee.skriptparticle.shapes.Shape;
+import com.sovdee.skriptparticle.elements.shapes.types.Shape;
 import org.bukkit.event.Event;
 
 import javax.annotation.Nullable;

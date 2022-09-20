@@ -1,4 +1,4 @@
-package com.sovdee.skriptparticle.shapes;
+package com.sovdee.skriptparticle.elements.shapes.types;
 
 import ch.njol.skript.classes.ClassInfo;
 import ch.njol.skript.classes.Serializer;

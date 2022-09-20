@@ -1,4 +1,4 @@
-package com.sovdee.skriptparticle.elements;
+package com.sovdee.skriptparticle.elements.shapes.effects;
 
 import ch.njol.skript.Skript;
 import ch.njol.skript.lang.Effect;
@@ -7,9 +7,8 @@ import ch.njol.skript.lang.SkriptParser;
 import ch.njol.skript.log.ErrorQuality;
 import ch.njol.util.Kleenean;
 import com.destroystokyo.paper.ParticleBuilder;
-import com.sovdee.skriptparticle.shapes.Shape;
+import com.sovdee.skriptparticle.elements.shapes.types.Shape;
 import org.bukkit.Location;
-import org.bukkit.Particle;
 import org.bukkit.event.Event;
 
 import javax.annotation.Nullable;
@@ -43,22 +42,18 @@ public class EffDrawShape extends Effect {
             if (shape == null) continue;
 
             if (particle == null) {
-                if (shape.getParticle() != null) {
-                    particle = shape.getParticle();
-                } else {
-                    particle = new ParticleBuilder(Particle.FLAME).count(0);
-                }
+                particle = shape.particle();
             }
 
             if (location == null){
-                location = shape.getCenter();
+                location = shape.center();
                 if (location == null) {
                     Skript.error("Shape has no location. Please use the 'centered at' draw syntax or define the shape with a location.", ErrorQuality.SEMANTIC_ERROR);
                     return;
                 }
             }
 
-            List<Location> locs = shape.getLocations(location);
+            List<Location> locs = shape.locations(location);
             for (Location loc : locs) {
                 particle.location(loc).receivers(loc.getWorld().getPlayers()).spawn();
             }

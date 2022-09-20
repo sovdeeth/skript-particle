@@ -1,4 +1,4 @@
-package com.sovdee.skriptparticle.elements.shapes;
+package com.sovdee.skriptparticle.elements.shapes.structures;
 
 import ch.njol.skript.Skript;
 import ch.njol.skript.lang.Expression;
@@ -7,8 +7,7 @@ import ch.njol.skript.lang.SkriptParser;
 import ch.njol.skript.lang.Trigger;
 import ch.njol.skript.lang.util.ContextlessEvent;
 import com.destroystokyo.paper.ParticleBuilder;
-import com.sovdee.skriptparticle.shapes.ComplexShape;
-import com.sovdee.skriptparticle.shapes.ShapePosition;
+import com.sovdee.skriptparticle.elements.shapes.types.ComplexShape;
 import org.bukkit.Location;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;

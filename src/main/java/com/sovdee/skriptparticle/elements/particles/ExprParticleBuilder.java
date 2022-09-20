@@ -1,4 +1,4 @@
-package com.sovdee.skriptparticle.elements;
+package com.sovdee.skriptparticle.elements.particles;
 
 import ch.njol.skript.Skript;
 import ch.njol.skript.lang.Expression;

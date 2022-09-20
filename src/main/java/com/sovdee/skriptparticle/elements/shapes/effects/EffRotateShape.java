@@ -1,12 +1,12 @@
-package com.sovdee.skriptparticle.elements;
+package com.sovdee.skriptparticle.elements.shapes.effects;
 
 import ch.njol.skript.Skript;
 import ch.njol.skript.lang.Effect;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser;
-import ch.njol.skript.lang.util.SimpleLiteral;
 import ch.njol.util.Kleenean;
-import com.sovdee.skriptparticle.shapes.Shape;
+import com.sovdee.skriptparticle.elements.shapes.types.Shape;
+import com.sovdee.skriptparticle.util.Quaternion;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
 
@@ -16,12 +16,14 @@ public class EffRotateShape extends Effect {
 
 static {
         Skript.registerEffect(EffRotateShape.class,
-                "rotate [shape[s]] %shapes% around (v:%-vector%|((:x|:y|:z)(-| )axis)) by %-number% [:degrees|:radians]");
+                "rotate [shape[s]] %shapes% around (v:%-vector%|((:x|:y|:z)(-| )axis)) by %-number% [:degrees|:radians]",
+                "rotate [shape[s]] %shapes% (by|with) [rotation] %rotation%");
     }
 
     private Expression<Shape> shapesExpr;
     private Expression<Vector> axisExpr;
     private Expression<Number> angleExpr;
+    private String axis;
     private boolean convertToRadians = true;
 
     @Override
@@ -30,12 +32,29 @@ static {
         if (angle == null) return;
         if (convertToRadians) angle = Math.toRadians(angle.doubleValue());
 
-        Vector axis = axisExpr.getSingle(e);
-        if (axis == null) return;
+        Quaternion rotation;
+        if (axis != null) {
+            switch (axis) {
+                case "x":
+                    rotation = new Quaternion(new Vector(1, 0, 0), angle.doubleValue());
+                    break;
+                case "y":
+                    rotation = new Quaternion(new Vector(0, 1, 0), angle.doubleValue());
+                    break;
+                case "z":
+                    rotation = new Quaternion(new Vector(0, 0, 1), angle.doubleValue());
+                    break;
+                default:
+                    return;
+            }
+        } else {
+            Vector axis = axisExpr.getSingle(e);
+            if (axis == null) return;
+            rotation = new Quaternion(axis, angle.doubleValue());
+        }
 
-        for (Shape shape : shapesExpr.getArray(e)) {
-            shape.getNormal().rotateAroundAxis(axis.clone().normalize(), angle.doubleValue());
-            shape.setNeedsUpdate(true);
+        for (Shape shape : shapesExpr.getAll(e)) {
+            shape.orientation().multiply(rotation.normalize());
         }
 
     }
@@ -51,7 +70,7 @@ static {
         if (parseResult.hasTag("v")) {
             axisExpr = (Expression<Vector>) exprs[1];
         } else {
-            axisExpr = new SimpleLiteral<>(new Vector(parseResult.hasTag("x") ? 1 : 0, parseResult.hasTag("y") ? 1 : 0, parseResult.hasTag("z") ? 1 : 0), false);
+            axis = parseResult.tags.get(0);
         }
         angleExpr = (Expression<Number>) exprs[2];
         convertToRadians = !parseResult.hasTag("radians");

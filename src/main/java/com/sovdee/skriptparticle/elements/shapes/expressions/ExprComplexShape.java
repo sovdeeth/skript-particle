@@ -1,4 +1,4 @@
-package com.sovdee.skriptparticle.elements.shapes;
+package com.sovdee.skriptparticle.elements.shapes.expressions;
 
 import ch.njol.skript.Skript;
 import ch.njol.skript.lang.Expression;
@@ -6,7 +6,8 @@ import ch.njol.skript.lang.ExpressionType;
 import ch.njol.skript.lang.SkriptParser;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
-import com.sovdee.skriptparticle.shapes.ComplexShape;
+import com.sovdee.skriptparticle.elements.shapes.structures.StructComplexShape;
+import com.sovdee.skriptparticle.elements.shapes.types.ComplexShape;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
 
