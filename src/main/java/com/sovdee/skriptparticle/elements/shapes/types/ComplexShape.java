@@ -4,6 +4,7 @@ import ch.njol.skript.classes.ClassInfo;
 import ch.njol.skript.classes.Parser;
 import ch.njol.skript.lang.ParseContext;
 import ch.njol.skript.registrations.Classes;
+import com.sovdee.skriptparticle.util.Quaternion;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
@@ -38,6 +39,32 @@ public class ComplexShape extends Shape {
             }
         }
         return points;
+    }
+
+    // necessary to rotate from origin each time because of unknown state of sub-shapes
+    @Override
+    public Shape orientPoints() {
+        Quaternion rotation = orientation.clone();
+
+        for (Vector point : points) {
+            rotation.transform(point);
+        }
+        previousOrientation(this.orientation.clone());
+        return this;
+    }
+
+    @Override
+    public int particleCount() {
+        int count = 0;
+        for (Shape shape : shapes) {
+            count += shape.particleCount();
+        }
+        return count;
+    }
+
+    @Override
+    public Shape particleCount(int count) {
+        return this;
     }
 
     @Override

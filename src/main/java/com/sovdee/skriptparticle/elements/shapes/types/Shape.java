@@ -25,36 +25,55 @@ public abstract class Shape implements Cloneable {
     protected Vector offset;
     protected Location center;
     private final UUID uuid;
-    protected ParticleBuilder particle = new ParticleBuilder(Particle.FLAME).count(0);
+    protected ParticleBuilder particle = new ParticleBuilder(Particle.FLAME).count(1).extra(0);
+    protected double particleDensity = 0.1; // 1 particle per 0.01 meters^2, approximately
 
     /*
     * CHANGE TO BUILDER BASED SYSTEM
      */
     public Shape() {
-        this.points = generatePoints();
-
+        this.points = new ArrayList<>();
+        
         this.orientation = new Quaternion(1, 0, 0, 0);
         this.previousOrientation = new Quaternion(1, 0, 0, 0);
-
+        
         this.scale = 1;
         this.offset = new Vector(0, 0, 0);
         this.center = new Location(null, 0, 0, 0);
-
+        
         this.uuid = UUID.randomUUID();
     }
 
 
     public abstract List<Vector> generatePoints();
 
+    public Shape particleDensity(double count){
+        this.particleDensity = count;
+        return this;
+    }
+    public double particleDensity() {
+        return particleDensity;
+    }
+
+    public abstract int particleCount();
+    public abstract Shape particleCount(int count);
+
     public Shape orientPoints() {
         if (orientation.equals(previousOrientation)) {
             return this;
         }
-        Quaternion rotation = orientation.multiply(previousOrientation.conjugate());
+        Quaternion rotation = orientation.clone().multiply(previousOrientation.conjugate());
         for (Vector point : points) {
             rotation.transform(point);
         }
         this.previousOrientation = this.orientation.clone();
+        return this;
+    }
+
+    public Shape resetOrientation() {
+        this.orientation.set(1, 0, 0, 0);
+        this.previousOrientation.set(1, 0, 0, 0);
+        this.points = calculatePoints();
         return this;
     }
 
@@ -64,7 +83,8 @@ public abstract class Shape implements Cloneable {
                 .previousOrientation(this.previousOrientation)
                 .scale(this.scale)
                 .offset(this.offset)
-                .center(this.center);
+                .center(this.center)
+                .particleDensity(this.particleDensity);
         return shape;
     };
 
@@ -111,7 +131,7 @@ public abstract class Shape implements Cloneable {
     }
 
     public Vector relativeYAxis() {
-        return orientation().transform(new Vector(0, 1, 0));
+        return orientation().transform(new Vector(0, 1, 0)).normalize();
     }
 
     public Vector relativeXAxis() {
@@ -169,6 +189,7 @@ public abstract class Shape implements Cloneable {
         fields.putPrimitive("scale", scale);
         fields.putObject("offset", offset);
         fields.putObject("center", center);
+        fields.putPrimitive("density", particleDensity);
     }
 
     public static Shape deserialize(Fields fields, Shape shape) throws StreamCorruptedException {
@@ -177,6 +198,7 @@ public abstract class Shape implements Cloneable {
         shape.scale = fields.getPrimitive("scale", double.class);
         shape.offset = fields.getObject("offset", Vector.class);
         shape.center = fields.getObject("center", Location.class);
+        shape.particleDensity = fields.getPrimitive("density", double.class);
         return shape;
     }
 

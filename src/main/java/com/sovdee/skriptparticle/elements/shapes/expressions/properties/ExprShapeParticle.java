@@ -23,9 +23,9 @@ public class ExprShapeParticle extends SimplePropertyExpression<Shape, ParticleB
 
     @Override
     public void change(Event event, @Nullable Object[] delta, Changer.ChangeMode mode) {
-        if (delta == null || delta.length == 0) return;
         switch (mode) {
             case SET:
+                if (delta == null || delta.length == 0) return;
                 for (Shape shape : getExpr().getArray(event))
                     shape.particle((ParticleBuilder) delta[0]);
                 break;

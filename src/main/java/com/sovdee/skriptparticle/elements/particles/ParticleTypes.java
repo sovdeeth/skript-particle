@@ -81,7 +81,7 @@ public class ParticleTypes {
                             Particle p = ParticleUtil.parse(s.replace(" ", "_"));
                             if (p == null)
                                 return null;
-                            return new ParticleBuilder(p);
+                            return new ParticleBuilder(p).count(1).extra(0);
                         }
 
                         @Override

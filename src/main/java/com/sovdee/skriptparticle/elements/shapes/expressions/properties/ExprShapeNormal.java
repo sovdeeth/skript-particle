@@ -1,5 +1,6 @@
 package com.sovdee.skriptparticle.elements.shapes.expressions.properties;
 
+import ch.njol.skript.Skript;
 import ch.njol.skript.classes.Changer;
 import ch.njol.skript.expressions.base.SimplePropertyExpression;
 import com.sovdee.skriptparticle.elements.shapes.types.Shape;
@@ -12,7 +13,7 @@ import javax.annotation.Nullable;
 public class ExprShapeNormal extends SimplePropertyExpression<Shape, Vector> {
 
     static {
-        register(ExprShapeNormal.class, Vector.class, "normal", "shapes");
+        register(ExprShapeNormal.class, Vector.class, "normal [vector]", "shapes");
     }
 
     @Override
@@ -24,19 +25,18 @@ public class ExprShapeNormal extends SimplePropertyExpression<Shape, Vector> {
 
     @Override
     public void change(Event e, @Nullable Object[] delta, Changer.ChangeMode mode) {
-        if ((delta == null || delta.length != 1))
-            return;
         switch (mode) {
             case SET:
-                for (Shape shape : getExpr().getArray(e)) {
+                if (delta == null || delta.length == 0) return;
+                for (Shape shape : getExpr().getAll(e)) {
                     shape.orientation(Quaternion.rotationToVector((Vector) delta[0]));
                 }
                 break;
             case RESET:
             case DELETE:
             case REMOVE_ALL:
-                for (Shape shape : getExpr().getArray(e)) {
-                    shape.orientation().set(1, 0,0,0);
+                for (Shape shape : getExpr().getAll(e)) {
+                    shape.resetOrientation();
                 }
                 break;
             default:

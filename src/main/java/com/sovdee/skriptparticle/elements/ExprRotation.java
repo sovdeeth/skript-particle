@@ -15,7 +15,7 @@ import javax.annotation.Nullable;
 public class ExprRotation extends SimpleExpression<Quaternion> {
 
     static {
-        Skript.registerExpression(ExprRotation.class, Quaternion.class, ExpressionType.COMBINED, "[the] rotation (of|from) [the] [vector] %vector% and [the] angle [of] %number% [:degrees|radians]");
+        Skript.registerExpression(ExprRotation.class, Quaternion.class, ExpressionType.COMBINED, "[the] rotation (from|around) [the] [vector] %vector% (and|with|by) [the|an] angle [of] %number% [:degrees|radians]");
     }
 
     private Expression<Number> rotationExpr;

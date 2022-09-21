@@ -22,10 +22,9 @@ public class ExprShapeRotation extends SimplePropertyExpression<Shape, Quaternio
 
     @Override
     public void change(Event event, @Nullable Object[] delta, Changer.ChangeMode mode) {
-        if ((delta == null || delta.length == 0) && (mode == Changer.ChangeMode.ADD || mode == Changer.ChangeMode.SET))
-            return;
         switch (mode) {
             case SET:
+                if (delta == null || delta.length == 0) return;
                 for (Shape shape : getExpr().getArray(event)) {
                     shape.orientation((Quaternion) delta[0]);
                 }
@@ -34,7 +33,7 @@ public class ExprShapeRotation extends SimplePropertyExpression<Shape, Quaternio
             case DELETE:
             case REMOVE_ALL:
                 for (Shape shape : getExpr().getArray(event)) {
-                    shape.orientation().set(0,0,1,0);
+                    shape.resetOrientation();
                 }
                 break;
             default:

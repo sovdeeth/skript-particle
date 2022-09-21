@@ -18,7 +18,6 @@ public class Line extends Shape {
 
     private Vector start;
     private Vector end;
-    private double stepSize = 0.25;
 
     public Line() {
         super();
@@ -45,17 +44,28 @@ public class Line extends Shape {
 
         Vector direction = end.clone().subtract(start);
         double length = direction.length();
-        direction.normalize().multiply(stepSize);
+        direction.normalize().multiply(particleDensity);
 
-        for (double i = 0; i < (length / stepSize); i++) {
+        for (double i = 0; i < (length / particleDensity); i++) {
             points.add(start.clone().add(direction.clone().multiply(i)));
         }
         return points;
     }
 
     @Override
+    public int particleCount() {
+        return (int) (end.clone().subtract(start).length() / particleDensity);
+    }
+
+    @Override
+    public Shape particleCount(int count) {
+        particleDensity = (end.clone().subtract(start).length() / count);
+        return this;
+    }
+
+    @Override
     public Shape clone() {
-        Line line = new Line(this.start, this.end).stepSize(this.stepSize);
+        Line line = new Line(this.start, this.end);
         this.copyTo(line);
         return line;
     }
@@ -78,21 +88,8 @@ public class Line extends Shape {
         return this;
     }
 
-    public double stepSize() {
-        return stepSize;
-    }
-
-    public Line stepSize(double stepSize) {
-        this.stepSize = stepSize;
-        return this;
-    }
-
-
-
-
-
     public String toString(){
-        return "Line from " + this.start + " to " + this.end + " and stepSize " + this.stepSize;
+        return "Line from " + this.start + " to " + this.end;
     }
 
     static {
@@ -129,7 +126,6 @@ public class Line extends Shape {
                         Fields fields = new Fields();
                         fields.putObject("start", line.start);
                         fields.putObject("end", line.end);
-                        fields.putPrimitive("stepSize", line.stepSize);
                         line.serialize(fields);
                         return fields;
                     }
@@ -138,8 +134,7 @@ public class Line extends Shape {
                     public Line deserialize(Fields fields) throws StreamCorruptedException {
                         Vector start = fields.getObject("start", Vector.class);
                         Vector end = fields.getObject("end", Vector.class);
-                        double stepSize = fields.getPrimitive("stepSize", double.class);
-                        Line line = new Line(start, end).stepSize(stepSize);
+                        Line line = new Line(start, end);
                         Shape.deserialize(fields, line);
                         return line;
                     }

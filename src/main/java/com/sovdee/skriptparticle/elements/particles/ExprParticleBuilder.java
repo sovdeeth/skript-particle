@@ -18,7 +18,7 @@ public class ExprParticleBuilder extends SimpleExpression<ParticleBuilder> {
 
     static {
         Skript.registerExpression(ExprParticleBuilder.class, ParticleBuilder.class, ExpressionType.COMBINED,
-                "[%-number% [of]] %particlebuilder% [particle] [using %-itemtype/blockdata/dustoption/dusttransition/vibration" +
+                "[%number% [of]] %particlebuilder% particle[s] [using %-itemtype/blockdata/dustoption/dusttransition/vibration" +
                         "/number%] [with offset %-vector%] [with extra %-number%]");
     }
 

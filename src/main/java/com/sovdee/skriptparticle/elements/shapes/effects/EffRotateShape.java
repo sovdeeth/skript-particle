@@ -16,14 +16,15 @@ public class EffRotateShape extends Effect {
 
 static {
         Skript.registerEffect(EffRotateShape.class,
-                "rotate [shape[s]] %shapes% around (v:%-vector%|((:x|:y|:z)(-| )axis)) by %-number% [:degrees|:radians]",
-                "rotate [shape[s]] %shapes% (by|with) [rotation] %rotation%");
+                "rotate shape[s] %shapes% around [:relative] (v:%-vector%|((:x|:y|:z)(-| )axis)) by %-number% [:degrees|:radians]",
+                "rotate shape[s] %shapes% (by|with) [rotation] %rotation%");
     }
 
     private Expression<Shape> shapesExpr;
     private Expression<Vector> axisExpr;
     private Expression<Number> angleExpr;
     private String axis;
+    private boolean relative = false;
     private boolean convertToRadians = true;
 
     @Override
@@ -54,7 +55,10 @@ static {
         }
 
         for (Shape shape : shapesExpr.getAll(e)) {
-            shape.orientation().multiply(rotation.normalize());
+            if (relative)
+                shape.orientation().multiply(rotation);
+            else
+                shape.orientation().multiplyLeft(rotation);
         }
 
     }
@@ -70,7 +74,8 @@ static {
         if (parseResult.hasTag("v")) {
             axisExpr = (Expression<Vector>) exprs[1];
         } else {
-            axis = parseResult.tags.get(0);
+            relative = parseResult.hasTag("relative");
+            axis = parseResult.hasTag("x") ? "x" : parseResult.hasTag("y") ? "y" : "z";
         }
         angleExpr = (Expression<Number>) exprs[2];
         convertToRadians = !parseResult.hasTag("radians");

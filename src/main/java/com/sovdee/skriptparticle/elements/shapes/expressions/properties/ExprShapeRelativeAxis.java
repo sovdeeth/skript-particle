@@ -1,4 +1,4 @@
-package com.sovdee.skriptparticle.elements.shapes.expressions;
+package com.sovdee.skriptparticle.elements.shapes.expressions.properties;
 
 import ch.njol.skript.expressions.base.SimplePropertyExpression;
 import ch.njol.skript.lang.Expression;
@@ -12,40 +12,43 @@ import javax.annotation.Nullable;
 public class ExprShapeRelativeAxis extends SimplePropertyExpression<Shape, Vector> {
 
     static {
-        register(ExprShapeRelativeAxis.class, Vector.class, "[relative] :(x|y|z)(-| )axis", "shapes");
+        register(ExprShapeRelativeAxis.class, Vector.class, "relative (:x|:y|:z)(-| )axis", "shapes");
     }
 
     private String axis;
 
     @Override
+    public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, SkriptParser.ParseResult parseResult) {
+        axis = parseResult.tags.get(0);
+        return super.init(exprs, matchedPattern, isDelayed, parseResult);
+    }
+
+    @Override
     protected String getPropertyName() {
-        return "relative axis";
+        return "relative axis " + axis;
     }
 
     @Override
     public @Nullable Vector convert(Shape shape) {
+        Vector axisVector;
         switch (axis) {
             case "x":
-                return shape.relativeXAxis();
+                axisVector = shape.relativeXAxis();
+                break;
             case "y":
-                return shape.relativeYAxis();
+                axisVector = shape.relativeYAxis();
+                break;
             case "z":
-                return shape.relativeZAxis();
+                axisVector = shape.relativeZAxis();
+                break;
             default:
                 return null;
         }
+        return axisVector;
     }
 
     @Override
     public Class<? extends Vector> getReturnType() {
-        return null;
-    }
-
-    @Override
-    public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, SkriptParser.ParseResult parseResult) {
-        if (!super.init(exprs, matchedPattern, isDelayed, parseResult))
-            return false;
-        axis = parseResult.tags.get(0);
-        return true;
+        return Vector.class;
     }
 }

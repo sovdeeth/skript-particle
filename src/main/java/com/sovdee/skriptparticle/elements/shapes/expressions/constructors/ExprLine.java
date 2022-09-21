@@ -3,7 +3,6 @@ package com.sovdee.skriptparticle.elements.shapes.expressions.constructors;
 import ch.njol.skript.Skript;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.ExpressionType;
-import ch.njol.skript.lang.Literal;
 import ch.njol.skript.lang.SkriptParser;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
@@ -17,14 +16,13 @@ import javax.annotation.Nullable;
 public class ExprLine extends SimpleExpression<Line> {
 
     static {
-        Skript.registerExpression(ExprLine.class, Line.class, ExpressionType.COMBINED, "[(the|a)] line (from|between) %vector% (to|and) %vector% [with [a] step size [of] %-number% [meters]]",
-                                                                                                "[(the|a)] line (from|between) %location% (to|and) %location% [with [a] step size [of] %-number% [meters]]",
-                                                                                                "[(the|a)] line (in [the]|from) direction %vector% (and|[and] with) length %number% [with [a] step size [of] %-number% [meters]]");
+        Skript.registerExpression(ExprLine.class, Line.class, ExpressionType.COMBINED, "[a] line (from|between) %vector% (to|and) %vector%",
+                                                                                                "[a] line (from|between) %location% (to|and) %location%",
+                                                                                                "[a] line (in [the]|from) direction %vector% (and|[and] with) length %number%");
     }
 
     private Expression<Vector> startExpr;
     private Expression<Vector> endExpr;
-    private Expression<Number> stepSizeExpr = null;
 
     private Expression<Location> startLocExpr;
     private Expression<Location> endLocExpr;
@@ -57,14 +55,6 @@ public class ExprLine extends SimpleExpression<Line> {
                 line = new Line().end(directionExpr.getSingle(event).normalize().multiply(lengthExpr.getSingle(event).doubleValue()));
                 break;
         }
-        if (stepSizeExpr != null && stepSizeExpr.getSingle(event) != null) {
-            if (stepSizeExpr.getSingle(event).doubleValue() <= 0) {
-                Skript.error("Step size must be greater than 0. (step size: " + stepSizeExpr.getSingle(event) + ")");
-                return new Line[0];
-            }
-            line.stepSize(stepSizeExpr.getSingle(event).doubleValue());
-            line.generatePoints();
-        }
         return new Line[]{line};
     }
 
@@ -92,7 +82,7 @@ public class ExprLine extends SimpleExpression<Line> {
                 str = "the line in direction " + directionExpr.getSingle(event) + " with length " + lengthExpr.getSingle(event);
                 break;
         }
-        return str + (stepSizeExpr != null ? " with step size " + stepSizeExpr.getSingle(event) : "");
+        return str;
     }
 
     @Override
@@ -111,15 +101,6 @@ public class ExprLine extends SimpleExpression<Line> {
                 directionExpr = (Expression<Vector>) exprs[0];
                 lengthExpr = (Expression<Number>) exprs[1];
                 break;
-        }
-        if (exprs.length > 2) {
-            stepSizeExpr = (Expression<Number>) exprs[2];
-            if (stepSizeExpr instanceof Literal) {
-                if (((Literal<Number>) stepSizeExpr).getSingle().doubleValue() <= 0) {
-                    Skript.error("Step size must be greater than 0. (step size: " + ((Literal<Number>) stepSizeExpr).getSingle().doubleValue() + ")");
-                    return false;
-                }
-            }
         }
         return true;
     }

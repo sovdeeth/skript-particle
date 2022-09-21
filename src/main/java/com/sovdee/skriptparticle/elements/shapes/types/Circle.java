@@ -15,7 +15,6 @@ import java.util.List;
 public class Circle extends Shape {
 
     private double radius;
-    private double stepSize = Math.PI * 2 / 30;
 
     public Circle (){
         super();
@@ -36,19 +35,22 @@ public class Circle extends Shape {
         return this;
     }
 
-    public double stepSize() {
-        return stepSize;
+    @Override
+    public int particleCount() {
+        return (int) (Math.PI * 2 * radius / particleDensity);
     }
 
-    public Circle stepSize(double stepSize) {
-        this.stepSize = stepSize;
+    @Override
+    public Circle particleCount(int count) {
+        particleDensity = Math.PI * 2 * radius / count;
         return this;
     }
 
     @Override
     public List<Vector> generatePoints() {
         this.points = new ArrayList<>();
-        for (double theta = 0; theta < 2 * Math.PI; theta += this.stepSize) {
+        double stepSize = particleDensity / radius;
+        for (double theta = 0; theta < 2 * Math.PI; theta += stepSize) {
             points.add(new Vector(Math.cos(theta) * radius, 0, Math.sin(theta) * radius));
         }
         return points;
@@ -56,13 +58,13 @@ public class Circle extends Shape {
 
     @Override
     public Shape clone() {
-        Circle circle = new Circle(this.radius).stepSize(this.stepSize);
+        Circle circle = new Circle(this.radius);
         this.copyTo(circle);
         return circle;
     }
 
     public String toString(){
-        return "Circle with radius " + this.radius + " and stepSize " + this.stepSize;
+        return "Circle with radius " + this.radius;
     }
 
     static {
@@ -77,7 +79,6 @@ public class Circle extends Shape {
                     public Fields serialize(Circle circle) {
                         Fields fields = new Fields();
                         fields.putPrimitive("radius", circle.radius);
-                        fields.putPrimitive("stepSize", circle.stepSize);
                         circle.serialize(fields);
                         return fields;
                     }
@@ -85,8 +86,7 @@ public class Circle extends Shape {
                     @Override
                     public Circle deserialize(Fields fields) throws StreamCorruptedException {
                         double radius = fields.getPrimitive("radius", Double.class);
-                        double stepSize = fields.getPrimitive("stepSize", Double.class);
-                        Circle circle = new Circle(radius).stepSize(stepSize);
+                        Circle circle = new Circle(radius);
                         Shape.deserialize(fields, circle);
                         return circle;
                     }

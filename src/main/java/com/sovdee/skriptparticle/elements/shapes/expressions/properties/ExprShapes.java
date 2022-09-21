@@ -30,7 +30,7 @@ public class ExprShapes extends SimpleExpression<Shape> {
 
     @Override
     public void change(Event event, @Nullable Object[] delta, Changer.ChangeMode mode) {
-        if (delta == null || delta.length == 0)
+        if ((delta == null || delta.length == 0) && (mode != Changer.ChangeMode.RESET && mode != Changer.ChangeMode.DELETE && mode != Changer.ChangeMode.REMOVE_ALL))
             return;
         if (shape == null)
             return;
@@ -71,7 +71,7 @@ public class ExprShapes extends SimpleExpression<Shape> {
 
     @Override
     public @NotNull String toString(@Nullable Event event, boolean debug) {
-        return null;
+        return "shapes";
     }
 
     @Override
