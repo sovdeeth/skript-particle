@@ -4,53 +4,59 @@ import ch.njol.skript.classes.ClassInfo;
 import ch.njol.skript.classes.Parser;
 import ch.njol.skript.lang.ParseContext;
 import ch.njol.skript.registrations.Classes;
-import com.sovdee.skriptparticle.util.Quaternion;
+import com.destroystokyo.paper.ParticleBuilder;
+import org.bukkit.Location;
 import org.bukkit.util.Vector;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ComplexShape extends Shape {
 
     private List<Shape> shapes = new ArrayList<>();
+    private List<Line> axes = new ArrayList<>();
     public ComplexShape() {
         super();
-    }
-
-    @Override
-    public List<Vector> calculatePoints(){
-        // necessary to calculate sub-shape points for offset/scale
-        points = generatePoints();
-        // ensure orientation is up-to-date
-        orientPoints();
-        ArrayList<Vector> positionedPoints = new ArrayList<>();
-        for (Vector point : points) {
-            positionedPoints.add(point.clone().multiply(scale).add(offset));
-        }
-        return positionedPoints;
     }
 
     @Override
     public List<Vector> generatePoints() {
         List<Vector> points = new ArrayList<>();
         for (Shape shape : shapes) {
-            for (Vector point : shape.calculatePoints()) {
-                points.add(point.clone());
-            }
+            points.addAll(shape.positionedPoints());
         }
         return points;
     }
 
-    // necessary to rotate from origin each time because of unknown state of sub-shapes
     @Override
-    public Shape orientPoints() {
-        Quaternion rotation = orientation.clone();
-
-        for (Vector point : points) {
-            rotation.transform(point);
+    public void draw(Location location, ParticleBuilder particle, @Nullable Shape... parents) {
+        List<Shape> newParents = new ArrayList<>();
+        if (parents != null) {
+            newParents.addAll(List.of(parents));
         }
-        previousOrientation(this.orientation.clone());
-        return this;
+        newParents.add(this);
+        // override particles if necessary
+        if (particle.equals(this.particle)){
+            for (Shape shape : shapes) {
+                shape.draw(location, newParents.toArray(new Shape[0]));
+            }
+        } else {
+            for (Shape shape : shapes) {
+                shape.draw(location, particle, newParents.toArray(new Shape[0]));
+            }
+        }
+        if (showLocalAxes) {
+            drawLocalAxes(location, parents);
+        }
+        if (showGlobalAxes) {
+            drawGlobalAxes(location, parents);
+        }
+    }
+
+    @Override
+    public List<Location> locations(Location center) {
+        return super.locations(center);
     }
 
     @Override

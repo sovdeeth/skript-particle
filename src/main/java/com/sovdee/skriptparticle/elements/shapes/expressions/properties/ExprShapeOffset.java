@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class ExprShapeOffset extends SimplePropertyExpression<Shape, Vector> {
 
         static {
-            register(ExprShapeNormal.class, Vector.class, "offset [vector]","shapes");
+            register(ExprShapeOffset.class, Vector.class, "offset [vector]","shapes");
         }
 
         @Override

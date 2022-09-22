@@ -12,7 +12,6 @@ import org.bukkit.Location;
 import org.bukkit.event.Event;
 
 import javax.annotation.Nullable;
-import java.util.List;
 
 public class EffDrawShape extends Effect {
 
@@ -33,17 +32,12 @@ public class EffDrawShape extends Effect {
         ParticleBuilder particle = null;
         if (particleExpr != null) {
             particle = particleExpr.getSingle(event);
-            if (particle == null) return;
         }
 
         Location location = locationExpr != null ? locationExpr.getSingle(event) : null;
 
         for (Shape shape : shapes) {
             if (shape == null) continue;
-
-            if (particle == null) {
-                particle = shape.particle();
-            }
 
             if (location == null){
                 location = shape.center();
@@ -53,9 +47,10 @@ public class EffDrawShape extends Effect {
                 }
             }
 
-            List<Location> locs = shape.locations(location);
-            for (Location loc : locs) {
-                particle.location(loc).receivers(loc.getWorld().getPlayers()).spawn();
+            if (particle == null) {
+                shape.draw(location);
+            } else {
+                shape.draw(location, particle);
             }
         }
     }

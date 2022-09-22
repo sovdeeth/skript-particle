@@ -18,7 +18,7 @@ public class ExprLine extends SimpleExpression<Line> {
     static {
         Skript.registerExpression(ExprLine.class, Line.class, ExpressionType.COMBINED, "[a] line (from|between) %vector% (to|and) %vector%",
                                                                                                 "[a] line (from|between) %location% (to|and) %location%",
-                                                                                                "[a] line (in [the]|from) direction %vector% (and|[and] with) length %number%");
+                                                                                                "[a] line (in [the]|from) direction %vector% [(and|[and] with) length %number%]");
     }
 
     private Expression<Vector> startExpr;
@@ -49,10 +49,13 @@ public class ExprLine extends SimpleExpression<Line> {
                 line = new Line(startLocExpr.getSingle(event), endLocExpr.getSingle(event));
                 break;
             case 2:
-                if (directionExpr.getSingle(event) == null || lengthExpr.getSingle(event) == null)
+                if (directionExpr.getSingle(event) == null)
                     return new Line[0];
+                Vector v = directionExpr.getSingle(event);
+                if (lengthExpr != null && lengthExpr.getSingle(event) != null)
+                    v.multiply(lengthExpr.getSingle(event).doubleValue());
 
-                line = new Line().end(directionExpr.getSingle(event).normalize().multiply(lengthExpr.getSingle(event).doubleValue()));
+                line = new Line(v);
                 break;
         }
         return new Line[]{line};
@@ -99,7 +102,8 @@ public class ExprLine extends SimpleExpression<Line> {
                 break;
             case 2:
                 directionExpr = (Expression<Vector>) exprs[0];
-                lengthExpr = (Expression<Number>) exprs[1];
+                if (exprs.length > 1)
+                    lengthExpr = (Expression<Number>) exprs[1];
                 break;
         }
         return true;

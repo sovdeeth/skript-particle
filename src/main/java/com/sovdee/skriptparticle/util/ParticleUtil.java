@@ -2,6 +2,7 @@ package com.sovdee.skriptparticle.util;
 
 import ch.njol.skript.aliases.ItemType;
 import ch.njol.util.StringUtils;
+import com.destroystokyo.paper.ParticleBuilder;
 import org.bukkit.*;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
@@ -173,5 +174,16 @@ public class ParticleUtil {
     }
 
 
+    public static final ParticleBuilder DEFAULT_PB =  new ParticleBuilder(Particle.FLAME).count(1).extra(0);
 
+    public static ParticleBuilder cloneBuilder(ParticleBuilder builder) {
+        return new ParticleBuilder(builder.particle())
+                .count(builder.count())
+                .extra(builder.extra())
+                .offset(builder.offsetX(), builder.offsetY(), builder.offsetZ())
+                .data(builder.data())
+                .force(builder.force())
+                .receivers(builder.receivers())
+                .source(builder.source());
+    }
 }

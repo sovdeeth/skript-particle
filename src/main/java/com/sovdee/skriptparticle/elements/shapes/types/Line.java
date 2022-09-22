@@ -6,7 +6,10 @@ import ch.njol.skript.classes.Serializer;
 import ch.njol.skript.lang.ParseContext;
 import ch.njol.skript.registrations.Classes;
 import ch.njol.yggdrasil.Fields;
+import com.destroystokyo.paper.ParticleBuilder;
+import org.bukkit.Color;
 import org.bukkit.Location;
+import org.bukkit.Particle;
 import org.bukkit.util.Vector;
 
 import java.io.NotSerializableException;
@@ -23,6 +26,12 @@ public class Line extends Shape {
         super();
         this.start = new Vector(0, 0, 0);
         this.end = new Vector(0, 0, 0);
+    }
+
+    public Line(Vector end) {
+        super();
+        this.start = new Vector(0, 0, 0);
+        this.end = end;
     }
 
     public Line(Vector start, Vector end) {
@@ -155,5 +164,12 @@ public class Line extends Shape {
                     }
 
                 }));
+
+        globalAxes.add((Line) new Line(new Vector(1, 0, 0))
+                .particle(new ParticleBuilder(Particle.REDSTONE).data(new Particle.DustOptions(Color.RED, 0.5F))));
+        globalAxes.add((Line) new Line(new Vector(0, 1, 0))
+                .particle(new ParticleBuilder(Particle.REDSTONE).data(new Particle.DustOptions(Color.LIME, 0.5F))));
+        globalAxes.add((Line) new Line(new Vector(0, 0, 1))
+                .particle(new ParticleBuilder(Particle.REDSTONE).data(new Particle.DustOptions(Color.AQUA, 0.5F))));
     }
 }

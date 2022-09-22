@@ -35,7 +35,7 @@ public class ExprShapeCopy extends SimpleExpression<Shape> {
 
     @Override
     public boolean isSingle() {
-        return false;
+        return true;
     }
 
     @Override
@@ -45,7 +45,7 @@ public class ExprShapeCopy extends SimpleExpression<Shape> {
 
     @Override
     public String toString(@Nullable Event event, boolean b) {
-        return "shapes copy";
+        return "shape copy";
     }
 
     @Override

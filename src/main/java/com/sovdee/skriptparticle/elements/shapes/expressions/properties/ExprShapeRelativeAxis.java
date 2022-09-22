@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class ExprShapeRelativeAxis extends SimplePropertyExpression<Shape, Vector> {
 
     static {
-        register(ExprShapeRelativeAxis.class, Vector.class, "relative (:x|:y|:z)(-| )axis", "shapes");
+        register(ExprShapeRelativeAxis.class, Vector.class, "(relative|local) (:x|:y|:z)(-| )axis", "shapes");
     }
 
     private String axis;

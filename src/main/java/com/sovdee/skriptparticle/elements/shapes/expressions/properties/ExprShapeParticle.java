@@ -4,6 +4,7 @@ import ch.njol.skript.classes.Changer;
 import ch.njol.skript.expressions.base.SimplePropertyExpression;
 import com.destroystokyo.paper.ParticleBuilder;
 import com.sovdee.skriptparticle.elements.shapes.types.Shape;
+import com.sovdee.skriptparticle.util.ParticleUtil;
 import org.bukkit.event.Event;
 
 import javax.annotation.Nullable;
@@ -33,7 +34,7 @@ public class ExprShapeParticle extends SimplePropertyExpression<Shape, ParticleB
             case DELETE:
             case REMOVE_ALL:
                 for (Shape shape : getExpr().getArray(event))
-                    shape.particle(null);
+                    shape.particle(ParticleUtil.DEFAULT_PB);
                 break;
             default:
                 assert false;

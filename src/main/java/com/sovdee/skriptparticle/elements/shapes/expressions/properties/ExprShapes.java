@@ -10,6 +10,7 @@ import ch.njol.util.Kleenean;
 import com.sovdee.skriptparticle.elements.shapes.structures.StructComplexShape;
 import com.sovdee.skriptparticle.elements.shapes.types.ComplexShape;
 import com.sovdee.skriptparticle.elements.shapes.types.Shape;
+import com.sovdee.skriptparticle.util.ParticleUtil;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
 
@@ -34,6 +35,14 @@ public class ExprShapes extends SimpleExpression<Shape> {
             return;
         if (shape == null)
             return;
+        // override default particles
+        if (delta != null && delta.length != 0) {
+            for (Shape shape : (Shape[]) delta){
+                if (shape.particle().equals(ParticleUtil.DEFAULT_PB)){
+                    shape.particle(this.shape.particle());
+                }
+            }
+        }
         switch (mode) {
             case ADD:
                 shape.addShapes((Shape[]) delta);
