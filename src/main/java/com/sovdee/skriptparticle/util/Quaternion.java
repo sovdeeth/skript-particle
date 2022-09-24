@@ -9,6 +9,7 @@ import static java.lang.Math.PI;
 import static java.lang.Math.sqrt;
 
 public class Quaternion implements Cloneable {
+    public static Quaternion identity = new Quaternion(1, 0, 0, 0);
     public static double degreesToRadians = PI / 180.0;
     public static double radiansToDegrees = 180.0 / PI;
     private static final Quaternion temp1 = new Quaternion(0,0,0,0);

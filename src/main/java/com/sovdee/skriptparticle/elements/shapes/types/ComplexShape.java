@@ -5,10 +5,11 @@ import ch.njol.skript.classes.Parser;
 import ch.njol.skript.lang.ParseContext;
 import ch.njol.skript.registrations.Classes;
 import com.destroystokyo.paper.ParticleBuilder;
+import com.sovdee.skriptparticle.elements.particles.ParticleGradient;
+import com.sovdee.skriptparticle.util.Quaternion;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,39 +25,55 @@ public class ComplexShape extends Shape {
     public List<Vector> generatePoints() {
         List<Vector> points = new ArrayList<>();
         for (Shape shape : shapes) {
-            points.addAll(shape.positionedPoints());
+            points.addAll(shape.positionedPoints(Quaternion.identity));
         }
         return points;
     }
 
     @Override
-    public void draw(Location location, ParticleBuilder particle, @Nullable Shape... parents) {
-        List<Shape> newParents = new ArrayList<>();
-        if (parents != null) {
-            newParents.addAll(List.of(parents));
+    public List<Vector> generateOutline() {
+        return generatePoints();
+    }
+
+    @Override
+    public void draw(Location location, Quaternion parentOrientation, ParticleBuilder particle) {
+        Quaternion newOrientation = parentOrientation.clone().multiply(orientation);
+        Vector newOffset = parentOrientation.transform(offset.clone());
+        Location newLocation = location.clone().add(newOffset);
+
+        // update this object's particle if it's a gradient
+        if (this.particle instanceof ParticleGradient) {
+            // set orientation (basically re-orients back to world space, for easier calculation)
+            ((ParticleGradient) this.particle).orientation(newOrientation.clone().conjugate());
+            // set origin
+            ((ParticleGradient) this.particle).origin(newLocation.clone());
         }
-        newParents.add(this);
-        // override particles if necessary
-        if (particle.equals(this.particle)){
+
+        // override particles if necessary.
+        // if the particle is not being overwritten, and it's not a gradient, we'll leave as is.
+        // if it is overwritten or a gradient, though, we'll force its use for all sub-shapes.
+        if (particle.equals(this.particle) && !(this.particle instanceof ParticleGradient)){
             for (Shape shape : shapes) {
-                shape.draw(location, newParents.toArray(new Shape[0]));
+                shape.draw(newLocation, newOrientation);
             }
         } else {
             for (Shape shape : shapes) {
-                shape.draw(location, particle, newParents.toArray(new Shape[0]));
+                shape.draw(newLocation, newOrientation, particle);
             }
         }
+
+        // draw debug axes
         if (showLocalAxes) {
-            drawLocalAxes(location, parents);
+            drawLocalAxes(location, parentOrientation);
         }
         if (showGlobalAxes) {
-            drawGlobalAxes(location, parents);
+            drawGlobalAxes(location);
         }
     }
 
     @Override
-    public List<Location> locations(Location center) {
-        return super.locations(center);
+    public List<Location> locations(Location center, Quaternion orientation) {
+        return super.locations(center, orientation);
     }
 
     @Override

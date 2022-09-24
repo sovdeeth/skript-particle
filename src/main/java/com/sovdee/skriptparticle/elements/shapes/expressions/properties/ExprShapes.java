@@ -7,6 +7,7 @@ import ch.njol.skript.lang.ExpressionType;
 import ch.njol.skript.lang.SkriptParser;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
+import com.sovdee.skriptparticle.elements.particles.ParticleGradient;
 import com.sovdee.skriptparticle.elements.shapes.structures.StructComplexShape;
 import com.sovdee.skriptparticle.elements.shapes.types.ComplexShape;
 import com.sovdee.skriptparticle.elements.shapes.types.Shape;
@@ -38,7 +39,7 @@ public class ExprShapes extends SimpleExpression<Shape> {
         // override default particles
         if (delta != null && delta.length != 0) {
             for (Shape shape : (Shape[]) delta){
-                if (shape.particle().equals(ParticleUtil.DEFAULT_PB)){
+                if (shape.particle().equals(ParticleUtil.DEFAULT_PB) && !(this.shape.particle() instanceof ParticleGradient)){
                     shape.particle(this.shape.particle());
                 }
             }

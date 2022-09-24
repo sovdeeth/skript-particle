@@ -7,6 +7,7 @@ import ch.njol.skript.registrations.Classes;
 import ch.njol.skript.registrations.Converters;
 import ch.njol.yggdrasil.Fields;
 import com.destroystokyo.paper.ParticleBuilder;
+import com.sovdee.skriptparticle.elements.particles.ParticleGradient;
 import com.sovdee.skriptparticle.util.ParticleUtil;
 import com.sovdee.skriptparticle.util.Quaternion;
 import org.bukkit.Color;
@@ -14,7 +15,6 @@ import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.util.Vector;
 
-import javax.annotation.Nullable;
 import java.io.StreamCorruptedException;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +22,7 @@ import java.util.UUID;
 
 public abstract class Shape implements Cloneable {
     protected List<Vector> points;
+    protected Shape.Style style;
     protected Quaternion orientation;
     private Quaternion previousOrientation;
     protected double scale;
@@ -36,6 +37,7 @@ public abstract class Shape implements Cloneable {
 
     public Shape() {
         this.points = new ArrayList<>();
+        this.style = Style.OUTLINE;
         
         this.orientation = new Quaternion(1, 0, 0, 0);
         this.previousOrientation = new Quaternion(1, 0, 0, 0);
@@ -47,26 +49,38 @@ public abstract class Shape implements Cloneable {
         this.uuid = UUID.randomUUID();
     }
 
-    public void draw(Location location, @Nullable Shape... parents) {
-        draw(location, particle, parents);
+    public void draw(Location location) {
+        draw(location, Quaternion.identity, particle);
     }
-    public void draw(Location location, ParticleBuilder particle, @Nullable Shape... parents) {
-        List<Vector> points = positionedPoints();
-        // rotate, scale, and offset points by parents' values recursively (from most immediate parent to least)
-        if (parents != null) {
-            for (int i = parents.length - 1; i >= 0; i--) {
-                for (Vector point : points) {
-                    parents[i].orientation().transform(point);
-                    point.multiply(parents[i].scale()).add(parents[i].offset());
-                }
-            }
+
+    public void draw(Location location, Quaternion orientation) {
+        draw(location, orientation, particle);
+    }
+
+    public void draw(Location location, ParticleBuilder particle) {
+        draw(location, Quaternion.identity, particle);
+    }
+
+    public void draw(Location location, Quaternion parentOrientation, ParticleBuilder particle) {
+        // get local point positions
+        List<Vector> points = positionedPoints(parentOrientation);
+
+        // update this object's particle if it's a gradient
+        if (this.particle instanceof ParticleGradient) {
+            // set orientation (basically re-orients back to world space, for easier calculation)
+            ((ParticleGradient) this.particle).orientation(parentOrientation.clone().multiply(orientation).conjugate());
+            // set origin
+            ((ParticleGradient) this.particle).origin(location.clone().add(parentOrientation.transform(offset)));
         }
+
+        // draw debug axes
         if (showLocalAxes) {
-            drawLocalAxes(location, parents);
+            drawLocalAxes(location, parentOrientation);
         }
         if (showGlobalAxes) {
-            drawGlobalAxes(location, parents);
+            drawGlobalAxes(location);
         }
+
         // draw points
         for (Vector point : points) {
             particle.location(location.clone().add(point)).spawn();
@@ -75,41 +89,59 @@ public abstract class Shape implements Cloneable {
 
 
 
-    public abstract List<Vector> generatePoints();
+    public List<Vector> generatePoints(){
+        return switch (style) {
+            case OUTLINE -> generateOutline();
+            case SURFACE -> generateSurface();
+            case FILLED -> generateFilled();
+        };
+    }
 
-    public List<Vector> positionedPoints() {
+    public abstract List<Vector> generateOutline();
+
+    public List<Vector> generateSurface(){
+        return generateOutline();
+    };
+
+    public List<Vector> generateFilled(){
+        return generateSurface();
+    };
+
+    public List<Vector> positionedPoints(Quaternion parentOrientation) {
         // ensure points exist
         if (points == null || points.isEmpty())
             points = generatePoints();
 
         // ensure points are up-to-date
-        orientPoints();
+        orientPoints(parentOrientation);
 
         // scale and offset points
         ArrayList<Vector> newPoints = new ArrayList<>();
+        Vector transformedOffset = parentOrientation.transform(offset.clone());
         for (Vector point : points)
-            newPoints.add(point.clone().multiply(scale).add(offset));
+            newPoints.add(point.clone().multiply(scale).add(transformedOffset));
 
         return newPoints;
     }
 
-    public Shape orientPoints() {
-        if (orientation.equals(previousOrientation)) {
+    public Shape orientPoints(Quaternion parentOrientation) {
+        Quaternion fullOrientation = parentOrientation.clone().multiply(orientation);
+        if (fullOrientation.equals(previousOrientation)) {
             return this;
         }
-        Quaternion rotation = orientation.clone().multiply(previousOrientation.conjugate());
+        Quaternion rotation = fullOrientation.clone().multiply(previousOrientation.conjugate());
         for (Vector point : points) {
             rotation.transform(point);
         }
-        this.previousOrientation = this.orientation.clone();
+        this.previousOrientation = fullOrientation.clone();
         return this;
     }
 
-    public List<Location> locations(){ return locations(this.center); }
+    public List<Location> locations(){ return locations(this.center, Quaternion.identity); }
 
-    public List<Location> locations(Location center){
+    public List<Location> locations(Location center, Quaternion orientation){
         ArrayList<Location> locations = new ArrayList<>();
-        for (Vector point : positionedPoints()) {
+        for (Vector point : positionedPoints(orientation)) {
             locations.add(center.clone().add(point));
         }
         return locations;
@@ -131,7 +163,7 @@ public abstract class Shape implements Cloneable {
     public Shape resetOrientation() {
         this.orientation.set(1, 0, 0, 0);
         this.previousOrientation.set(1, 0, 0, 0);
-        this.points = positionedPoints();
+        this.points = positionedPoints(Quaternion.identity);
         return this;
     }
 
@@ -217,7 +249,7 @@ public abstract class Shape implements Cloneable {
     }
 
     public Shape particle(ParticleBuilder particle) {
-        this.particle = particle;
+        this.particle = particle != null ? particle : ParticleUtil.DEFAULT_PB;
         return this;
     }
 
@@ -295,33 +327,30 @@ public abstract class Shape implements Cloneable {
         });
     }
 
-    public void drawLocalAxes(Location location, Shape... parents) {
+    public void drawLocalAxes(Location location, Quaternion parentOrientation) {
         new Line(relativeXAxis())
                 .particle(new ParticleBuilder(Particle.REDSTONE).data(new Particle.DustOptions(Color.RED, 0.5F)))
                 .offset(offset)
-                .draw(location, parents);
+                .draw(location, parentOrientation);
         new Line(relativeYAxis())
                 .particle(new ParticleBuilder(Particle.REDSTONE).data(new Particle.DustOptions(Color.LIME, 0.5F)))
                 .offset(offset)
-                .draw(location, parents);
+                .draw(location, parentOrientation);
         new Line(relativeZAxis())
                 .particle(new ParticleBuilder(Particle.REDSTONE).data(new Particle.DustOptions(Color.AQUA, 0.5F)))
                 .offset(offset)
-                .draw(location, parents);
+                .draw(location, parentOrientation);
     }
 
-    public void drawGlobalAxes(Location location, Shape... parents) {
-        Vector v = offset.clone();
-        // rotate, scale, and offset points by parents' values recursively (from most immediate parent to least)
-        if (parents != null) {
-            for (int i = parents.length - 1; i >= 0; i--) {
-                parents[i].orientation().transform(v);
-                v.multiply(parents[i].scale()).add(parents[i].offset());
-            }
-        }
-
+    public void drawGlobalAxes(Location location) {
         for (Line axis : globalAxes) {
-            axis.clone().draw(location.clone().add(v));
+            axis.clone().draw(location);
         }
+    }
+
+    public enum Style {
+        OUTLINE,
+        SURFACE,
+        FILLED
     }
 }

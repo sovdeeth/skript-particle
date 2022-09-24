@@ -79,6 +79,22 @@ public class StructComplexShape extends Structure {
     }
 
     @Override
+    public boolean postLoad() {
+        EntryContainer entryContainer = getEntryContainer();
+        Expression<ParticleBuilder> particleExpr = ((Expression<ParticleBuilder>) entryContainer.getOptional("particle", Expression.class, true));
+        if (particleExpr != null) {
+            shape.particle(particleExpr.getSingle(ContextlessEvent.get()));
+        }
+        return super.postLoad();
+    }
+
+    @Override
+    public void unload() {
+        CUSTOM_SHAPES.remove(shapeName);
+        super.unload();
+    }
+
+    @Override
     public String toString(@Nullable Event event, boolean debug) {
         return "Custom shape";
     }

@@ -47,12 +47,28 @@ public class Circle extends Shape {
     }
 
     @Override
-    public List<Vector> generatePoints() {
+    public List<Vector> generateOutline() {
         this.points = new ArrayList<>();
         double stepSize = particleDensity / radius;
         for (double theta = 0; theta < 2 * Math.PI; theta += stepSize) {
             points.add(new Vector(Math.cos(theta) * radius, 0, Math.sin(theta) * radius));
         }
+        return points;
+    }
+
+    @Override
+    public List<Vector> generateSurface() {
+        this.points = generateOutline();
+        int subCircles = (int) (radius / particleDensity) - 1;
+        double radiusStep = radius / subCircles;
+        for (int i = 1; i < subCircles; i++) {
+            double subRadius = i * radiusStep;
+            double stepSize = particleDensity / subRadius;
+            for (double theta = 0; theta < 2 * Math.PI; theta += stepSize) {
+                points.add(new Vector(Math.cos(theta) * subRadius, 0, Math.sin(theta) * subRadius));
+            }
+        }
+
         return points;
     }
 

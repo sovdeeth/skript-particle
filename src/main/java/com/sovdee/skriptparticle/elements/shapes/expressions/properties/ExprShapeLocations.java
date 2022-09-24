@@ -7,6 +7,7 @@ import ch.njol.skript.lang.SkriptParser;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
 import com.sovdee.skriptparticle.elements.shapes.types.Shape;
+import com.sovdee.skriptparticle.util.Quaternion;
 import org.bukkit.Location;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
@@ -36,7 +37,7 @@ public class ExprShapeLocations extends SimpleExpression<Location> {
             if (center == null && shape.center() == null) {
                 return null;
             } else if (center != null) {
-                locations.addAll(shape.locations(center));
+                locations.addAll(shape.locations(center, Quaternion.identity));
             } else {
                 locations.addAll(shape.locations());
             }

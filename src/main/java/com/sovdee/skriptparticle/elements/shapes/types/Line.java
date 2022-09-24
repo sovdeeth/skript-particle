@@ -48,7 +48,7 @@ public class Line extends Shape {
     }
 
     @Override
-    public List<Vector> generatePoints() {
+    public List<Vector> generateOutline() {
         points = new ArrayList<>();
 
         Vector direction = end.clone().subtract(start);
