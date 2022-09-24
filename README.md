@@ -17,12 +17,8 @@
    - Bezier Curves
    - Spirals
  - Drawing:
-   - More particle options, like speed, colour, offset...
-   - Dynamically change data within shape (gradients)
    - Fill in shapes
    - Options for who sees the particle (player specific)
- - Complex Shapes 
-   - save locations and more complex particle data
  - Animation
    - Ability to stretch out drawing a shape over a timespan
    - Ability to continuously draw a shape for a timespan
@@ -32,6 +28,8 @@
  Currently, there are only a few syntaxes in Skript-Particle. Circles, Lines, rotation expressions, and the draw effect.
 
  You can also combine shapes in a complex shape structure to create new shapes.
+ 
+ **THIS IS ALL CURRENTLY OUT OF DATE**
  
  ## Shapes
  
