@@ -57,7 +57,7 @@ public class EffDrawShape extends Effect {
 
     @Override
     public String toString(@Nullable Event event, boolean debug) {
-        return "Draw shape " + shapeExpr.getSingle(event);
+        return "draw shape";
     }
 
     @Override

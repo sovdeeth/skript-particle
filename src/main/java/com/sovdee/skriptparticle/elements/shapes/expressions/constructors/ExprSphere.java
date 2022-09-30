@@ -7,24 +7,24 @@ import ch.njol.skript.lang.Literal;
 import ch.njol.skript.lang.SkriptParser;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
-import com.sovdee.skriptparticle.elements.shapes.types.Circle;
+import com.sovdee.skriptparticle.elements.shapes.types.Sphere;
 import com.sovdee.skriptparticle.util.Style;
 import org.bukkit.event.Event;
 
 import javax.annotation.Nullable;
 
-public class ExprCircle extends SimpleExpression<Circle> {
+public class ExprSphere extends SimpleExpression<Sphere>{
 
     static {
-        Skript.registerExpression(ExprCircle.class, Circle.class, ExpressionType.COMBINED, "[a] (circle|:disc) [with|of] radius %number%");
+        Skript.registerExpression(ExprSphere.class, Sphere.class, ExpressionType.COMBINED, "[a] [:solid] sphere [with|of] radius %number%");
     }
 
     private Expression<Number> radius;
-    private boolean isDisc;
+    private boolean isSolid;
 
     @Override
     public String toString(@Nullable Event event, boolean debug) {
-        return "circle";
+        return "sphere";
     }
 
     @Override
@@ -32,25 +32,25 @@ public class ExprCircle extends SimpleExpression<Circle> {
         radius = (Expression<Number>) exprs[0];
         if (radius instanceof Literal) {
             if (((Literal<Number>) radius).getSingle().doubleValue() <= 0){
-                Skript.error("The radius of the circle must be greater than 0. (radius: " + ((Literal<Number>) radius).getSingle().doubleValue() + ")");
+                Skript.error("The radius of the sphere must be greater than 0. (radius: " + ((Literal<Number>) radius).getSingle().doubleValue() + ")");
                 return false;
             }
         }
-        isDisc = parseResult.hasTag("disc");
+        isSolid = parseResult.hasTag("solid");
         return true;
     }
 
 
     @Override
-    protected Circle[] get(Event event) {
+    protected Sphere[] get(Event event) {
         Number r = radius.getSingle(event);
         if (r == null || r.doubleValue() <= 0) {
-            Skript.error("The radius of the circle must be greater than 0; defaulting to 1. (radius: " + r + ")");
+            Skript.error("The radius of the sphere must be greater than 0; defaulting to 1. (radius: " + r + ")");
             r = 1;
         }
-        Circle circle = new Circle(r.doubleValue());
-        if (isDisc) circle.style(Style.SURFACE);
-        return new Circle[]{circle};
+        Sphere sphere = new Sphere(r.doubleValue());
+        if (isSolid) sphere.style(Style.FILL);
+        return new Sphere[]{sphere};
     }
 
     @Override
@@ -59,7 +59,7 @@ public class ExprCircle extends SimpleExpression<Circle> {
     }
 
     @Override
-    public Class<? extends Circle> getReturnType() {
-        return Circle.class;
+    public Class<? extends Sphere> getReturnType() {
+        return Sphere.class;
     }
 }

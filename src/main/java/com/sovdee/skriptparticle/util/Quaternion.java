@@ -6,7 +6,6 @@ import org.bukkit.util.Vector;
 import java.io.StreamCorruptedException;
 
 import static java.lang.Math.PI;
-import static java.lang.Math.sqrt;
 
 public class Quaternion implements Cloneable {
     public static Quaternion identity = new Quaternion(1, 0, 0, 0);
@@ -179,26 +178,26 @@ public class Quaternion implements Cloneable {
 
     private static Vector vectorForCross = Vector.getRandom().normalize();
     public static Quaternion rotationFromVectorToVector(Vector from, Vector to) {
-        double dot = from.dot(to);
-        double mag = sqrt(from.lengthSquared() * to.lengthSquared());
-        double angle = dot / mag + 1;
-        if (angle < 0.0000001 && angle > -0.0000001) {
+        Vector fromNorm = from.clone().normalize();
+        Vector toNorm = to.clone().normalize();
+        double dot = fromNorm.dot(toNorm);
+        double angle = dot + 1;
+        if (Double.isNaN(angle) || (angle < 0.00001 && angle > -0.00001)) {
             Vector v = from.getCrossProduct(vectorForCross);
             return new Quaternion(0, v.getX(), v.getY(), v.getZ());
         }
 
         Vector a = from.getCrossProduct(to);
-        double w = dot + mag;
-        return new Quaternion(w, a.getX(), a.getY(), a.getZ()).normalize();
+        return new Quaternion(dot, a.getX(), a.getY(), a.getZ()).normalize();
     }
 
     public static Quaternion rotationToVector(Vector to) {
+         to = to.clone().normalize();
          double dot = to.getY();
-         double mag = to.length();
-         double angle = dot / mag + 1;
-         if (angle < 0.0000001 && angle > -0.0000001)
-            return new Quaternion(0, 0, 0, 1);
-         return new Quaternion(dot + mag, to.getZ(), 0, -1 * to.getX()).normalize();
+         double angle = dot + 1;
+         if (Double.isNaN(angle) || (angle < 0.00001 && angle > -0.00001))
+            return new Quaternion(1, 0, 0, 0);
+         return new Quaternion(angle, to.getZ(), 0, -1 * to.getX()).normalize();
     }
 
 }

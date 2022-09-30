@@ -1,5 +1,6 @@
 package com.sovdee.skriptparticle.elements.shapes.types;
 
+import ch.njol.skript.Skript;
 import ch.njol.skript.classes.ClassInfo;
 import ch.njol.skript.classes.Parser;
 import ch.njol.skript.lang.ParseContext;
@@ -10,6 +11,7 @@ import com.destroystokyo.paper.ParticleBuilder;
 import com.sovdee.skriptparticle.elements.particles.ParticleGradient;
 import com.sovdee.skriptparticle.util.ParticleUtil;
 import com.sovdee.skriptparticle.util.Quaternion;
+import com.sovdee.skriptparticle.util.Style;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -22,7 +24,8 @@ import java.util.UUID;
 
 public abstract class Shape implements Cloneable {
     protected List<Vector> points;
-    protected Shape.Style style;
+    protected Style style;
+    private Style previousStyle;
     protected Quaternion orientation;
     private Quaternion previousOrientation;
     protected double scale;
@@ -30,7 +33,7 @@ public abstract class Shape implements Cloneable {
     protected Location center;
     private final UUID uuid;
     protected ParticleBuilder particle = ParticleUtil.DEFAULT_PB;
-    protected double particleDensity = 0.1; // 1 particle per 0.01 meters^2, approximately
+    protected double particleDensity = 0.25; // 1 particle per 0.0625 meters^2, approximately, or 16 particles per meter^2
     public boolean showLocalAxes = false;
     public boolean showGlobalAxes = false;
     protected static final List<Line> globalAxes = new ArrayList<>();
@@ -62,6 +65,7 @@ public abstract class Shape implements Cloneable {
     }
 
     public void draw(Location location, Quaternion parentOrientation, ParticleBuilder particle) {
+        Skript.info("draw called on " + this.getClass().getSimpleName() + " at " + location.toString() + " with orientation " + parentOrientation.toString() + " and particle " + particle.toString());
         // get local point positions
         List<Vector> points = positionedPoints(parentOrientation);
 
@@ -90,10 +94,12 @@ public abstract class Shape implements Cloneable {
 
 
     public List<Vector> generatePoints(){
+        this.previousStyle = this.style;
+        this.previousOrientation = Quaternion.identity;
         return switch (style) {
             case OUTLINE -> generateOutline();
             case SURFACE -> generateSurface();
-            case FILLED -> generateFilled();
+            case FILL -> generateFilled();
         };
     }
 
@@ -109,7 +115,7 @@ public abstract class Shape implements Cloneable {
 
     public List<Vector> positionedPoints(Quaternion parentOrientation) {
         // ensure points exist
-        if (points == null || points.isEmpty())
+        if (points == null || points.isEmpty() || previousStyle != style)
             points = generatePoints();
 
         // ensure points are up-to-date
@@ -179,9 +185,14 @@ public abstract class Shape implements Cloneable {
         return shape;
     };
 
+    public Style style() {
+        return style;
+    }
 
-
-
+    public Shape style(Style style) {
+        this.style = style;
+        return this;
+    }
 
     public Quaternion orientation() {
         return orientation;
@@ -346,11 +357,5 @@ public abstract class Shape implements Cloneable {
         for (Line axis : globalAxes) {
             axis.clone().draw(location);
         }
-    }
-
-    public enum Style {
-        OUTLINE,
-        SURFACE,
-        FILLED
     }
 }

@@ -9,10 +9,10 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 
-public class ExprShapeRotation extends SimplePropertyExpression<Shape, Quaternion> {
+public class ExprShapeOrientation extends SimplePropertyExpression<Shape, Quaternion> {
 
     static {
-        register(ExprShapeRotation.class, Quaternion.class, "rotation","shapes");
+        register(ExprShapeOrientation.class, Quaternion.class, "orientation","shapes");
     }
 
     @Override
@@ -43,7 +43,7 @@ public class ExprShapeRotation extends SimplePropertyExpression<Shape, Quaternio
 
     @Override
     protected @NotNull String getPropertyName() {
-        return "rotation";
+        return "orientation";
     }
 
     @Override

@@ -117,7 +117,7 @@ public class ComplexShape extends Shape {
     }
 
     public String toString() {
-        return "complex shape with " + shapes.size() + " shapes (total points: " + points.size() + ").";
+        return "complex shape with " + shapes.size() + " shapes (total points: " + this.particleCount() + ").";
     }
 
     static {

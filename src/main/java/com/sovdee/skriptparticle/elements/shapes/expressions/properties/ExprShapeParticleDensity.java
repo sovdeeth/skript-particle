@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class ExprShapeParticleDensity extends SimplePropertyExpression<Shape, Number> {
 
     static {
-        register(ExprShapeParticleDensity.class, Number.class, "particle :(density|count)", "shapes");
+        register(ExprShapeParticleDensity.class, Number.class, "particle (:density|:count)", "shapes");
     }
 
     private boolean flag;
