@@ -5,6 +5,7 @@ import ch.njol.skript.classes.Serializer;
 import ch.njol.skript.registrations.Classes;
 import ch.njol.skript.registrations.Converters;
 import ch.njol.yggdrasil.Fields;
+import com.sovdee.skriptparticle.util.MathUtil;
 import org.bukkit.util.Vector;
 
 import java.io.NotSerializableException;
@@ -12,7 +13,7 @@ import java.io.StreamCorruptedException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Circle extends Shape {
+public class Circle extends Shape implements RadialShape {
 
     private double radius;
 
@@ -48,11 +49,7 @@ public class Circle extends Shape {
 
     @Override
     public List<Vector> generateOutline() {
-        this.points = new ArrayList<>();
-        double stepSize = particleDensity / radius;
-        for (double theta = 0; theta < 2 * Math.PI; theta += stepSize) {
-            points.add(new Vector(Math.cos(theta) * radius, 0, Math.sin(theta) * radius));
-        }
+        this.points = MathUtil.calculateCircle(this.radius, this.particleDensity, 2*Math.PI);
         return points;
     }
 
@@ -63,10 +60,7 @@ public class Circle extends Shape {
         double radiusStep = radius / subCircles;
         for (int i = 1; i < subCircles; i++) {
             double subRadius = i * radiusStep;
-            double stepSize = particleDensity / subRadius;
-            for (double theta = 0; theta < 2 * Math.PI; theta += stepSize) {
-                points.add(new Vector(Math.cos(theta) * subRadius, 0, Math.sin(theta) * subRadius));
-            }
+            points.addAll(MathUtil.calculateCircle(subRadius, this.particleDensity, 2*Math.PI));
         }
 
         return points;

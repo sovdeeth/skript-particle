@@ -7,6 +7,7 @@ import ch.njol.skript.lang.ParseContext;
 import ch.njol.skript.registrations.Classes;
 import ch.njol.yggdrasil.Fields;
 import com.destroystokyo.paper.ParticleBuilder;
+import com.sovdee.skriptparticle.util.MathUtil;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -49,15 +50,7 @@ public class Line extends Shape {
 
     @Override
     public List<Vector> generateOutline() {
-        points = new ArrayList<>();
-
-        Vector direction = end.clone().subtract(start);
-        double length = direction.length();
-        direction.normalize().multiply(particleDensity);
-
-        for (double i = 0; i < (length / particleDensity); i++) {
-            points.add(start.clone().add(direction.clone().multiply(i)));
-        }
+        this.points = MathUtil.calculateLine(start, end, particleDensity);
         return points;
     }
 

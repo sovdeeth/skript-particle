@@ -52,4 +52,25 @@ public class MathUtil {
         }
         return points;
     }
+
+    public static List<Vector> calculateCircle(double radius, double particleDensity, double cutoffAngle){
+        List<Vector> points = new ArrayList<>();
+        double stepSize = particleDensity / radius;
+        for (double theta = 0; theta < cutoffAngle; theta += stepSize) {
+            points.add(new Vector(Math.cos(theta) * radius, 0, Math.sin(theta) * radius));
+        }
+        return points;
+    }
+
+    public static List<Vector> calculateLine(Vector start, Vector end, double particleDensity){
+        List<Vector> points = new ArrayList<>();
+        Vector direction = end.clone().subtract(start);
+        double length = direction.length();
+        direction.normalize().multiply(particleDensity);
+
+        for (double i = 0; i < (length / particleDensity); i++) {
+            points.add(start.clone().add(direction.clone().multiply(i)));
+        }
+        return points;
+    }
 }

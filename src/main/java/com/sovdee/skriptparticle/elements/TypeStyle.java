@@ -3,8 +3,13 @@ package com.sovdee.skriptparticle.elements;
 import ch.njol.skript.classes.ClassInfo;
 import ch.njol.skript.classes.Parser;
 import ch.njol.skript.lang.ParseContext;
+import ch.njol.skript.lang.util.SimpleEvent;
 import ch.njol.skript.registrations.Classes;
+import ch.njol.skript.registrations.EventValues;
+import ch.njol.skript.util.Getter;
 import com.sovdee.skriptparticle.util.Style;
+import org.bukkit.entity.Entity;
+import org.bukkit.event.Event;
 
 import javax.annotation.Nullable;
 

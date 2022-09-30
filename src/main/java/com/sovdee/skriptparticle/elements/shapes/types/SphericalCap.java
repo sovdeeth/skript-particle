@@ -12,7 +12,7 @@ import java.io.NotSerializableException;
 import java.io.StreamCorruptedException;
 import java.util.List;
 
-public class SphericalCap extends Shape {
+public class SphericalCap extends Shape implements RadialShape {
 
     private double radius;
     private double cutoffAngle;
