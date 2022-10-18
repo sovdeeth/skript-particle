@@ -3,19 +3,17 @@ package com.sovdee.skriptparticle.elements.shapes.types;
 import ch.njol.skript.classes.ClassInfo;
 import ch.njol.skript.classes.Serializer;
 import ch.njol.skript.registrations.Classes;
-import ch.njol.skript.registrations.Converters;
 import ch.njol.yggdrasil.Fields;
 import com.sovdee.skriptparticle.util.MathUtil;
 import org.bukkit.util.Vector;
 
 import java.io.NotSerializableException;
 import java.io.StreamCorruptedException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class Circle extends Shape implements RadialShape {
 
-    private double radius;
+    protected double radius;
 
     public Circle (){
         super();
@@ -37,13 +35,11 @@ public class Circle extends Shape implements RadialShape {
     }
 
     @Override
-    public int particleCount() {
-        return (int) (Math.PI * 2 * radius / particleDensity);
-    }
-
-    @Override
     public Circle particleCount(int count) {
-        particleDensity = Math.PI * 2 * radius / count;
+        particleDensity = switch (style) {
+            case OUTLINE -> Math.PI * 2 * radius / count;
+            case SURFACE,FILL -> Math.sqrt(Math.PI * radius * radius / count);
+        };
         return this;
     }
 
@@ -55,14 +51,7 @@ public class Circle extends Shape implements RadialShape {
 
     @Override
     public List<Vector> generateSurface() {
-        this.points = generateOutline();
-        int subCircles = (int) (radius / particleDensity) - 1;
-        double radiusStep = radius / subCircles;
-        for (int i = 1; i < subCircles; i++) {
-            double subRadius = i * radiusStep;
-            points.addAll(MathUtil.calculateCircle(subRadius, this.particleDensity, 2*Math.PI));
-        }
-
+        this.points = MathUtil.calculateDisc(this.radius, this.particleDensity, 2*Math.PI);
         return points;
     }
 
@@ -117,8 +106,6 @@ public class Circle extends Shape implements RadialShape {
                     }
 
                 }));
-
-        Converters.registerConverter(Circle.class, Shape.class, (circle) -> circle);
 
     }
 

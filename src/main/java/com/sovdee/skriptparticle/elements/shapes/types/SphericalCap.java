@@ -3,7 +3,6 @@ package com.sovdee.skriptparticle.elements.shapes.types;
 import ch.njol.skript.classes.ClassInfo;
 import ch.njol.skript.classes.Serializer;
 import ch.njol.skript.registrations.Classes;
-import ch.njol.skript.registrations.Converters;
 import ch.njol.yggdrasil.Fields;
 import com.sovdee.skriptparticle.util.MathUtil;
 import org.bukkit.util.Vector;
@@ -16,11 +15,13 @@ public class SphericalCap extends Shape implements RadialShape {
 
     private double radius;
     private double cutoffAngle;
+    private double cutoffAngleCos;
 
     public SphericalCap(double radius, double cutoffAngle) {
         super();
         this.radius = radius;
         this.cutoffAngle = cutoffAngle;
+        this.cutoffAngleCos = Math.cos(cutoffAngle);
     }
 
     @Override
@@ -50,17 +51,16 @@ public class SphericalCap extends Shape implements RadialShape {
 
     public SphericalCap cutoffAngle(double cutoffAngle) {
         this.cutoffAngle = cutoffAngle;
+        this.cutoffAngleCos = Math.cos(cutoffAngle);
         return this;
     }
 
     @Override
-    public int particleCount() {
-        return 4 * (int) (Math.PI * radius * radius / (particleDensity * particleDensity));
-    }
-
-    @Override
     public Shape particleCount(int count) {
-        this.particleDensity = Math.sqrt(4 * Math.PI * radius * radius / count);
+        this.particleDensity =  switch (style) {
+            case OUTLINE,SURFACE -> Math.sqrt(2 * Math.PI * radius * radius * (1 - cutoffAngleCos) / count);
+            case FILL -> Math.cbrt(Math.PI / 3 * radius * radius * radius * (2 + cutoffAngleCos) * (1 - cutoffAngleCos) * (1 - cutoffAngleCos) / count);
+        };
         return this;
     }
 
@@ -117,8 +117,5 @@ public class SphericalCap extends Shape implements RadialShape {
                     }
 
                 }));
-
-        Converters.registerConverter(SphericalCap.class, Shape.class, (sphericalCap) -> sphericalCap);
-
     }
 }

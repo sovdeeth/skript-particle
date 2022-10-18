@@ -15,7 +15,6 @@ import org.bukkit.util.Vector;
 
 import java.io.NotSerializableException;
 import java.io.StreamCorruptedException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class Line extends Shape {
@@ -52,11 +51,6 @@ public class Line extends Shape {
     public List<Vector> generateOutline() {
         this.points = MathUtil.calculateLine(start, end, particleDensity);
         return points;
-    }
-
-    @Override
-    public int particleCount() {
-        return (int) (end.clone().subtract(start).length() / particleDensity);
     }
 
     @Override

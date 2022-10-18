@@ -3,7 +3,6 @@ package com.sovdee.skriptparticle.elements.shapes.types;
 import ch.njol.skript.classes.ClassInfo;
 import ch.njol.skript.classes.Serializer;
 import ch.njol.skript.registrations.Classes;
-import ch.njol.skript.registrations.Converters;
 import ch.njol.yggdrasil.Fields;
 import com.sovdee.skriptparticle.util.MathUtil;
 import com.sovdee.skriptparticle.util.Style;
@@ -15,7 +14,7 @@ import java.util.List;
 
 public class Sphere extends Shape implements RadialShape {
 
-    private double radius;
+    protected double radius;
 
     public Sphere (double radius){
         super();
@@ -64,13 +63,12 @@ public class Sphere extends Shape implements RadialShape {
     }
 
     @Override
-    public int particleCount() {
-        return 4 * (int) (Math.PI * radius * radius / (particleDensity * particleDensity));
-    }
-
-    @Override
     public Shape particleCount(int count) {
-        this.particleDensity = Math.sqrt(4 * Math.PI * radius * radius / count);
+        this.particleDensity =  switch (style) {
+            case OUTLINE,SURFACE -> Math.sqrt(4 * Math.PI * radius * radius / count);
+            case FILL -> Math.cbrt(1.33333 * Math.PI * radius * radius * radius / count);
+        };
+
         return this;
     }
 
@@ -125,8 +123,5 @@ public class Sphere extends Shape implements RadialShape {
                     }
 
                 }));
-
-        Converters.registerConverter(Sphere.class, Shape.class, (sphere) -> sphere);
-
     }
 }

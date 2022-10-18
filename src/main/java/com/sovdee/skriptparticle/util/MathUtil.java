@@ -62,6 +62,15 @@ public class MathUtil {
         return points;
     }
 
+    public static List<Vector> calculateDisc(double radius, double particleDensity, double cutoffAngle){
+        List<Vector> points = new ArrayList<>();
+        for (double subRadius = particleDensity; subRadius < radius; subRadius += particleDensity) {
+            points.addAll(calculateCircle(subRadius, particleDensity, cutoffAngle));
+        }
+        points.addAll(calculateCircle(radius, particleDensity, cutoffAngle));
+        return points;
+    }
+
     public static List<Vector> calculateLine(Vector start, Vector end, double particleDensity){
         List<Vector> points = new ArrayList<>();
         Vector direction = end.clone().subtract(start);
@@ -70,6 +79,15 @@ public class MathUtil {
 
         for (double i = 0; i < (length / particleDensity); i++) {
             points.add(start.clone().add(direction.clone().multiply(i)));
+        }
+        return points;
+    }
+
+    public static List<Vector> calculateRegularPolygon(double radius, double angle, double particleDensity) {
+        List<Vector> points = new ArrayList<>();
+        Vector vertex = new Vector(radius, 0, 0);
+        for (double i = 0; i < 2*Math.PI; i += angle) {
+            points.addAll(calculateLine(vertex.clone().rotateAroundY(i), vertex.clone().rotateAroundY(i + angle), particleDensity));
         }
         return points;
     }

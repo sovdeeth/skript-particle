@@ -7,7 +7,6 @@ import ch.njol.yggdrasil.Fields;
 import com.sovdee.skriptparticle.util.MathUtil;
 import org.bukkit.util.Vector;
 
-import java.io.NotSerializableException;
 import java.io.StreamCorruptedException;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,17 +46,9 @@ public class Rectangle extends Shape {
     }
 
     @Override
-    public int particleCount() {
-        return (int) switch (style){
-            case FILL,SURFACE -> 4 * halfWidth * halfLength / (particleDensity * particleDensity);
-            case OUTLINE -> 4 * (halfWidth + halfLength) / particleDensity;
-        };
-    }
-
-    @Override
     public Shape particleCount(int count) {
         switch (style){
-            case FILL,SURFACE -> particleDensity = 4 * halfWidth * halfLength / (count * count);
+            case FILL,SURFACE -> particleDensity = Math.sqrt(4 * halfWidth * halfLength / count);
             case OUTLINE -> particleDensity = 4 * (halfWidth + halfLength) / count;
         };
         return this;

@@ -3,14 +3,11 @@ package com.sovdee.skriptparticle.elements.shapes.types;
 import ch.njol.skript.classes.ClassInfo;
 import ch.njol.skript.classes.Serializer;
 import ch.njol.skript.registrations.Classes;
-import ch.njol.skript.registrations.Converters;
 import ch.njol.yggdrasil.Fields;
 import com.sovdee.skriptparticle.util.MathUtil;
 import org.bukkit.util.Vector;
 
-import java.io.NotSerializableException;
 import java.io.StreamCorruptedException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class Arc extends Shape implements RadialShape {
@@ -30,13 +27,22 @@ public class Arc extends Shape implements RadialShape {
     }
 
     @Override
+    public List<Vector> generateSurface() {
+        this.points = MathUtil.calculateDisc(this.radius, this.particleDensity, this.cutoffAngle);
+        return points;
+    }
+
+    @Override
     public int particleCount() {
         return (int) (cutoffAngle * radius / particleDensity);
     }
 
     @Override
     public Shape particleCount(int count) {
-        particleDensity = cutoffAngle * radius / count;
+        particleDensity = switch (style){
+            case OUTLINE -> cutoffAngle * radius / count;
+            case SURFACE,FILL -> Math.sqrt(0.5 * cutoffAngle * radius * radius / count);
+        };
         return this;
     }
 
@@ -107,7 +113,5 @@ public class Arc extends Shape implements RadialShape {
                     }
 
                 }));
-
-        Converters.registerConverter(Arc.class, Shape.class, (arc) -> arc);
     }
 }

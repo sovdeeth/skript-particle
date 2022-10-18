@@ -5,7 +5,6 @@ import ch.njol.skript.classes.ClassInfo;
 import ch.njol.skript.classes.Parser;
 import ch.njol.skript.lang.ParseContext;
 import ch.njol.skript.registrations.Classes;
-import ch.njol.skript.registrations.Converters;
 import ch.njol.yggdrasil.Fields;
 import com.destroystokyo.paper.ParticleBuilder;
 import com.sovdee.skriptparticle.elements.particles.ParticleGradient;
@@ -39,8 +38,8 @@ public abstract class Shape implements Cloneable {
     protected static final List<Line> globalAxes = new ArrayList<>();
 
     public Shape() {
-        this.points = new ArrayList<>();
         this.style = Style.OUTLINE;
+        this.points = generateOutline();
         
         this.orientation = new Quaternion(1, 0, 0, 0);
         this.previousOrientation = new Quaternion(1, 0, 0, 0);
@@ -161,7 +160,9 @@ public abstract class Shape implements Cloneable {
         return particleDensity;
     }
 
-    public abstract int particleCount();
+    public int particleCount(){
+        return points.size();
+    };
     public abstract Shape particleCount(int count);
 
 
@@ -316,26 +317,26 @@ public abstract class Shape implements Cloneable {
                 })
         );
 
-        Converters.registerConverter(Shape.class, Circle.class, (shape) -> {
-            if (shape instanceof Circle) {
-                return (Circle) shape;
-            }
-            return null;
-        });
-
-        Converters.registerConverter(Shape.class, Line.class, (shape) -> {
-            if (shape instanceof Line) {
-                return (Line) shape;
-            }
-            return null;
-        });
-
-        Converters.registerConverter(Shape.class, ComplexShape.class, (shape) -> {
-            if (shape instanceof ComplexShape) {
-                return (ComplexShape) shape;
-            }
-            return null;
-        });
+//        Converters.registerConverter(Shape.class, Circle.class, (shape) -> {
+//            if (shape instanceof Circle) {
+//                return (Circle) shape;
+//            }
+//            return null;
+//        });
+//
+//        Converters.registerConverter(Shape.class, Line.class, (shape) -> {
+//            if (shape instanceof Line) {
+//                return (Line) shape;
+//            }
+//            return null;
+//        });
+//
+//        Converters.registerConverter(Shape.class, ComplexShape.class, (shape) -> {
+//            if (shape instanceof ComplexShape) {
+//                return (ComplexShape) shape;
+//            }
+//            return null;
+//        });
     }
 
     public void drawLocalAxes(Location location, Quaternion parentOrientation) {
