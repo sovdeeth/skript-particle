@@ -8,7 +8,6 @@ import com.sovdee.skriptparticle.util.MathUtil;
 import org.bukkit.util.Vector;
 
 import java.io.StreamCorruptedException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class Rectangle extends Shape {
@@ -21,27 +20,13 @@ public class Rectangle extends Shape {
     }
     @Override
     public List<Vector> generateOutline() {
-        Vector corner1 = new Vector(halfWidth, 0, halfLength);
-        Vector corner2 = new Vector(halfWidth, 0, -halfLength);
-        Vector corner3 = new Vector(-halfWidth, 0, halfLength);
-        Vector corner4 = new Vector(-halfWidth, 0, -halfLength);
-        points = new ArrayList<>();
-        points.addAll(MathUtil.calculateLine(corner1, corner2, particleDensity));
-        points.addAll(MathUtil.calculateLine(corner1, corner4, particleDensity));
-        points.addAll(MathUtil.calculateLine(corner2, corner3, particleDensity));
-        points.addAll(MathUtil.calculateLine(corner3, corner4, particleDensity));
+        this.points = MathUtil.calculateRectOutline(halfLength, halfWidth, particleDensity);
         return points;
     }
 
     @Override
     public List<Vector> generateSurface() {
-        Vector corner1 = new Vector(halfWidth, 0, halfLength);
-        Vector corner2 = new Vector(halfWidth, 0, -halfLength);
-        Vector lengthVector = new Vector(halfWidth * -2, 0, 0);
-        points = new ArrayList<>();
-        for (Vector point : MathUtil.calculateLine(corner1, corner2, particleDensity)){
-            points.addAll(MathUtil.calculateLine(point, point.clone().add(lengthVector), particleDensity));
-        }
+        this.points = MathUtil.calculateRectSurface(halfLength, halfWidth, particleDensity);
         return points;
     }
 

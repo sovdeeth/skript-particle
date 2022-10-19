@@ -4,6 +4,7 @@ import ch.njol.yggdrasil.Fields;
 import org.bukkit.util.Vector;
 
 import java.io.StreamCorruptedException;
+import java.util.List;
 
 import static java.lang.Math.PI;
 
@@ -59,6 +60,13 @@ public class Quaternion implements Cloneable {
         vector.setY(temp2.y);
         vector.setZ(temp2.z);
         return vector.multiply(length);
+    }
+
+    public Vector transform(List<Vector> vector) {
+        for (Vector v : vector) {
+            transform(v);
+        }
+        return null;
     }
 
     // a = a * b

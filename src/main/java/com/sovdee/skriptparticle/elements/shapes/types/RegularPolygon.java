@@ -61,6 +61,22 @@ public class RegularPolygon extends Shape implements RadialShape{
         return this;
     }
 
+    public double getSideLength() {
+        return sideLength;
+    }
+
+    public void setSideLength(double sideLength) {
+        this.sideLength = sideLength;
+    }
+
+    public int getSides() {
+        return sides;
+    }
+
+    public void setSides(int sides) {
+        this.sides = sides;
+    }
+
     @Override
     public Shape clone() {
         RegularPolygon regularPolygon = new RegularPolygon(sides, sideLength);

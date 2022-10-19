@@ -91,4 +91,35 @@ public class MathUtil {
         }
         return points;
     }
+
+    public static List<Vector> connectPoints(List<Vector> points, double particleDensity) {
+        List<Vector> connectedPoints = new ArrayList<>();
+        for (int i = 0; i < points.size() - 1; i++) {
+            connectedPoints.addAll(calculateLine(points.get(i), points.get(i + 1), particleDensity));
+        }
+        return connectedPoints;
+    }
+
+    public static List<Vector> calculateRectSurface(double halfLength, double halfWidth, double particleDensity) {
+        List<Vector> points = new ArrayList<>();
+        for (double x = -halfLength; x < halfLength; x += particleDensity) {
+            for (double z = -halfWidth; z < halfWidth; z += particleDensity) {
+                points.add(new Vector(x, 0, z));
+            }
+        }
+        return points;
+    }
+
+    public static List<Vector> calculateRectOutline(double halfLength, double halfWidth, double particleDensity) {
+        List<Vector> points = new ArrayList<>();
+        for (double x = -halfLength; x < halfLength; x += particleDensity) {
+            points.add(new Vector(x, 0, -halfWidth));
+            points.add(new Vector(x, 0, halfWidth));
+        }
+        for (double z = -halfWidth; z < halfWidth; z += particleDensity) {
+            points.add(new Vector(-halfLength, 0, z));
+            points.add(new Vector(halfLength, 0, z));
+        }
+        return points;
+    }
 }
