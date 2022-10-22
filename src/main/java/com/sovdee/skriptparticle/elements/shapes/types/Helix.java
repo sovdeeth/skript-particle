@@ -5,7 +5,7 @@ import org.bukkit.util.Vector;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Spiral extends Shape implements RadialShape {
+public class Helix extends Shape implements RadialShape {
 
     private double radius;
     private double height;

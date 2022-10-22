@@ -12,6 +12,17 @@ public class SkriptParticle extends JavaPlugin {
     SkriptParticle instance;
     SkriptAddon addon;
 
+    // todo before alpha
+    // classinfo for cuboid, helix, arbitrary polygons
+    // Surface fill for arbitrary polygons
+    // everything for bezier curves, ellipsoids, regular polyhedra
+    // Particle motion (vector, inwards, outwards)
+    // Properties
+    // Better interface use
+    // DOCUMENTATION
+
+
+
     @Override
     public void onEnable() {
         instance = this;
