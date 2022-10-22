@@ -44,6 +44,11 @@
  # Syntax
 Skript-Particle's syntax is currently in flux and is subject to change. Below are a few small examples of what the syntax looks like currently.
 ```bash
+on load:
+    set {local-gradient} to a local particle gradient
+    add gradient point from vector(0,2,0) and colour rgb(176,40,0) to points of {local-gradient}
+    add gradient point from vector(0,-3,0) and colour rgb(230,160,28) to points of {local-gradient}
+
  complex shape named "eye":
      shapes:
          set {_pupil} to a spherical cap with radius 3 and cutoff angle 10 degrees
@@ -86,12 +91,6 @@ command toggle-eye:
 complex shape named "magic-circle":
     particle: electric spark
     shapes:
-        set {_circle} to a sphere of radius 4
-        set particle count of {_circle} to 1000
-
-        set offset vector of {_circle} to vector(0,0,5)
-        set normal of {_circle} to vector(0,0,1)
-        add {_circle} to shapes
         set {_circle} to a circle of radius 1.75
         add {_circle} to shapes
 
