@@ -15,22 +15,20 @@ import org.bukkit.util.Vector;
 
 import java.io.NotSerializableException;
 import java.io.StreamCorruptedException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Line extends Shape {
 
-    private Vector start;
-    private Vector end;
+    private Vector start = new Vector(0, 0, 0);
+    private Vector end = new Vector(0, 0, 0);
 
     public Line() {
         super();
-        this.start = new Vector(0, 0, 0);
-        this.end = new Vector(0, 0, 0);
     }
 
     public Line(Vector end) {
         super();
-        this.start = new Vector(0, 0, 0);
         this.end = end;
     }
 
@@ -49,6 +47,9 @@ public class Line extends Shape {
 
     @Override
     public List<Vector> generateOutline() {
+        if (start == null || end == null) {
+            return new ArrayList<>();
+        }
         this.points = MathUtil.calculateLine(start, end, particleDensity);
         return points;
     }

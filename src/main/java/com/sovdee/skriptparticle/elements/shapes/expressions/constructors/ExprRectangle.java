@@ -7,6 +7,7 @@ import ch.njol.skript.lang.SkriptParser;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
 import com.sovdee.skriptparticle.elements.shapes.types.Rectangle;
+import com.sovdee.skriptparticle.util.Style;
 import org.bukkit.event.Event;
 
 import javax.annotation.Nullable;
@@ -14,11 +15,12 @@ import javax.annotation.Nullable;
 public class ExprRectangle extends SimpleExpression<Rectangle> {
 
     static {
-        Skript.registerExpression(ExprRectangle.class, Rectangle.class, ExpressionType.COMBINED, "[a] (rectangle) [with|of] length %number%[,] [and] width %number%");
+        Skript.registerExpression(ExprRectangle.class, Rectangle.class, ExpressionType.COMBINED, "[a] [solid:(solid|filled)] (rectangle) [with|of] length %number%[,] [and] width %number%");
     }
 
-    Expression<Number> lengthExpr;
-    Expression<Number> widthExpr;
+    private Expression<Number> lengthExpr;
+    private Expression<Number> widthExpr;
+    private boolean isSolid;
 
     @Override
     protected @Nullable Rectangle[] get(Event event) {
@@ -28,7 +30,9 @@ public class ExprRectangle extends SimpleExpression<Rectangle> {
         double len = length.doubleValue();
         double wid = width.doubleValue();
         if (len <= 0 || wid <= 0) return new Rectangle[0];
-        return new Rectangle[]{new Rectangle(length.doubleValue(), width.doubleValue())};
+        Rectangle rectangle = new Rectangle(length.doubleValue(), width.doubleValue());
+        if (isSolid) rectangle.style(Style.SURFACE);
+        return new Rectangle[]{rectangle};
     }
 
     @Override
@@ -50,6 +54,7 @@ public class ExprRectangle extends SimpleExpression<Rectangle> {
     public boolean init(Expression<?>[] expressions, int i, Kleenean kleenean, SkriptParser.ParseResult parseResult) {
         lengthExpr = (Expression<Number>) expressions[0];
         widthExpr = (Expression<Number>) expressions[1];
+        isSolid = parseResult.hasTag("solid");
         return true;
     }
 }

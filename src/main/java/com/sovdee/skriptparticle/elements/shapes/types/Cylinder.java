@@ -33,7 +33,8 @@ public class Cylinder extends Circle implements RadialShape {
     @Override
     public List<Vector> generateOutline() {
         this.points = new ArrayList<>();
-        for (int i = 0; i < height; i += particleDensity) {
+        double step = height / Math.round(height/particleDensity);
+        for (double i = 0; i <= height; i += step) {
             List<Vector> circle = MathUtil.calculateCircle(radius, particleDensity, 2 * Math.PI);
             for (Vector vector : circle) {
                 vector.setY(i);
@@ -58,7 +59,7 @@ public class Cylinder extends Circle implements RadialShape {
     @Override
     public List<Vector> generateFilled() {
         this.points = new ArrayList<>();
-        for (int i = 0; i < height; i += particleDensity) {
+        for (double i = 0; i < height; i += particleDensity) {
             List<Vector> disc = MathUtil.calculateDisc(radius, particleDensity, 2 * Math.PI);
             for (Vector vector : disc) {
                 vector.setY(i);

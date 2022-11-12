@@ -7,6 +7,7 @@ import ch.njol.skript.lang.SkriptParser;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
 import com.sovdee.skriptparticle.elements.shapes.types.Arc;
+import com.sovdee.skriptparticle.util.Style;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -14,12 +15,13 @@ import org.jetbrains.annotations.Nullable;
 public class ExprArc extends SimpleExpression<Arc> {
 
     static {
-        Skript.registerExpression(ExprArc.class, Arc.class, ExpressionType.COMBINED, "[a[n]] arc (with|of) radius %number%[,| and] [cutoff] angle %number% [degrees|:radians]");
+        Skript.registerExpression(ExprArc.class, Arc.class, ExpressionType.COMBINED, "[a[n]] [circular] (arc|:sector) (with|of) radius %number%[,| and] [cutoff] angle %number% [degrees|:radians]");
     }
 
     private Expression<Number> radiusExpr;
     private Expression<Number> angleExpr;
     private boolean isRadians;
+    private boolean isSector;
 
     @Override
     protected Arc @NotNull [] get(@NotNull Event event) {
@@ -30,7 +32,11 @@ public class ExprArc extends SimpleExpression<Arc> {
         if (!isRadians){
             angle = Math.toRadians(angle.doubleValue());
         }
-        return new Arc[]{new Arc(radius.doubleValue(), angle.doubleValue())};
+        Arc arc = new Arc(radius.doubleValue(), angle.doubleValue());
+        if (isSector){
+            arc.style(Style.SURFACE);
+        }
+        return new Arc[]{arc};
     }
 
     @Override
@@ -53,6 +59,7 @@ public class ExprArc extends SimpleExpression<Arc> {
         radiusExpr = (Expression<Number>) expressions[0];
         angleExpr = (Expression<Number>) expressions[1];
         isRadians = parseResult.hasTag("radians");
+        isSector = parseResult.hasTag("sector");
         return true;
     }
 }

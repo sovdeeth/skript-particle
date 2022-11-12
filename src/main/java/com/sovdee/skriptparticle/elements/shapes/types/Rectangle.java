@@ -4,29 +4,53 @@ import ch.njol.skript.classes.ClassInfo;
 import ch.njol.skript.classes.Serializer;
 import ch.njol.skript.registrations.Classes;
 import ch.njol.yggdrasil.Fields;
-import com.sovdee.skriptparticle.util.MathUtil;
 import org.bukkit.util.Vector;
 
 import java.io.StreamCorruptedException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Rectangle extends Shape {
     private double halfWidth;
     private double halfLength;
 
+    private double xStep = 1.0;
+    private double zStep = 1.0;
+
     public Rectangle(double length, double width){
+        super();
         this.halfWidth = width / 2;
         this.halfLength = length / 2;
+        calculateSteps();
+    }
+
+
+    private void calculateSteps() {
+        xStep = 2 * halfWidth / Math.round(2 * halfWidth / particleDensity);
+        zStep = 2 * halfLength / Math.round(2 * halfLength / particleDensity);
     }
     @Override
     public List<Vector> generateOutline() {
-        this.points = MathUtil.calculateRectOutline(halfLength, halfWidth, particleDensity);
+        this.points = new ArrayList<>();
+        for (double x = -halfWidth; x <= halfWidth; x += xStep) {
+            points.add(new Vector(x, 0, -halfLength));
+            points.add(new Vector(x, 0, halfLength));
+        }
+        for (double z = -halfLength + zStep; z < halfLength; z += zStep) {
+            points.add(new Vector(-halfWidth, 0, z));
+            points.add(new Vector(halfWidth, 0, z));
+        }
         return points;
     }
 
     @Override
     public List<Vector> generateSurface() {
-        this.points = MathUtil.calculateRectSurface(halfLength, halfWidth, particleDensity);
+        this.points = new ArrayList<>();
+        for (double x = -halfWidth; x <= halfWidth; x += xStep) {
+            for (double z = -halfLength; z <= halfLength; z += zStep) {
+                points.add(new Vector(x, 0, z));
+            }
+        }
         return points;
     }
 

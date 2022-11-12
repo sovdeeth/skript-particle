@@ -46,9 +46,12 @@ public class RegularPolygon extends Shape implements RadialShape{
     @Override
     public List<Vector> generateSurface() {
         this.points = new ArrayList<>();
-        for (double subRadius = radius; subRadius > 0; subRadius -= particleDensity) {
+        double apothem = radius * Math.cos(Math.PI/sides);
+        double radiusStep = radius / Math.round(apothem/particleDensity);
+        for (double subRadius = radius; subRadius > 0; subRadius -= radiusStep) {
             this.points.addAll(MathUtil.calculateRegularPolygon(subRadius, angle, particleDensity));
         }
+        points.add(new Vector(0, 0, 0));
         return points;
     }
 

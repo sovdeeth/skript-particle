@@ -75,9 +75,10 @@ public class MathUtil {
         List<Vector> points = new ArrayList<>();
         Vector direction = end.clone().subtract(start);
         double length = direction.length();
-        direction.normalize().multiply(particleDensity);
+        double step = length / Math.round(length / particleDensity);
+        direction.normalize().multiply(step);
 
-        for (double i = 0; i < (length / particleDensity); i++) {
+        for (double i = 0; i <= (length / step); i++) {
             points.add(start.clone().add(direction.clone().multiply(i)));
         }
         return points;
@@ -98,28 +99,5 @@ public class MathUtil {
             connectedPoints.addAll(calculateLine(points.get(i), points.get(i + 1), particleDensity));
         }
         return connectedPoints;
-    }
-
-    public static List<Vector> calculateRectSurface(double halfLength, double halfWidth, double particleDensity) {
-        List<Vector> points = new ArrayList<>();
-        for (double x = -halfLength; x < halfLength; x += particleDensity) {
-            for (double z = -halfWidth; z < halfWidth; z += particleDensity) {
-                points.add(new Vector(x, 0, z));
-            }
-        }
-        return points;
-    }
-
-    public static List<Vector> calculateRectOutline(double halfLength, double halfWidth, double particleDensity) {
-        List<Vector> points = new ArrayList<>();
-        for (double x = -halfLength; x < halfLength; x += particleDensity) {
-            points.add(new Vector(x, 0, -halfWidth));
-            points.add(new Vector(x, 0, halfWidth));
-        }
-        for (double z = -halfWidth; z < halfWidth; z += particleDensity) {
-            points.add(new Vector(-halfLength, 0, z));
-            points.add(new Vector(halfLength, 0, z));
-        }
-        return points;
     }
 }

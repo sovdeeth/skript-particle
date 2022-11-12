@@ -14,7 +14,7 @@ import javax.annotation.Nullable;
 public class ExprShapeCopy extends SimpleExpression<Shape> {
 
     static {
-        Skript.registerExpression(ExprShapeCopy.class, Shape.class, ExpressionType.SIMPLE, "[a] copy of %shape%");
+        Skript.registerExpression(ExprShapeCopy.class, Shape.class, ExpressionType.SIMPLE, "[a] copy of %shapes%");
     }
 
     Expression<Shape> shapeExpr;

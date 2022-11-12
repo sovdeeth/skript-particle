@@ -25,7 +25,7 @@ public class ComplexShape extends Shape {
     public List<Vector> generatePoints() {
         List<Vector> points = new ArrayList<>();
         for (Shape shape : shapes) {
-            points.addAll(shape.positionedPoints(Quaternion.identity));
+            points.addAll(shape.positionedPoints(Quaternion.IDENTITY));
         }
         return points;
     }

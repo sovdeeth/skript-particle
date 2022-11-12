@@ -9,6 +9,7 @@ import org.bukkit.util.Vector;
 
 import java.io.NotSerializableException;
 import java.io.StreamCorruptedException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class SphericalCap extends Shape implements RadialShape {
@@ -33,6 +34,16 @@ public class SphericalCap extends Shape implements RadialShape {
     public List<Vector> generateSurface() {
         int pointCount = 4 * (int) (Math.PI * radius * radius / (particleDensity * particleDensity));
         this.points = MathUtil.calculateFibonacciSphere(pointCount, radius, cutoffAngle);
+        return points;
+    }
+
+    @Override
+    public List<Vector> generateFilled() {
+        this.points = new ArrayList<>();
+        for (double r = radius; r > 0; r -= particleDensity) {
+            int pointCount = 4 * (int) (Math.PI * r * r / (particleDensity * particleDensity));
+            this.points.addAll(MathUtil.calculateFibonacciSphere(pointCount, r, cutoffAngle));
+        }
         return points;
     }
 

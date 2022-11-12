@@ -37,7 +37,7 @@ public class ExprShapeLocations extends SimpleExpression<Location> {
             if (center == null && shape.center() == null) {
                 return null;
             } else if (center != null) {
-                locations.addAll(shape.locations(center, Quaternion.identity));
+                locations.addAll(shape.locations(center, Quaternion.IDENTITY));
             } else {
                 locations.addAll(shape.locations());
             }

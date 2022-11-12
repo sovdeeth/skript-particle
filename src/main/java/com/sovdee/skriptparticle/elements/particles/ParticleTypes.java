@@ -68,9 +68,9 @@ public class ParticleTypes {
 
         // Particle Builder class
         if (Classes.getExactClassInfo(ParticleBuilder.class) == null) {
-            Classes.registerClass(new ClassInfo<>(ParticleBuilder.class, "particlebuilder")
-                    .user("particlebuilders?")
-                    .name("Particle Builder")
+            Classes.registerClass(new ClassInfo<>(ParticleBuilder.class, "customparticle")
+                    .user("customparticles?")
+                    .name("Custom Particle")
                     .description("Represents a particle with extra data, including offset, count, data, and more.")
                     .parser(new Parser<>() {
 
