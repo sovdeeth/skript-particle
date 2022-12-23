@@ -57,6 +57,7 @@ public class Line extends Shape {
     @Override
     public Shape particleCount(int count) {
         particleDensity = (end.clone().subtract(start).length() / count);
+        points = generatePoints();
         return this;
     }
 

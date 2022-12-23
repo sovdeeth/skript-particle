@@ -28,7 +28,7 @@ public class ExprShapeParticle extends SimplePropertyExpression<Shape, ParticleB
             case SET:
                 if (delta == null || delta.length == 0) return;
                 for (Shape shape : getExpr().getArray(event))
-                    shape.particle((ParticleBuilder) delta[0]);
+                    shape.particle(ParticleUtil.cloneBuilder((ParticleBuilder) delta[0]));
                 break;
             case RESET:
             case DELETE:

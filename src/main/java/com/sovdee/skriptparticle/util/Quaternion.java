@@ -62,11 +62,11 @@ public class Quaternion implements Cloneable {
         return vector.multiply(length);
     }
 
-    public Vector transform(List<Vector> vector) {
-        for (Vector v : vector) {
+    public List<Vector> transform(List<Vector> vectors) {
+        for (Vector v : vectors) {
             transform(v);
         }
-        return null;
+        return vectors;
     }
 
     // a = a * b

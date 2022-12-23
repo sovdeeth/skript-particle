@@ -1,10 +1,17 @@
 package com.sovdee.skriptparticle.elements.shapes.types;
 
+import ch.njol.skript.classes.ClassInfo;
+import ch.njol.skript.classes.Serializer;
+import ch.njol.skript.registrations.Classes;
+import ch.njol.yggdrasil.Fields;
 import com.sovdee.skriptparticle.util.MathUtil;
 import org.bukkit.util.Vector;
 
-import java.util.ArrayList;
+import java.io.NotSerializableException;
+import java.io.StreamCorruptedException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 public class ArbitraryPolygon extends Shape {
@@ -21,9 +28,9 @@ public class ArbitraryPolygon extends Shape {
 
     @Override
     public List<org.bukkit.util.Vector> generateOutline() {
-        this.points = MathUtil.connectPoints(vertices, particleDensity);
+        Set<Vector> points = new HashSet<>(MathUtil.connectPoints(vertices, particleDensity));
         points.addAll(MathUtil.calculateLine(vertices.get(0), vertices.get(vertices.size() - 1), particleDensity));
-        List<Vector> upperPoints = new ArrayList<>();
+        Set<Vector> upperPoints = new HashSet<>();
         for (Vector v : points) {
             upperPoints.add(new Vector(v.getX(), height, v.getZ()));
         }
@@ -32,7 +39,7 @@ public class ArbitraryPolygon extends Shape {
             points.addAll(MathUtil.calculateLine(v, new Vector(v.getX(), height, v.getZ()), particleDensity));
         }
 
-        return points;
+        return points.stream().toList();
     }
 
     @Override
@@ -45,6 +52,7 @@ public class ArbitraryPolygon extends Shape {
         perimeter *= 2;
         perimeter += vertices.size() * height;
         particleDensity = perimeter / count;
+        points = generatePoints();
         return this;
     }
 
@@ -53,5 +61,49 @@ public class ArbitraryPolygon extends Shape {
         ArbitraryPolygon clone = new ArbitraryPolygon(vertices, height);
         this.copyTo(clone);
         return clone;
+    }
+    static {
+        Classes.registerClass(new ClassInfo<>(ArbitraryPolygon.class, "arbitrarypolygon")
+                .user("arbitrarypolygons?")
+                .name("ArbitraryPolygon")
+                .description("Represents an arbitrary polygon particle shape.")
+                .examples("on load:", "\tset {_arbitrary-polygon} to an arbitrary polygon from points {_points::*}")
+                .serializer(new Serializer<>() {
+
+                    @Override
+                    public Fields serialize(ArbitraryPolygon polygon) {
+                        Fields fields = new Fields();
+                        fields.putObject("vertices", polygon.vertices);
+                        fields.putPrimitive("height", polygon.height);
+                        polygon.serialize(fields);
+                        return fields;
+                    }
+
+                    @Override
+                    public ArbitraryPolygon deserialize(Fields fields) throws StreamCorruptedException {
+                        List<Vector> vertices = (List<Vector>) fields.getObject("vertices", List.class);
+                        double height = fields.getPrimitive("height", double.class);
+                        ArbitraryPolygon polygon = new ArbitraryPolygon(vertices, height);
+                        Shape.deserialize(fields, polygon);
+                        return polygon;
+                    }
+
+                    @Override
+                    public void deserialize(ArbitraryPolygon polygon, Fields fields) throws StreamCorruptedException, NotSerializableException {
+                        assert false;
+                    }
+
+                    @Override
+                    public boolean mustSyncDeserialization() {
+                        return false;
+                    }
+
+                    @Override
+                    protected boolean canBeInstantiated() {
+                        return false;
+                    }
+
+                }));
+
     }
 }

@@ -1,16 +1,21 @@
 package com.sovdee.skriptparticle.elements.shapes.types;
 
+import ch.njol.skript.classes.ClassInfo;
+import ch.njol.skript.classes.Serializer;
+import ch.njol.skript.registrations.Classes;
+import ch.njol.yggdrasil.Fields;
 import com.sovdee.skriptparticle.util.MathUtil;
 import com.sovdee.skriptparticle.util.Quaternion;
 import org.bukkit.util.Vector;
 
+import java.io.StreamCorruptedException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 
-public class RegularPolyhedron extends Shape {
+public class RegularPolyhedron extends Shape implements RadialShape {
 
     protected static final Quaternion[] TETRAHEDRON_FACES = {
             new Quaternion(0, 1.0, 0.0, 0.0),
@@ -166,6 +171,63 @@ public class RegularPolyhedron extends Shape {
 
     @Override
     public Shape clone() {
-        return null;
+        RegularPolyhedron clone = new RegularPolyhedron(radius, faces);
+        this.copyTo(clone);
+        return clone;
+    }
+
+    @Override
+    public double radius() {
+        return radius;
+    }
+
+    @Override
+    public Shape radius(double radius) {
+        this.radius = Math.max(0, radius);
+        return this;
+    }
+
+    static {
+        Classes.registerClass(new ClassInfo<>(RegularPolyhedron.class, "polyhedron")
+                .user("polyhedrons?")
+                .name("Regular Polyhedron")
+                .description("Represents a regular polyhedron (platonic solid) particle shape.")
+                .examples("on load:", "\tset {_icosahedron} to an icosahedron of radius 3")
+                .serializer(new Serializer<>() {
+
+                    @Override
+                    public Fields serialize(RegularPolyhedron regularPolyhedron) {
+                        Fields fields = new Fields();
+                        fields.putPrimitive("radius", regularPolyhedron.radius);
+                        fields.putPrimitive("faces", regularPolyhedron.faces);
+                        regularPolyhedron.serialize(fields);
+                        return fields;
+                    }
+
+                    @Override
+                    public RegularPolyhedron deserialize(Fields fields) throws StreamCorruptedException {
+                        double radius = fields.getPrimitive("radius", Double.class);
+                        int faces = fields.getPrimitive("faces", Integer.class);
+                        RegularPolyhedron regularPolyhedron = new RegularPolyhedron(radius, faces);
+                        Shape.deserialize(fields, regularPolyhedron);
+                        return regularPolyhedron;
+                    }
+
+                    @Override
+                    public void deserialize(RegularPolyhedron regularPolyhedron, Fields fields) {
+                        assert false;
+                    }
+
+                    @Override
+                    public boolean mustSyncDeserialization() {
+                        return false;
+                    }
+
+                    @Override
+                    protected boolean canBeInstantiated() {
+                        return false;
+                    }
+
+                }));
     }
 }

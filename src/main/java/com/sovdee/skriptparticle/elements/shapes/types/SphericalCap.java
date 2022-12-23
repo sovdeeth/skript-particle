@@ -72,6 +72,7 @@ public class SphericalCap extends Shape implements RadialShape {
             case OUTLINE,SURFACE -> Math.sqrt(2 * Math.PI * radius * radius * (1 - cutoffAngleCos) / count);
             case FILL -> Math.cbrt(Math.PI / 3 * radius * radius * radius * (2 + cutoffAngleCos) * (1 - cutoffAngleCos) * (1 - cutoffAngleCos) / count);
         };
+        points = generatePoints();
         return this;
     }
 

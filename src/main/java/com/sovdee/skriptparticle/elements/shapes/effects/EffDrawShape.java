@@ -17,7 +17,7 @@ public class EffDrawShape extends Effect {
 
     static {
         Skript.registerEffect(EffDrawShape.class,
-                "draw [shape[s]] %shapes% [location:[centered] at %-location%] [particle:(with|using) %-particlebuilder%]");
+                "draw [shape[s]] %shapes% [location:[centered] at %-location%] [particle:(with|using) %-customparticle%] [duration:for %-timespan%]");
     }
 
     Expression<Shape> shapeExpr;

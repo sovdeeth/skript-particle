@@ -13,6 +13,8 @@ import javax.annotation.Nullable;
 public class ExprShapeParticleDensity extends SimplePropertyExpression<Shape, Number> {
 
     static {
+        // most shapes kinda disregard the particle count, but it's still useful for some
+        // every shape responds to the particle density property pretty well though
         register(ExprShapeParticleDensity.class, Number.class, "particle (:density|:count)", "shapes");
     }
 

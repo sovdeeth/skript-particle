@@ -100,4 +100,46 @@ public class MathUtil {
         }
         return connectedPoints;
     }
+
+    public static List<Vector> calculateEllipse(double r1, double r2, double particleDensity, double cutoffAngle) {
+        List<Vector> points = new ArrayList<>();
+        double theta = 0.0;
+        double twoPi = Math.PI*2.0;
+        double deltaTheta = 0.0001;
+        double numIntegrals = Math.round(twoPi/deltaTheta);
+        double circ = 0.0;
+        double dpt;
+
+        /* integrate over the elipse to get the circumference */
+        for( int i=0; i < numIntegrals; i++ ) {
+            theta += i*deltaTheta;
+            dpt = computeDpt( r1, r2, theta);
+            circ += dpt;
+        }
+
+        int n = (int) Math.round(circ/particleDensity/10000);
+        int nextPoint = 0;
+        double run = 0, x, z, subIntegral;
+        theta = 0.0;
+
+        for( int i=0; i < numIntegrals; i++ ) {
+            theta += deltaTheta;
+            if (theta > cutoffAngle) break;
+            subIntegral = n*run/circ;
+            if( (int) subIntegral >= nextPoint ) {
+                x = r1 * Math.cos(theta);
+                z = r2 * Math.sin(theta);
+                points.add(new Vector(x, 0, z));
+                nextPoint++;
+            }
+            run += computeDpt(r1, r2, theta);
+        }
+        return points;
+    }
+
+    public static double computeDpt( double r1, double r2, double theta ) {
+        double dpt_sin = Math.pow(r1*Math.sin(theta), 2.0);
+        double dpt_cos = Math.pow( r2*Math.cos(theta), 2.0);
+        return Math.sqrt(dpt_sin + dpt_cos);
+    }
 }

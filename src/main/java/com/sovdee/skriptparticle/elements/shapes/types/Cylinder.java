@@ -27,6 +27,7 @@ public class Cylinder extends Circle implements RadialShape {
             case SURFACE -> Math.sqrt((Math.PI * 2 * radius * height + 2 * Math.PI * radius * radius)/ count);
             case FILL -> Math.cbrt(Math.PI * radius * radius * height / count);
         };
+        points = generatePoints();
         return this;
     }
 

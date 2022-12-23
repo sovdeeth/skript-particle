@@ -55,11 +55,18 @@ public class Rectangle extends Shape {
     }
 
     @Override
+    public List<Vector> generatePoints() {
+        calculateSteps();
+        return super.generatePoints();
+    }
+
+    @Override
     public Shape particleCount(int count) {
         switch (style){
             case FILL,SURFACE -> particleDensity = Math.sqrt(4 * halfWidth * halfLength / count);
             case OUTLINE -> particleDensity = 4 * (halfWidth + halfLength) / count;
         };
+        points = generatePoints();
         return this;
     }
 

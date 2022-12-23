@@ -50,7 +50,8 @@ public abstract class Shape implements Cloneable {
         this.uuid = UUID.randomUUID();
     }
 
-    public void draw(Location location) {
+    public void
+    draw(Location location) {
         draw(location, Quaternion.IDENTITY, particle);
     }
 
@@ -153,6 +154,7 @@ public abstract class Shape implements Cloneable {
 
     public Shape particleDensity(double count){
         this.particleDensity = count;
+        points = generatePoints();
         return this;
     }
     public double particleDensity() {
@@ -160,6 +162,8 @@ public abstract class Shape implements Cloneable {
     }
 
     public int particleCount(){
+        if (points == null || points.isEmpty())
+            points = generatePoints();
         return points.size();
     };
     public abstract Shape particleCount(int count);
@@ -181,7 +185,8 @@ public abstract class Shape implements Cloneable {
                 .offset(this.offset)
                 .center(this.center)
                 .particle(this.particle)
-                .particleDensity(this.particleDensity);
+                .particleDensity(this.particleDensity)
+                .style(this.style);
         return shape;
     };
 

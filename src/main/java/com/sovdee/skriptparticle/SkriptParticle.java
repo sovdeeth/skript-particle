@@ -13,13 +13,30 @@ public class SkriptParticle extends JavaPlugin {
     SkriptAddon addon;
 
     // todo before alpha
-    // classinfo for cuboid, helix, arbitrary polygons
-    // Surface fill for arbitrary polygons
-    // everything for bezier curves, ellipsoids, regular polyhedra
-    // Particle motion (vector, inwards, outwards)
-    // Properties
+    // SIMPLE
+        // Properties
+    // MODERATE
+        // proper particle density for regular polyhedra
+        // Particle motion (vector, inwards, outwards)
+        // Particle section
+            // create a new %particle% [particle]:
+            //- count: int
+            //- offset: vector
+            //- velocity: vector or inwards/outwards (exclusive w/ offset & count)
+            //- extra: double
+            //- data: dustOptions, item, etc. (take skbee code)
+            //- - if particle is dust, allow "color: color" and "size: double"
+            //- force: boolean
+    // HARD/LONG
+        // Surface fill for arbitrary polygons
+        // DOCUMENTATION
+
+    // Eventually:
     // Better interface use
-    // DOCUMENTATION
+    // everything for bezier curves
+    // Arbitrary 3d shapes w/ points
+    // Shapes defined by equations
+    //  - Chladni patterns?
 
 
 

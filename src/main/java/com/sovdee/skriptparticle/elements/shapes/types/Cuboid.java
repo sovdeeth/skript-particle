@@ -1,10 +1,17 @@
 package com.sovdee.skriptparticle.elements.shapes.types;
 
+import ch.njol.skript.classes.ClassInfo;
+import ch.njol.skript.classes.Serializer;
+import ch.njol.skript.registrations.Classes;
+import ch.njol.yggdrasil.Fields;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.NotSerializableException;
+import java.io.StreamCorruptedException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 public class Cuboid extends Shape {
@@ -23,6 +30,14 @@ public class Cuboid extends Shape {
         this.halfWidth = halfWidth;
         this.halfHeight = halfHeight;
         this.halfDepth = halfDepth;
+        calculateSteps();
+    }
+    public Cuboid(double halfWidth, double halfHeight, double halfDepth, Vector cubeCenter) {
+        super();
+        this.halfWidth = halfWidth;
+        this.halfHeight = halfHeight;
+        this.halfDepth = halfDepth;
+        this.cubeCenter = cubeCenter;
         calculateSteps();
     }
 
@@ -45,14 +60,20 @@ public class Cuboid extends Shape {
     }
 
     private void calculateSteps() {
-        xStep = 2 * halfWidth / Math.round(2 * halfWidth / particleDensity);
-        yStep = 2 * halfHeight / Math.round(2 * halfHeight / particleDensity);
-        zStep = 2 * halfDepth / Math.round(2 * halfDepth / particleDensity);
+        xStep = 2 * halfWidth / Math.floor(2 * halfWidth / particleDensity);
+        yStep = 2 * halfHeight / Math.floor(2 * halfHeight / particleDensity);
+        zStep = 2 * halfDepth / Math.floor(2 * halfDepth / particleDensity);
+    }
+
+    @Override
+    public List<Vector> generatePoints() {
+        calculateSteps();
+        return super.generatePoints();
     }
 
     @Override
     public List<Vector> generateOutline() {
-        points = new ArrayList<>();
+        HashSet<Vector> points = new HashSet<>();
         for (double x = -halfWidth; x <= halfWidth; x += xStep) {
             points.add(new Vector(x, -halfHeight, -halfDepth));
             points.add(new Vector(x, -halfHeight, halfDepth));
@@ -71,15 +92,16 @@ public class Cuboid extends Shape {
             points.add(new Vector(halfWidth, -halfHeight, z));
             points.add(new Vector(halfWidth, halfHeight, z));
         }
+        this.points = new ArrayList<>(points);
         if (cubeCenter != null) {
-            points.replaceAll(vector -> vector.add(cubeCenter));
+            this.points.replaceAll(vector -> vector.add(cubeCenter));
         }
-        return points;
+        return this.points;
     }
 
     @Override
     public List<Vector> generateSurface() {
-        points = new ArrayList<>();
+        HashSet<Vector> points = new HashSet<>();
         for (double x = -halfWidth; x <= halfWidth; x += xStep) {
             for (double z = -halfDepth; z <= halfDepth; z += zStep) {
                 points.add(new Vector(x, -halfHeight, z));
@@ -98,10 +120,11 @@ public class Cuboid extends Shape {
                 points.add(new Vector(x, y, halfDepth));
             }
         }
+        this.points = new ArrayList<>(points);
         if (cubeCenter != null) {
-            points.replaceAll(vector -> vector.add(cubeCenter));
+            this.points.replaceAll(vector -> vector.add(cubeCenter));
         }
-        return points;
+        return this.points;
     }
 
     @Override
@@ -128,6 +151,7 @@ public class Cuboid extends Shape {
             case FILL -> Math.cbrt(8 * halfDepth * halfHeight * halfWidth / count);
         };
         calculateSteps();
+        points = generatePoints();
         return this;
     }
 
@@ -163,5 +187,54 @@ public class Cuboid extends Shape {
         Cuboid cuboid = new Cuboid(halfWidth, halfHeight, halfDepth);
         this.copyTo(cuboid);
         return cuboid;
+    }
+    static {
+        Classes.registerClass(new ClassInfo<>(Cuboid.class, "cuboid")
+                .user("cuboids?")
+                    .name("Cuboid")
+                    .description("Represents a cuboid particle shape.")
+                    .examples("on load:", "\tset {_cuboid} to a cuboid ...")
+                    .serializer(new Serializer<>() {
+
+            @Override
+            public Fields serialize(Cuboid cuboid) {
+                Fields fields = new Fields();
+                fields.putPrimitive("half-height", cuboid.halfHeight);
+                fields.putPrimitive("half-width", cuboid.halfWidth);
+                fields.putPrimitive("half-depth", cuboid.halfDepth);
+                fields.putObject("center", cuboid.cubeCenter);
+                cuboid.serialize(fields);
+                return fields;
+            }
+
+            @Override
+            public Cuboid deserialize(Fields fields) throws StreamCorruptedException {
+                double halfHeight = fields.getPrimitive("half-height", double.class);
+                double halfWidth = fields.getPrimitive("half-width", double.class);
+                double halfDepth = fields.getPrimitive("half-depth", double.class);
+                Vector cubeCenter = fields.getObject("center", Vector.class);
+                Cuboid cuboid = new Cuboid(halfWidth, halfHeight, halfDepth, cubeCenter);
+                Shape.deserialize(fields, cuboid);
+                return cuboid;
+            }
+
+            @Override
+            public void deserialize(Cuboid cuboid, Fields fields) throws StreamCorruptedException, NotSerializableException
+            {
+                assert false;
+            }
+
+            @Override
+            public boolean mustSyncDeserialization() {
+                return false;
+            }
+
+            @Override
+            protected boolean canBeInstantiated() {
+                return false;
+            }
+
+        }));
+
     }
 }

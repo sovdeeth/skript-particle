@@ -68,7 +68,7 @@ public class Sphere extends Shape implements RadialShape {
             case OUTLINE,SURFACE -> Math.sqrt(4 * Math.PI * radius * radius / count);
             case FILL -> Math.cbrt(1.33333 * Math.PI * radius * radius * radius / count);
         };
-
+        points = generatePoints();
         return this;
     }
 

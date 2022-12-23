@@ -40,6 +40,7 @@ public class Circle extends Shape implements RadialShape {
             case OUTLINE -> Math.PI * 2 * radius / count;
             case SURFACE,FILL -> Math.sqrt(Math.PI * radius * radius / count);
         };
+        points = generatePoints();
         return this;
     }
 

@@ -33,16 +33,12 @@ public class Arc extends Shape implements RadialShape {
     }
 
     @Override
-    public int particleCount() {
-        return (int) (cutoffAngle * radius / particleDensity);
-    }
-
-    @Override
     public Shape particleCount(int count) {
         particleDensity = switch (style){
             case OUTLINE -> cutoffAngle * radius / count;
             case SURFACE,FILL -> Math.sqrt(0.5 * cutoffAngle * radius * radius / count);
         };
+        points = generatePoints();
         return this;
     }
 

@@ -61,6 +61,7 @@ public class RegularPolygon extends Shape implements RadialShape{
             case OUTLINE -> sideLength * sides / count;
             case SURFACE,FILL -> Math.sqrt(sides * radius * radius * Math.sin(angle) / 2 / count);
         };
+        points = generatePoints();
         return this;
     }
 
