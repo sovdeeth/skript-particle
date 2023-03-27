@@ -2,6 +2,6 @@ name: skript-particle
 author: Sovde
 description: Create complex effects with particles
 version: 1.0
-api-version: 1.18
-main: com.sovdee.skriptparticle.SkriptParticle
+api-version: 1.13
+main: com.sovdee.skriptparticles.SkriptParticle
 depend: [Skript]

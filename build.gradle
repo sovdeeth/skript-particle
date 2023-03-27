@@ -21,8 +21,8 @@ repositories {
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.19.2-R0.1-SNAPSHOT")
-//    implementation "com.github.SkriptLang:Skript:structure-api-SNAPSHOT"
-    implementation files('Skript-structures.jar')
+    implementation "com.github.SkriptLang:Skript:2.7.0-beta1"
+//    implementation files('Skript-structures.jar')
 }
 
 java {
@@ -33,3 +33,5 @@ task copyJar(type: Copy) {
     from "build/libs/skript-particles-1.0-SNAPSHOT.jar"
     into "e:/PaperServer/plugins"
 }
+sourceCompatibility = JavaVersion.VERSION_17_PREVIEW
+targetCompatibility = JavaVersion.VERSION_17_PREVIEW
