@@ -5,7 +5,7 @@ import org.bukkit.util.Vector;
 
 import java.util.Set;
 
-public class Sphere extends Shape implements RadialShape {
+public class Sphere extends RadialShape {
 
     protected double radius;
 

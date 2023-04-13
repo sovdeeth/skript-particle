@@ -1,58 +1,100 @@
 package com.sovdee.skriptparticles.elements.types;
 
 import ch.njol.skript.classes.ClassInfo;
-import ch.njol.skript.classes.Serializer;
+import ch.njol.skript.classes.Parser;
+import ch.njol.skript.lang.ParseContext;
 import ch.njol.skript.registrations.Classes;
-import ch.njol.yggdrasil.Fields;
+import com.sovdee.skriptparticles.shapes.LWHShape;
+import com.sovdee.skriptparticles.shapes.RadialShape;
 import com.sovdee.skriptparticles.shapes.Shape;
-import com.sovdee.skriptparticles.shapes.Sphere;
-
-import java.io.NotSerializableException;
-import java.io.StreamCorruptedException;
 
 public class ShapeTypes {
     static {
-        // Sphere
-        Classes.registerClass(new ClassInfo<>(Sphere.class, "particlesphere")
-                .user("particlespheres?")
-                .name("Sphere")
-                .description("Represents a sphere particle shape.")
-                .examples("on load:", "\tset {_sphere} to a sphere of radius 2")
-                .serializer(new Serializer<>() {
+        // Shape
+        Classes.registerClass(new ClassInfo<>(Shape.class, "shape")
+                .user("shapes?")
+                .name("Shape")
+                .description("Represents an abstract particle shape. E.g. circle, line, etc.")
+                .parser(new Parser<>() {
 
                     @Override
-                    public Fields serialize(Sphere sphere) {
-                        Fields fields = new Fields();
-                        fields.putPrimitive("radius", sphere.getRadius());
-                        sphere.serialize(fields);
-                        return fields;
+                    public Shape parse(String input, ParseContext context) {
+                        return null;
                     }
 
                     @Override
-                    public Sphere deserialize(Fields fields) throws StreamCorruptedException {
-                        double radius = fields.getPrimitive("radius", Double.class);
-                        Sphere sphere = new Sphere(radius);
-                        Shape.deserialize(fields, sphere);
-                        return sphere;
-                    }
-
-                    @Override
-                    public void deserialize(Sphere sphere, Fields fields) throws StreamCorruptedException, NotSerializableException {
-                        assert false;
-                    }
-
-                    @Override
-                    public boolean mustSyncDeserialization() {
+                    public boolean canParse(ParseContext context) {
                         return false;
                     }
 
                     @Override
-                    protected boolean canBeInstantiated() {
+                    public String toString(Shape o, int flags) {
+                        return o.toString();
+                    }
+
+                    @Override
+                    public String toVariableNameString(Shape shape) {
+                        return "shape:" + shape.getUUID();
+                    }
+                })
+        );
+
+        // RadialShape
+        Classes.registerClass(new ClassInfo<>(RadialShape.class, "radialshape")
+                .user("radial ?shapes?")
+                .name("Radial Shape")
+                .description("Represents an abstract particle shape that has a radius. E.g. circle, sphere, etc.")
+                .parser(new Parser<>() {
+
+                    @Override
+                    public RadialShape parse(String input, ParseContext context) {
+                        return null;
+                    }
+
+                    @Override
+                    public boolean canParse(ParseContext context) {
                         return false;
                     }
 
-                }));
+                    @Override
+                    public String toString(RadialShape o, int flags) {
+                        return o.toString();
+                    }
 
+                    @Override
+                    public String toVariableNameString(RadialShape shape) {
+                        return shape.toString();
+                    }
+                })
+        );
 
+        // LWHShape
+        Classes.registerClass(new ClassInfo<>(LWHShape.class, "lwhshape")
+                .user("lwh ?shapes?")
+                .name("Length/Width/Height Shape")
+                .description("Represents an abstract particle shape that has a length, width, and/or height. E.g. cube, cylinder, ellipse, etc.")
+                .parser(new Parser<>() {
+
+                    @Override
+                    public LWHShape parse(String input, ParseContext context) {
+                        return null;
+                    }
+
+                    @Override
+                    public boolean canParse(ParseContext context) {
+                        return false;
+                    }
+
+                    @Override
+                    public String toString(LWHShape o, int flags) {
+                        return o.toString();
+                    }
+
+                    @Override
+                    public String toVariableNameString(LWHShape shape) {
+                        return shape.toString();
+                    }
+                })
+        );
     }
 }

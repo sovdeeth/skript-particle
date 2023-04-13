@@ -1,10 +1,10 @@
 package com.sovdee.skriptparticles.shapes;
 
-public interface LWHShape {
-    double getLength();
-    double getWidth();
-    double getHeight();
-    void setLength(double length);
-    void setWidth(double width);
-    void setHeight(double height);
+public abstract class LWHShape extends RadialShape {
+    abstract public double getLength();
+    abstract public double getWidth();
+    abstract public double getHeight();
+    abstract public void setLength(double length);
+    abstract public void setWidth(double width);
+    abstract public void setHeight(double height);
 }

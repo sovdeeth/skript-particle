@@ -1,218 +1,66 @@
 package com.sovdee.skriptparticles.util;
 
-import ch.njol.yggdrasil.Fields;
 import org.bukkit.util.Vector;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
-import java.io.StreamCorruptedException;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
-import static java.lang.Math.PI;
+/*
+ * Helper class for JOML's Quaternionf class
+ * Adds methods to deal with Bukkit's Vector class instead of JOML's Vector3f class
+ * Adds a method to transform a collection of vectors
+ * Adds proper cloning
+ */
+public class Quaternion extends Quaternionf implements Cloneable {
 
-public class Quaternion implements Cloneable {
-    public static final Quaternion IDENTITY = new Quaternion(1, 0, 0, 0);
-    public static double degreesToRadians = PI / 180.0;
-    public static double radiansToDegrees = 180.0 / PI;
-    private static final Quaternion temp1 = new Quaternion(0,0,0,0);
-    private static final Quaternion temp2 = new Quaternion(0,0,0,0);
-    private double w;
-    private double x;
-    private double y;
-    private double z;
+    public static final Quaternion IDENTITY = new Quaternion(0, 0, 0, 1);
 
-    public Quaternion(double w, double x, double y, double z) {
-        this.set(w, x, y, z);
-    }
-    public Quaternion(Vector axis, double angle) {
-        this.set(axis, angle);
+    public Quaternion() {
+        super();
     }
 
-    public double squareLength() {
-        return x * x + y * y + z * z + w * w;
+    public Quaternion(float x, float y, float z, float w) {
+        super(x, y, z, w);
     }
-    
-    public Quaternion normalize() {
-        double len = squareLength();
-        if (len != 0.0d && len != 1.0d) {
-            len = Math.sqrt(len);
-            w /= len;
-            x /= len;
-            y /= len;
-            z /= len;
+
+    public Quaternion(Vector axis, float angle) {
+        super();
+        this.setAngleAxis(angle, (float) axis.getX(), (float) axis.getY(), (float) axis.getZ());
+    }
+
+    public Quaternion(Quaternion quaternion) {
+        super();
+        this.set(quaternion);
+    }
+
+    public Set<Vector> transform(Collection<Vector> vectors) {
+        Set<Vector> newVectors = new HashSet<>();
+        for (Vector vector : vectors) {
+            newVectors.add(this.transform(vector));
         }
-        return this;
+        return newVectors;
     }
 
-    public Quaternion conjugate() {
-        x = -x;
-        y = -y;
-        z = -z;
-        return this;
-    }
-    
     public Vector transform(Vector vector) {
-        double length = vector.length();
-        temp2.set(this);
-        temp2.conjugate();
-        temp2.multiplyLeft(temp1.set(0, vector.getX(), vector.getY(), vector.getZ()));
-        temp2.multiplyLeft(this);
-
-        vector.setX(temp2.x).setY(temp2.y).setZ(temp2.z);
-        return vector.multiply(length);
+        Vector3f vector3f = new Vector3f((float) vector.getX(), (float) vector.getY(), (float) vector.getZ());
+        vector3f = this.transform(vector3f);
+        return vector.setX(vector3f.x).setY(vector3f.y).setZ(vector3f.z);
     }
 
-    public Collection<Vector> transform(Collection<Vector> vectors) {
-        for (Vector v : vectors) {
-            transform(v);
-        }
-        return vectors;
+    public Quaternion rotationTo(Vector to) {
+        Vector3f vector3f = new Vector3f((float) to.getX(), (float) to.getY(), (float) to.getZ());
+        return (Quaternion) this.rotationTo(new Vector3f(0,1,0), vector3f);
     }
 
-    // a = a * b
-    public Quaternion multiply(final Quaternion other) {
-        final double newX = this.w * other.x + this.x * other.w + this.y * other.z - this.z * other.y;
-        final double newY = this.w * other.y + this.y * other.w + this.z * other.x - this.x * other.z;
-        final double newZ = this.w * other.z + this.z * other.w + this.x * other.y - this.y * other.x;
-        final double newW = this.w * other.w - this.x * other.x - this.y * other.y - this.z * other.z;
-        this.x = newX;
-        this.y = newY;
-        this.z = newZ;
-        this.w = newW;
-        return this.normalize();
-    }
-
-    // a = b * a
-    public Quaternion multiplyLeft (Quaternion other) {
-        final double newX = other.w * this.x + other.x * this.w + other.y * this.z - other.z * this.y;
-        final double newY = other.w * this.y + other.y * this.w + other.z * this.x - other.x * this.z;
-        final double newZ = other.w * this.z + other.z * this.w + other.x * this.y - other.y * this.x;
-        final double newW = other.w * this.w - other.x * this.x - other.y * this.y - other.z * this.z;
-        this.x = newX;
-        this.y = newY;
-        this.z = newZ;
-        this.w = newW;
-        return this.normalize();
+    public Quaternion rotationAxis(float angle, Vector axis) {
+        Vector3f vector3f = new Vector3f((float) axis.getX(), (float) axis.getY(), (float) axis.getZ());
+        return (Quaternion) this.rotationAxis(angle, vector3f);
     }
 
     public Quaternion clone() {
-        return new Quaternion(w, x, y, z);
+        return new Quaternion(this);
     }
-
-    public Quaternion set(double w, double x, double y, double z) {
-        this.w = w;
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        
-        return this.normalize();
-    }
-
-    public Quaternion set(Vector axis, double angle) {
-        Vector axisNorm = axis.clone().normalize();
-        double halfAngle = angle / 2;
-        double sin = Math.sin(halfAngle);
-        this.w = Math.cos(halfAngle);
-        this.x = axisNorm.getX() * sin;
-        this.y = axisNorm.getY() * sin;
-        this.z = axisNorm.getZ() * sin;
-        return this;
-    }
-    
-    public Quaternion set(Quaternion quaternion) {
-        this.w = quaternion.w;
-        this.x = quaternion.x;
-        this.y = quaternion.y;
-        this.z = quaternion.z;
-        return this.normalize();
-    }
-
-    public Vector getAxis() {
-        double s_squared = 1 - w * w; // assuming quaternion normalised then w is less than 1, so term always positive.
-        if (s_squared < 0.001) { // test to avoid divide by zero, s is always positive due to sqrt
-            // if s close to zero then direction of axis not important
-            return new Vector(1, 0, 0); // if it is important that axis is normalised then replace with x=1; y=z=0;
-        }
-        double s = Math.sqrt(s_squared); // normalise s
-        return new Vector(x / s, y / s, z / s);
-    }
-
-    public double getAngle() {
-        double angle = 2 * Math.acos(w);
-        return angle;
-    }
-
-    public boolean equals (Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (!(obj instanceof Quaternion)) {
-            return false;
-        }
-        Quaternion other = (Quaternion)obj;
-        return (Double.doubleToLongBits(w) == Double.doubleToLongBits(other.w))
-                && (Double.doubleToLongBits(x) == Double.doubleToLongBits(other.x))
-                && (Double.doubleToLongBits(y) == Double.doubleToLongBits(other.y))
-                && (Double.doubleToLongBits(z) == Double.doubleToLongBits(other.z));
-    }
-
-    public String toString() {
-        return "Quaternion{w=" + w + ", x=" + x + ", y=" + y + ", z=" + z + "}";
-    }
-
-    public void serialize(Fields fields) {
-        serialize(fields, "");
-    }
-    public void serialize(Fields fields, String prefix) {
-        fields.putPrimitive(prefix + "w", w);
-        fields.putPrimitive(prefix + "x", x);
-        fields.putPrimitive(prefix + "y", y);
-        fields.putPrimitive(prefix + "z", z);
-    }
-
-    public static Quaternion deserialize(Fields fields) throws StreamCorruptedException {
-        return deserialize(fields, "");
-    }
-    public static Quaternion deserialize(Fields fields, String prefix) throws StreamCorruptedException {
-        double w = fields.getPrimitive(prefix + "w", Double.class);
-        double x = fields.getPrimitive(prefix + "x", Double.class);
-        double y = fields.getPrimitive(prefix + "y", Double.class);
-        double z = fields.getPrimitive(prefix + "z", Double.class);
-        return new Quaternion(w, x, y, z);
-    }
-
-    private static Vector vectorForCross = Vector.getRandom().normalize();
-    public static Quaternion rotationFromVectorToVector(Vector from, Vector to) {
-        Vector fromNorm = from.clone().normalize();
-        Vector toNorm = to.clone().normalize();
-        double dot = fromNorm.dot(toNorm);
-        double angle = dot + 1;
-        if (Double.isNaN(angle) || (angle < 0.00001 && angle > -0.00001)) {
-            Vector v = from.getCrossProduct(vectorForCross);
-            return new Quaternion(0, v.getX(), v.getY(), v.getZ());
-        }
-
-        Vector a = from.getCrossProduct(to);
-        return new Quaternion(dot, a.getX(), a.getY(), a.getZ()).normalize();
-    }
-
-    public static Quaternion rotationToVector(Vector to) {
-         to = to.clone().normalize();
-         double dot = to.getY();
-         double angle = dot + 1;
-         if (Double.isNaN(angle) || (angle < 0.00001 && angle > -0.00001))
-            return new Quaternion(1, 0, 0, 0);
-         return new Quaternion(angle, to.getZ(), 0, -1 * to.getX()).normalize();
-    }
-
-    public int hashCode(){
-        int hash = 7;
-        hash = 79 * hash + (int)(Double.doubleToLongBits(this.x) ^ Double.doubleToLongBits(this.x) >>> 32);
-        hash = 79 * hash + (int)(Double.doubleToLongBits(this.y) ^ Double.doubleToLongBits(this.y) >>> 32);
-        hash = 79 * hash + (int)(Double.doubleToLongBits(this.z) ^ Double.doubleToLongBits(this.z) >>> 32);
-        hash = 79 * hash + (int)(Double.doubleToLongBits(this.w) ^ Double.doubleToLongBits(this.w) >>> 32);
-        return hash;
-    }
-
 }

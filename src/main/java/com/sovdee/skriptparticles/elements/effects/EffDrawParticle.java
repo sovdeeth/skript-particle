@@ -1,4 +1,4 @@
-package com.sovdee.skriptparticles.elements.expressions.effects;
+package com.sovdee.skriptparticles.elements.effects;
 
 import ch.njol.skript.Skript;
 import ch.njol.skript.doc.Description;

@@ -1,4 +1,4 @@
-package com.sovdee.skriptparticles.elements.expressions.effects;
+package com.sovdee.skriptparticles.elements.effects;
 
 import ch.njol.skript.Skript;
 import ch.njol.skript.doc.Description;
@@ -49,7 +49,7 @@ public class EffToggleAxes extends Effect {
 
     @Override
     protected void execute(Event event) {
-        Shape[] shapes = shape.getAll(event);
+        Shape[] shapes = shape.getArray(event);
         for (Shape shape : shapes) {
             if (globalFlag)
                 shape.showGlobalAxes(showFlag);

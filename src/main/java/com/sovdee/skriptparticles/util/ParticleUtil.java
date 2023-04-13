@@ -11,12 +11,14 @@ import org.bukkit.Particle.DustOptions;
 import org.bukkit.Particle.DustTransition;
 import org.bukkit.Vibration;
 import org.bukkit.block.data.BlockData;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -170,28 +172,32 @@ public class ParticleUtil {
                 .source(builder.source());
     }
 
-    public static void drawAxes(Location location, Quaternion orientation) {
+    private static final ParticleBuilder Y_AXIS = new ParticleBuilder(Particle.REDSTONE).data(new DustOptions(DyeColor.LIME.getColor(), 0.5f));
+    private static final ParticleBuilder X_AXIS = new ParticleBuilder(Particle.REDSTONE).data(new DustOptions(DyeColor.RED.getColor(), 0.5f));
+    private static final ParticleBuilder Z_AXIS = new ParticleBuilder(Particle.REDSTONE).data(new DustOptions(DyeColor.BLUE.getColor(), 0.5f));
+    public static void drawAxes(Location location, Quaternion orientation, Collection<Player> recipients) {
         Set<Vector> yAxis = MathUtil.calculateLine(new Vector(0, 0, 0), new Vector(0, 1, 0), 0.2);
         Set<Vector> xAxis = MathUtil.calculateLine(new Vector(0, 0, 0), new Vector(1, 0, 0), 0.2);
         Set<Vector> zAxis = MathUtil.calculateLine(new Vector(0, 0, 0), new Vector(0, 0, 1), 0.2);
 
-        yAxis = (Set<Vector>) orientation.transform(yAxis);
-        xAxis = (Set<Vector>) orientation.transform(xAxis);
-        zAxis = (Set<Vector>) orientation.transform(zAxis);
+        yAxis = orientation.transform(yAxis);
+        xAxis = orientation.transform(xAxis);
+        zAxis = orientation.transform(zAxis);
 
-        ParticleBuilder yParticle = new ParticleBuilder(Particle.REDSTONE).data(new DustOptions(DyeColor.LIME.getColor(), 0.5f));
+        Y_AXIS.receivers(recipients);
+        X_AXIS.receivers(recipients);
+        Z_AXIS.receivers(recipients);
+
         for (Vector vector : yAxis) {
-            yParticle.location(location.clone().add(vector)).spawn();
+            Y_AXIS.location(location.clone().add(vector)).spawn();
         }
 
-        ParticleBuilder xParticle = new ParticleBuilder(Particle.REDSTONE).data(new DustOptions(DyeColor.RED.getColor(), 0.5f));
         for (Vector vector : xAxis) {
-            xParticle.location(location.clone().add(vector)).spawn();
+            X_AXIS.location(location.clone().add(vector)).spawn();
         }
 
-        ParticleBuilder zParticle = new ParticleBuilder(Particle.REDSTONE).data(new DustOptions(DyeColor.BLUE.getColor(), 0.5f));
         for (Vector vector : zAxis) {
-            zParticle.location(location.clone().add(vector)).spawn();
+            Z_AXIS.location(location.clone().add(vector)).spawn();
         }
     }
 }

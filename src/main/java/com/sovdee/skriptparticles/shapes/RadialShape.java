@@ -1,6 +1,6 @@
 package com.sovdee.skriptparticles.shapes;
 
-public interface RadialShape {
-    double getRadius();
-    void setRadius(double radius);
+public abstract class RadialShape extends Shape {
+    abstract public double getRadius();
+    abstract public void setRadius(double radius);
 }

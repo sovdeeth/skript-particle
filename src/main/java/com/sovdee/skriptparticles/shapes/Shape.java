@@ -1,10 +1,5 @@
 package com.sovdee.skriptparticles.shapes;
 
-import ch.njol.skript.classes.ClassInfo;
-import ch.njol.skript.classes.Parser;
-import ch.njol.skript.lang.ParseContext;
-import ch.njol.skript.registrations.Classes;
-import ch.njol.yggdrasil.Fields;
 import com.sovdee.skriptparticles.SkriptParticle;
 import com.sovdee.skriptparticles.particles.Particle;
 import com.sovdee.skriptparticles.util.ParticleUtil;
@@ -14,8 +9,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.Consumer;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Quaternionf;
 
-import java.io.StreamCorruptedException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -44,7 +39,7 @@ public abstract class Shape {
         this.style = Style.OUTLINE;
         this.points = new HashSet<>();
 
-        this.orientation = new Quaternion(1, 0, 0, 0);
+        this.orientation = Quaternion.IDENTITY.clone();
 
         this.scale = 1;
         this.offset = new Vector(0, 0, 0);
@@ -138,7 +133,7 @@ public abstract class Shape {
         }
         // cache the last location and orientation used to draw the shape
         lastLocation = location.clone();
-        lastOrientation = baseOrientation.clone().multiply(orientation);
+        lastOrientation = (Quaternion) baseOrientation.clone().mul(orientation);
 
         // If the particle doesn't override the shape's particle, use the shape's particle
         if (this.particle != null && !particle.override()) {
@@ -159,10 +154,10 @@ public abstract class Shape {
         }
 
         if (drawLocalAxes) {
-            ParticleUtil.drawAxes(location, lastOrientation);
+            ParticleUtil.drawAxes(location.clone().add(offset), lastOrientation, recipients);
         }
         if (drawGlobalAxes) {
-            ParticleUtil.drawAxes(location, Quaternion.IDENTITY);
+            ParticleUtil.drawAxes(location.clone().add(offset), Quaternion.IDENTITY, recipients);
         }
     }
 
@@ -254,14 +249,14 @@ public abstract class Shape {
      * cause the shape to update upon the next getPoints() call.
      */
     public Quaternion getOrientation() {
-        return orientation.clone();
+        return new Quaternion(orientation);
     }
 
     /*
      * Sets the orientation of the shape. Marks the shape as needing an update.
      */
-    public void setOrientation(Quaternion orientation) {
-        this.orientation = orientation.clone();
+    public void setOrientation(Quaternionf orientation) {
+        this.orientation.set(orientation);
         needsUpdate = true;
     }
 
@@ -306,14 +301,14 @@ public abstract class Shape {
      * @Returns the particle of the shape.
      */
     public Particle getParticle() {
-        return particle;
+        return particle.clone();
     }
 
     /*
      * Sets the particle of the shape.
      */
     public void setParticle(Particle particle) {
-        this.particle = particle;
+        this.particle = particle.clone();
     }
 
     /*
@@ -427,55 +422,25 @@ public abstract class Shape {
         }
     }
 
-    /*
-     * Serializes the shape for storage in variables.
-     */
-    public void serialize(Fields fields) {
-        orientation.serialize(fields, "o");
-        fields.putPrimitive("scale", scale);
-        fields.putObject("offset", offset);
-        fields.putPrimitive("density", particleDensity);
-    }
+//    /*
+//     * Serializes the shape for storage in variables.
+//     */
+//    public void serialize(Fields fields) {
+//        orientation.serialize(fields, "o");
+//        fields.putPrimitive("scale", scale);
+//        fields.putObject("offset", offset);
+//        fields.putPrimitive("density", particleDensity);
+//    }
+//
+//    /*
+//     * Deserializes the shape from a variable.
+//     */
+//    public static Shape deserialize(Fields fields, Shape shape) throws StreamCorruptedException {
+//        shape.orientation = Quaternion.deserialize(fields, "o");
+//        shape.scale = fields.getPrimitive("scale", double.class);
+//        shape.offset = fields.getObject("offset", Vector.class);
+//        shape.particleDensity = fields.getPrimitive("density", double.class);
+//        return shape;
+//    }
 
-    /*
-     * Deserializes the shape from a variable.
-     */
-    public static Shape deserialize(Fields fields, Shape shape) throws StreamCorruptedException {
-        shape.orientation = Quaternion.deserialize(fields, "o");
-        shape.scale = fields.getPrimitive("scale", double.class);
-        shape.offset = fields.getObject("offset", Vector.class);
-        shape.particleDensity = fields.getPrimitive("density", double.class);
-        return shape;
-    }
-
-    static {
-        Classes.registerClass(new ClassInfo<>(Shape.class, "shape")
-                .user("shapes?")
-                .name("Shape")
-                .description("Represents an abstract particle shape. See various shapes for implementations. eg: circle, line, etc.")
-                .parser(new Parser<>() {
-
-                    @Override
-                    public Shape parse(String input, ParseContext context) {
-                        return null;
-                    }
-
-                    @Override
-                    public boolean canParse(ParseContext context) {
-                        return false;
-                    }
-
-                    @Override
-                    public String toString(Shape o, int flags) {
-                        return o.toString();
-                    }
-
-                    @Override
-                    public String toVariableNameString(Shape shape) {
-                        return "shape:" + shape.getUUID();
-                    }
-                })
-        );
-
-    }
 }

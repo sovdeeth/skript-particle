@@ -30,7 +30,7 @@ import java.util.List;
 public class ExprShapeRadius extends SimplePropertyExpression<Shape, Number> {
 
     static {
-        PropertyExpression.register(ExprShapeRadius.class, Number.class, "radius", "shapes");
+        PropertyExpression.register(ExprShapeRadius.class, Number.class, "radius", "radialshapes");
     }
 
     @Override

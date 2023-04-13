@@ -5,7 +5,7 @@ import org.bukkit.util.Vector;
 
 import java.util.Set;
 
-public class Circle extends Shape implements RadialShape {
+public class Circle extends RadialShape {
 
     protected double radius;
 

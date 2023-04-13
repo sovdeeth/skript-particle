@@ -24,6 +24,14 @@ public class ExprRotation extends SimpleExpression<Quaternion> {
 
     private boolean convertToRadians = true;
 
+    @Override
+    public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, SkriptParser.ParseResult parseResult) {
+        normalExpr = (Expression<Vector>) exprs[1];
+        rotationExpr = (Expression<Number>) exprs[2];
+        if (!parseResult.hasTag("degrees"))
+            convertToRadians = true;
+        return true;
+    }
 
     @Override
     protected @Nullable Quaternion[] get(Event e) {
@@ -47,14 +55,5 @@ public class ExprRotation extends SimpleExpression<Quaternion> {
     @Override
     public String toString(@Nullable Event e, boolean debug) {
         return "rotation of " + normalExpr.toString(e, debug) + " and angle " + rotationExpr.toString(e, debug);
-    }
-
-    @Override
-    public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, SkriptParser.ParseResult parseResult) {
-        normalExpr = (Expression<Vector>) exprs[1];
-        rotationExpr = (Expression<Number>) exprs[2];
-        if (!parseResult.hasTag("degrees"))
-            convertToRadians = true;
-        return true;
     }
 }

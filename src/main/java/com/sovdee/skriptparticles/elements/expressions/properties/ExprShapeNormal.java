@@ -52,7 +52,7 @@ public class ExprShapeNormal extends SimplePropertyExpression<Shape, Vector> {
             case SET:
                 if (delta == null || delta.length == 0) return;
                 for (Shape shape : getExpr().getArray(event)) {
-                    shape.setOrientation(Quaternion.rotationToVector((Vector) delta[0]));
+                    shape.setOrientation(new Quaternion().rotationTo((Vector) delta[0]));
                 }
                 break;
             case RESET:

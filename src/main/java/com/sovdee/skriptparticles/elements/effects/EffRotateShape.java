@@ -1,4 +1,4 @@
-package com.sovdee.skriptparticles.elements.expressions.effects;
+package com.sovdee.skriptparticles.elements.effects;
 
 import ch.njol.skript.Skript;
 import ch.njol.skript.doc.Description;
@@ -10,9 +10,9 @@ import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser;
 import ch.njol.util.Kleenean;
 import com.sovdee.skriptparticles.shapes.Shape;
-import com.sovdee.skriptparticles.util.Quaternion;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
+import org.joml.Quaternionf;
 
 import javax.annotation.Nullable;
 
@@ -33,21 +33,28 @@ public class EffRotateShape extends Effect {
 
     static {
         Skript.registerEffect(EffRotateShape.class,
-                "rotate shape[s] %shapes% around [relative:(relative|local)] (v:%-vector%|((:x|:y|:z)(-| )axis)) by %-number% [:degrees|:radians]"
-//                "rotate shape[s] %shapes% (by|with) [rotation] %rotation%"
+                "rotate shape[s] %shapes% around [relative:(relative|local)] (v:%-vector%|((:x|:y|:z)(-| )axis)) by %-number% [:degrees|:radians]",
+                "rotate shape[s] %shapes% (by|with) [rotation] %quaternion%"
                 );
     }
 
     private Expression<Shape> shapes;
     private Expression<Vector> vectorAxis;
     private Expression<Number> angle;
+    private Expression<Quaternionf> rotation;
     private String axis;
     private boolean relative = false;
     private boolean convertToRadians = true;
+    private boolean isAxisAngle = false;
 
     @Override
     public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, SkriptParser.ParseResult parseResult) {
         shapes = (Expression<Shape>) exprs[0];
+        if (matchedPattern == 1) {
+            rotation = (Expression<Quaternionf>) exprs[1];
+            return true;
+        }
+        isAxisAngle = true;
         if (parseResult.hasTag("v")) {
             vectorAxis = (Expression<Vector>) exprs[1];
         } else {
@@ -61,38 +68,42 @@ public class EffRotateShape extends Effect {
 
     @Override
     protected void execute(Event event) {
-        Number angle = this.angle.getSingle(event);
-        if (angle == null) return;
-        if (convertToRadians) angle = Math.toRadians(angle.doubleValue());
-
-        Quaternion rotation;
-        Vector axis;
-        if (this.axis != null) {
-            switch (this.axis) {
-                case "x":
-                    axis = new Vector(1, 0, 0);
-                    break;
-                case "y":
-                    axis = new Vector(0, 1, 0);
-                    break;
-                case "z":
-                    axis = new Vector(0, 0, 1);
-                    break;
-                default:
-                    return;
+        Quaternionf rotation;
+        if (isAxisAngle) {
+            Number angle = this.angle.getSingle(event);
+            if (angle == null) return;
+            if (convertToRadians) angle = Math.toRadians(angle.doubleValue());
+            Vector axis;
+            if (this.axis != null) {
+                switch (this.axis) {
+                    case "x":
+                        axis = new Vector(1, 0, 0);
+                        break;
+                    case "y":
+                        axis = new Vector(0, 1, 0);
+                        break;
+                    case "z":
+                        axis = new Vector(0, 0, 1);
+                        break;
+                    default:
+                        return;
+                }
+            } else {
+                axis = vectorAxis.getSingle(event);
+                if (axis == null) return;
             }
+            rotation = new Quaternionf().rotationAxis((float) angle.doubleValue(), (float) axis.getX(), (float) axis.getY(), (float) axis.getZ());
         } else {
-             axis = vectorAxis.getSingle(event);
-            if (axis == null) return;
+            rotation = this.rotation.getSingle(event);
+            if (rotation == null) return;
         }
-        rotation = new Quaternion(axis, angle.doubleValue());
 
         for (Shape shape : shapes.getAll(event)) {
-            Quaternion orientation = shape.getOrientation();
+            Quaternionf orientation = shape.getOrientation();
             if (relative) {
-                shape.setOrientation(orientation.multiply(rotation));
+                shape.setOrientation(orientation.mul(rotation));
             } else {
-                shape.setOrientation(orientation.multiplyLeft(rotation));
+                shape.setOrientation(orientation.premul(rotation));
             }
         }
     }
