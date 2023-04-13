@@ -7,42 +7,47 @@
  
 ## Current Features:
 - Shapes:
-  - Regular and irregular 2d polygons, with optional height
-  - Circles, cylinders, and spheres
-  - Arcs and spherical caps
-  - Lines, rectangles, and cuboids
-  - Helices
-- Drawing
+  - Circles and Spheres
+- Drawing:
   - Three styles: outline, surface, and filled. Some shapes only support one or two of these styles.
   - Rotation to any orientation.
   - Scaling and offsetting.
   - Drawing multiple shapes at once.
-  - Combining shapes into a custom shape to be drawn as a single shape.
+  - Options for who sees the particles (player specific)
   - Custom particle data and density per shape
     - Full support for SkBee's particle data syntaxes
-    - Gradient colour fields, with custom colour nodes.
   - Debug axes for clear visualization of the orientation of your shape.
   - Shapes are only calculated when they actually change, so you can draw the same shape many times without any performance hit.
+  - Option to make all calculation and drawing asynchronous
+- Particles:
+  - Expression for custom particles
+  - Section for custom particles
 
  ## Planned Features:
  - Shapes:
+   - Regular and irregular 2d polygons, with optional height
+   - Cylinders
+   - Arcs and spherical caps
+   - Lines, rectangles, and cuboids
+   - Helices
    - Ellipsoids
    - Bezier Curves
    - Regular polyhedra
    - Custom shapes defined by a function
    - "Common but difficult to code" shapes like hearts, stars, and more
  - Drawing:
-   - Options for who sees the particle (player specific)
+   - Combining shapes into a custom shape to be drawn as a single shape.
    - Custom particle motion (inwards, outwards, clockwise, etc) 
+   - Gradient colour fields, with custom colour nodes.
  - Animation:
    - Ability to stretch out drawing a shape over a timespan
    - Ability to continuously draw a shape for a timespan
    - Set up a pre-made animation in a custom structure, play back with one draw call 
  - Better particle syntax:
-   - Structure API-based particle definition
+   - Particle motion tag, to allow motions based on the shape: inwards, outwards, clockwise, counter-clockwise
 
  # Syntax
-Skript-Particle's syntax is currently in flux and is subject to change. Below are a few small examples of what the syntax looks like currently.
+Skript-Particle's syntax is currently in flux and is subject to change. This is old syntax, but somewhat representative of the final goal.
 ```bash
 on load:
     set {local-gradient} to a local particle gradient
