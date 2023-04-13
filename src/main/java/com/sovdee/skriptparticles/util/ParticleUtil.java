@@ -3,6 +3,8 @@ package com.sovdee.skriptparticles.util;
 import ch.njol.skript.aliases.ItemType;
 import ch.njol.util.StringUtils;
 import com.destroystokyo.paper.ParticleBuilder;
+import org.bukkit.DyeColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Particle.DustOptions;
@@ -10,6 +12,7 @@ import org.bukkit.Particle.DustTransition;
 import org.bukkit.Vibration;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
@@ -18,6 +21,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class ParticleUtil {
 
@@ -164,5 +168,30 @@ public class ParticleUtil {
                 .force(builder.force())
                 .receivers(builder.receivers())
                 .source(builder.source());
+    }
+
+    public static void drawAxes(Location location, Quaternion orientation) {
+        Set<Vector> yAxis = MathUtil.calculateLine(new Vector(0, 0, 0), new Vector(0, 1, 0), 0.2);
+        Set<Vector> xAxis = MathUtil.calculateLine(new Vector(0, 0, 0), new Vector(1, 0, 0), 0.2);
+        Set<Vector> zAxis = MathUtil.calculateLine(new Vector(0, 0, 0), new Vector(0, 0, 1), 0.2);
+
+        yAxis = (Set<Vector>) orientation.transform(yAxis);
+        xAxis = (Set<Vector>) orientation.transform(xAxis);
+        zAxis = (Set<Vector>) orientation.transform(zAxis);
+
+        ParticleBuilder yParticle = new ParticleBuilder(Particle.REDSTONE).data(new DustOptions(DyeColor.LIME.getColor(), 0.5f));
+        for (Vector vector : yAxis) {
+            yParticle.location(location.clone().add(vector)).spawn();
+        }
+
+        ParticleBuilder xParticle = new ParticleBuilder(Particle.REDSTONE).data(new DustOptions(DyeColor.RED.getColor(), 0.5f));
+        for (Vector vector : xAxis) {
+            xParticle.location(location.clone().add(vector)).spawn();
+        }
+
+        ParticleBuilder zParticle = new ParticleBuilder(Particle.REDSTONE).data(new DustOptions(DyeColor.BLUE.getColor(), 0.5f));
+        for (Vector vector : zAxis) {
+            zParticle.location(location.clone().add(vector)).spawn();
+        }
     }
 }

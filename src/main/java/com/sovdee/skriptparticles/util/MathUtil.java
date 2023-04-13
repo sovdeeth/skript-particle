@@ -77,8 +77,8 @@ public class MathUtil {
         return points;
     }
 
-    public static List<Vector> calculateLine(Vector start, Vector end, double particleDensity){
-        List<Vector> points = new ArrayList<>();
+    public static Set<Vector> calculateLine(Vector start, Vector end, double particleDensity){
+        Set<Vector> points = new HashSet<>();
         Vector direction = end.clone().subtract(start);
         double length = direction.length();
         double step = length / Math.round(length / particleDensity);

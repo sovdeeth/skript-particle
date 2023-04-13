@@ -7,6 +7,7 @@ import ch.njol.skript.registrations.Classes;
 import ch.njol.yggdrasil.Fields;
 import com.sovdee.skriptparticles.SkriptParticle;
 import com.sovdee.skriptparticles.particles.Particle;
+import com.sovdee.skriptparticles.util.ParticleUtil;
 import com.sovdee.skriptparticles.util.Quaternion;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -26,15 +27,18 @@ public abstract class Shape {
     protected Style style;
     protected Quaternion orientation;
     protected Quaternion lastOrientation;
-    protected State lastState;
-    protected Location lastLocation;
     protected double scale;
     protected Vector offset;
     private final UUID uuid;
     protected Particle particle;
     protected double particleDensity = 0.25;
 
+    protected State lastState;
+    protected Location lastLocation;
     protected boolean needsUpdate = false;
+
+    protected boolean drawLocalAxes = false;
+    protected boolean drawGlobalAxes = false;
 
     public Shape() {
         this.style = Style.OUTLINE;
@@ -153,6 +157,13 @@ public abstract class Shape {
         for (Vector point : getPoints(lastOrientation)) {
             particle.spawn(point);
         }
+
+        if (drawLocalAxes) {
+            ParticleUtil.drawAxes(location, lastOrientation);
+        }
+        if (drawGlobalAxes) {
+            ParticleUtil.drawAxes(location, Quaternion.IDENTITY);
+        }
     }
 
     /*
@@ -187,6 +198,36 @@ public abstract class Shape {
     }
 
     /*
+     * Sets whether the shape will draw its local axes.
+     * @param show Whether the shape should draw its local axes.
+     */
+    public void showLocalAxes(boolean show) {
+        drawLocalAxes = show;
+    }
+
+    /*
+     * @Returns whether the shape will draw its local axes.
+     */
+    public boolean showLocalAxes() {
+        return drawLocalAxes;
+    }
+
+    /*
+     * Sets whether the shape will draw its global axes.
+     * @param show Whether the shape should draw its global axes.
+     */
+    public void showGlobalAxes(boolean show) {
+        drawGlobalAxes = show;
+    }
+
+    /*
+     * @Returns whether the shape will draw its global axes.
+     */
+    public boolean showGlobalAxes() {
+        return drawGlobalAxes;
+    }
+
+    /*
      * @Returns the last location used to draw the shape.
      */
     public Location getLastLocation() {
@@ -213,7 +254,7 @@ public abstract class Shape {
      * cause the shape to update upon the next getPoints() call.
      */
     public Quaternion getOrientation() {
-        return orientation;
+        return orientation.clone();
     }
 
     /*
@@ -243,7 +284,7 @@ public abstract class Shape {
      * @Returns the offset of the shape.
      */
     public Vector getOffset() {
-        return offset;
+        return offset.clone();
     }
 
     /*

@@ -11,7 +11,7 @@ public class Circle extends Shape implements RadialShape {
 
     public Circle (double radius){
         super();
-        this.style = Shape.Style.SURFACE;
+        this.style = Style.OUTLINE;
         this.radius = radius;
     }
 
