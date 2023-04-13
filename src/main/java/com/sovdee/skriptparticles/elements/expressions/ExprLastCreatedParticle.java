@@ -15,7 +15,7 @@ import javax.annotation.Nullable;
 public class ExprLastCreatedParticle extends SimpleExpression<Particle> {
 
     static {
-        Skript.registerExpression(ExprLastCreatedParticle.class, Particle.class, ExpressionType.SIMPLE, "last created particle");
+        Skript.registerExpression(ExprLastCreatedParticle.class, Particle.class, ExpressionType.SIMPLE, "last created [custom] particle");
     }
 
     @Override

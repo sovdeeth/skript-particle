@@ -2,7 +2,9 @@ package com.sovdee.skriptparticles.elements.expressions.properties;
 
 import ch.njol.skript.classes.Changer.ChangeMode;
 import ch.njol.skript.doc.Description;
+import ch.njol.skript.doc.Examples;
 import ch.njol.skript.doc.Name;
+import ch.njol.skript.doc.Since;
 import ch.njol.skript.expressions.base.PropertyExpression;
 import ch.njol.skript.expressions.base.SimplePropertyExpression;
 import com.sovdee.skriptparticles.shapes.Shape;
@@ -15,6 +17,12 @@ import javax.annotation.Nullable;
         "Returns the style of a shape. This determines how the shape is drawn. See the shape style type for more information.",
         "Changing this will change the style of the shape accordingly."
 })
+@Examples({
+        "set style of {_shape} to solid",
+        "set {_shape}'s style to wireframe",
+        "set style of {_shape} to hollow"
+})
+@Since("1.0.0")
 public class ExprShapeStyle extends SimplePropertyExpression<Shape, Shape.Style> {
 
     static {

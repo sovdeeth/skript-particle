@@ -5,3 +5,4 @@ version: 1.0
 api-version: 1.13
 main: com.sovdee.skriptparticles.SkriptParticle
 depend: [Skript]
+softdepend: [SkBee]

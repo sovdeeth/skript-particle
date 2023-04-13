@@ -22,8 +22,8 @@ public class Particle extends ParticleBuilder {
         this.motion = motion;
     }
 
-    public @NotNull ParticleBuilder spawn(@NotNull Vector delta) {
-        if (parent == null || parent.getLastLocation() == null) return this;
+    public void spawn(@NotNull Vector delta) {
+        if (parent == null || parent.getLastLocation() == null) return;
         if (this.motion != null) {
             Vector motionVector = this.motion.getMotionVector(parent.getRelativeYAxis(true), delta);
             this.offset(motionVector.getX(), motionVector.getY(), motionVector.getZ());
@@ -34,7 +34,7 @@ public class Particle extends ParticleBuilder {
         }
         this.location(parent.getLastLocation().clone().add(delta));
         // note that the values we change here do persist, so we may need to reset them after spawning if it causes issues
-        return super.spawn();
+        super.spawn();
     }
 
     @Nullable
@@ -77,7 +77,15 @@ public class Particle extends ParticleBuilder {
     }
 
     public Particle clone() {
-        Particle particle = new Particle(this.particle());
+        Particle particle = (Particle) new Particle(this.particle())
+                .count(this.count())
+                .extra(this.extra())
+                .offset(this.offsetX(), this.offsetY(), this.offsetZ())
+                .data(this.data())
+                .force(this.force())
+                .receivers(this.receivers())
+                .source(this.source());
+
         if (this.location() != null)
             particle.location(this.location());
 

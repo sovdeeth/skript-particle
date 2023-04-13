@@ -26,8 +26,8 @@ public abstract class Shape {
     protected Style style;
     protected Quaternion orientation;
     protected Quaternion lastOrientation;
+    protected State lastState;
     protected Location lastLocation;
-    protected int orientationHash;
     protected double scale;
     protected Vector offset;
     private final UUID uuid;
@@ -46,6 +46,8 @@ public abstract class Shape {
         this.offset = new Vector(0, 0, 0);
 
         this.uuid = UUID.randomUUID();
+
+        this.lastState = getState();
     }
 
     /*
@@ -58,18 +60,27 @@ public abstract class Shape {
     }
 
     public Set<Vector> getPoints(Quaternion orientation) {
-        if (needsUpdate || orientation.hashCode() != orientationHash || points.isEmpty()) {
-            SkriptParticle.info("Updating shape " + this);
+        State state = getState(orientation);
+        if (needsUpdate || !lastState.equals(state) || points.isEmpty()) {
+            SkriptParticle.info("Updating shape " + this + " for reason: " + (needsUpdate ? "needsUpdate" : points.isEmpty() ? "points.isEmpty()" : "lastState != getState()"));
             points = generatePoints();
             for (Vector point : points) {
                 orientation.transform(point);
                 point.multiply(scale);
                 point.add(offset);
             }
-            orientationHash = orientation.hashCode();
+
+            lastState = state;
             needsUpdate = false;
         }
         return points;
+    }
+
+    /*
+     * Sets the points for the shape.
+     */
+    public void setPoints(Set<Vector> points) {
+        this.points = points;
     }
 
     /*
@@ -121,9 +132,9 @@ public abstract class Shape {
         if (baseOrientation == null) {
             baseOrientation = Quaternion.IDENTITY;
         }
-        // cache the last orientation and location used to draw the shape
-        lastOrientation = baseOrientation.clone().multiply(this.orientation);
+        // cache the last location and orientation used to draw the shape
         lastLocation = location.clone();
+        lastOrientation = baseOrientation.clone().multiply(orientation);
 
         // If the particle doesn't override the shape's particle, use the shape's particle
         if (this.particle != null && !particle.override()) {
@@ -322,6 +333,10 @@ public abstract class Shape {
         shape.setParticle(this.particle);
         shape.setParticleDensity(this.particleDensity);
         shape.setStyle(this.style);
+        // ensure that the shape's points are updated, so we don't have to recalculate them unless we change the copy.
+        shape.setPoints(this.getPoints());
+        shape.setNeedsUpdate(this.needsUpdate);
+        shape.setLastState(this.lastState);
         return shape;
     };
 
@@ -332,6 +347,19 @@ public abstract class Shape {
      */
     private State getState() {
         return new State(style, orientation.hashCode(), scale, offset.hashCode(), particleDensity);
+    }
+
+    /*
+     * Gets the physical state of a shape, but with a custom orientation.
+     * @Param orientation The orientation to use for the state.
+     * @Returns A state object that represents the shape's physical state.
+     */
+    private State getState(Quaternion orientation) {
+        return new State(style, orientation.hashCode(), scale, offset.hashCode(), particleDensity);
+    }
+
+    private void setLastState(State state) {
+        this.lastState = state;
     }
 
     protected record State(Style style, int orientationHash, double scale, int offsetHash, double particleDensity) {

@@ -1,16 +1,18 @@
 package com.sovdee.skriptparticles.util;
 
+import ch.njol.skript.aliases.ItemType;
 import ch.njol.util.StringUtils;
 import com.destroystokyo.paper.ParticleBuilder;
+import org.bukkit.Material;
 import org.bukkit.Particle;
+import org.bukkit.Particle.DustOptions;
+import org.bukkit.Particle.DustTransition;
 import org.bukkit.Vibration;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -18,49 +20,35 @@ import java.util.List;
 import java.util.Map;
 
 public class ParticleUtil {
-    public static ParticleBuilder cloneBuilder(ParticleBuilder builder) {
-        return new ParticleBuilder(builder.particle())
-                .count(builder.count())
-                .extra(builder.extra())
-                .offset(builder.offsetX(), builder.offsetY(), builder.offsetZ())
-                .data(builder.data())
-                .force(builder.force())
-                .receivers(builder.receivers())
-                .source(builder.source());
-    }
 
     public static com.sovdee.skriptparticles.particles.Particle getDefaultParticle() {
         return (com.sovdee.skriptparticles.particles.Particle) new com.sovdee.skriptparticles.particles.Particle(Particle.FLAME).count(1).extra(0);
     }
-
-    private static final Map<String, org.bukkit.Particle> PARTICLES = new HashMap<>();
+    private static final Map<String, Particle> PARTICLES = new HashMap<>();
+    private static final Map<Particle, String> PARTICLE_NAMES = new HashMap<>();
 
     // Load and map Minecraft particle names
     // Bukkit does not have any API for getting the Minecraft names of particles (how stupid)
     // This method fetches them from the server and maps them with the Bukkit particle enums
     static {
         Class<?> cbParticle = ReflectionUtils.getOBCClass("CraftParticle");
-        Class<?> mcKey = ReflectionUtils.getNMSClass("MinecraftKey", "net.minecraft.resources");
         try {
             assert cbParticle != null;
-            Field mc = cbParticle.getDeclaredField("minecraftKey");
-            mc.setAccessible(true);
-            Field pc = cbParticle.getDeclaredField("bukkit");
-            pc.setAccessible(true);
-
-            assert mcKey != null;
-            Method getKey = mcKey.getMethod(ReflectionUtils.ReflectionConstants.MINECRAFT_KEY_GET_KEY_METHOD);
-            getKey.setAccessible(true);
+            Field bukkitParticleField = cbParticle.getDeclaredField("bukkit");
+            bukkitParticleField.setAccessible(true);
+            Field mcKeyField = cbParticle.getDeclaredField("minecraftKey");
+            mcKeyField.setAccessible(true);
 
             for (Object enumConstant : cbParticle.getEnumConstants()) {
-                String KEY = getKey.invoke(mc.get(enumConstant)).toString();
-                Particle PARTICLE = ((Particle) pc.get(enumConstant));
+                String mcKey = mcKeyField.get(enumConstant).toString().replace("minecraft:", "");
+                Particle bukkitParticle = (Particle) bukkitParticleField.get(enumConstant);
 
-                if (!PARTICLE.toString().contains("LEGACY")) {
-                    PARTICLES.put(KEY, PARTICLE);
+                if (!bukkitParticle.toString().contains("LEGACY")) {
+                    PARTICLES.put(mcKey, bukkitParticle);
+                    PARTICLE_NAMES.put(bukkitParticle, mcKey);
                 }
             }
-        } catch (NoSuchFieldException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+        } catch (NoSuchFieldException | IllegalAccessException e) {
             e.printStackTrace();
         }
     }
@@ -91,12 +79,16 @@ public class ParticleUtil {
      * @return Minecraft name of particle
      */
     public static String getName(Particle particle) {
-        for (String key : PARTICLES.keySet()) {
-            if (PARTICLES.get(key) == particle) {
-                return key;
-            }
-        }
-        return null;
+        return PARTICLE_NAMES.get(particle);
+    }
+
+    /**
+     * Get a list of all available particles
+     *
+     * @return List of all available particles
+     */
+    public static List<Particle> getAvailableParticles() {
+        return new ArrayList<>(PARTICLES.values());
     }
 
     /**
@@ -117,11 +109,11 @@ public class ParticleUtil {
         Class<?> dataType = particle.getDataType();
         if (dataType == ItemStack.class) {
             return "itemtype";
-        } else if (dataType == Particle.DustOptions.class) {
+        } else if (dataType == DustOptions.class) {
             return "dust-option";
         } else if (dataType == BlockData.class) {
             return "blockdata/itemtype";
-        } else if (dataType == Particle.DustTransition.class) {
+        } else if (dataType == DustTransition.class) {
             return "dust-transition";
         } else if (dataType == Vibration.class) {
             return "vibration";
@@ -132,5 +124,45 @@ public class ParticleUtil {
         }
         // For future particle data additions that haven't been added here yet
         return "UNKNOWN";
+    }
+
+    private static Object getData(Particle particle, Object data) {
+        Class<?> dataType = particle.getDataType();
+        if (dataType == Void.class) {
+            return null;
+        } else if (dataType == Float.class && data instanceof Number number) {
+            return number.floatValue();
+        } else if (dataType == Integer.class && data instanceof Number number) {
+            return number.intValue();
+        } else if (dataType == ItemStack.class && data instanceof ItemType itemType) {
+            return itemType.getRandom();
+        } else if (dataType == DustOptions.class && data instanceof DustOptions) {
+            return data;
+        } else if (dataType == DustTransition.class && data instanceof DustTransition) {
+            return data;
+        } else if (dataType == Vibration.class && data instanceof Vibration) {
+            return data;
+        } else if (dataType == BlockData.class) {
+            if (data instanceof BlockData) {
+                return data;
+            } else if (data instanceof ItemType itemType) {
+                Material material = itemType.getMaterial();
+                if (material.isBlock()) {
+                    return material.createBlockData();
+                }
+            }
+        }
+        return null;
+    }
+
+    public static ParticleBuilder cloneBuilder(ParticleBuilder builder) {
+        return new ParticleBuilder(builder.particle())
+                .count(builder.count())
+                .extra(builder.extra())
+                .offset(builder.offsetX(), builder.offsetY(), builder.offsetZ())
+                .data(builder.data())
+                .force(builder.force())
+                .receivers(builder.receivers())
+                .source(builder.source());
     }
 }

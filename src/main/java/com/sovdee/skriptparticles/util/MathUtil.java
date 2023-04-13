@@ -59,8 +59,8 @@ public class MathUtil {
         return points;
     }
 
-    public static List<Vector> calculateCircle(double radius, double particleDensity, double cutoffAngle){
-        List<Vector> points = new ArrayList<>();
+    public static Set<Vector> calculateCircle(double radius, double particleDensity, double cutoffAngle){
+        Set<Vector> points = new HashSet<>();
         double stepSize = particleDensity / radius;
         for (double theta = 0; theta < cutoffAngle; theta += stepSize) {
             points.add(new Vector(Math.cos(theta) * radius, 0, Math.sin(theta) * radius));
@@ -68,8 +68,8 @@ public class MathUtil {
         return points;
     }
 
-    public static List<Vector> calculateDisc(double radius, double particleDensity, double cutoffAngle){
-        List<Vector> points = new ArrayList<>();
+    public static Set<Vector> calculateDisc(double radius, double particleDensity, double cutoffAngle){
+        Set<Vector> points = new HashSet<>();
         for (double subRadius = particleDensity; subRadius < radius; subRadius += particleDensity) {
             points.addAll(calculateCircle(subRadius, particleDensity, cutoffAngle));
         }

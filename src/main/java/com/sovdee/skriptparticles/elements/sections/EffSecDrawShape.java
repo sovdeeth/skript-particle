@@ -6,6 +6,7 @@ import ch.njol.skript.doc.Description;
 import ch.njol.skript.doc.Examples;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
+import ch.njol.skript.effects.Delay;
 import ch.njol.skript.lang.EffectSection;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
@@ -16,6 +17,7 @@ import ch.njol.skript.util.Direction;
 import ch.njol.skript.util.Getter;
 import ch.njol.skript.variables.Variables;
 import ch.njol.util.Kleenean;
+import com.sovdee.skriptparticles.SkriptParticle;
 import com.sovdee.skriptparticles.shapes.Shape;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -36,17 +38,27 @@ import java.util.concurrent.atomic.AtomicBoolean;
         "Draws the given shapes at the given locations. The shapes will be drawn in the order they are given.",
         "The code inside the draw shape section will be executed before drawing begins, and will not affect the original shapes.",
         "This means you can set particle data, or change the shape's location, rotation, or scale, without affecting the shape the next time it's drawn.",
+        "",
+        "By default, this effect will run synchronously, meaning it will block the main thread until it's finished drawing. For most cases, this is fine. " +
+        "However, if you want to draw a lot of shapes at once, or if you want to draw large and complex shapes, you should consider using the async option.",
+        "Be aware that this changes the behavior of the section slightly. All the section code will first be executed synchronously, " +
+        "and then the drawing will be done asynchronously. This means that the time the shape appears may be slightly delayed compared to the completion of the section code.",
+        "Additionally, the code immediately after the draw shape section will be executed immediately, often before the drawing is finished. If you stumble across issues with this, " +
+        "please report them on the Skript-Particles GitHub page."
 })
 @Examples({
         "draw a sphere with radius 1 at player's location",
-        "draw (a sphere with radius 1 and a cube with radius 1) at player's location",
+        "draw (a sphere with radius 1 and a cube with radius 1) at player's location for (all players in radius 10 of player)",
+        "asynchronously draw a sphere with radius 1 at player's location",
         "",
         "draw {_shape} at player's location:",
-        "\tset {_shape}'s particle to dust using dustOption(red, 1)"
+            "\tset event-shape's particle to dust using dustOption(red, 1)",
+        "",
+        "asynchronously draw (a sphere with radius 1 and a cube with radius 1) at player's location:",
+            "\tset event-shape's radius to 2",
 })
 @Since("1.0.0")
 public class EffSecDrawShape extends EffectSection {
-
     public static class DrawEvent extends Event {
         private final Shape shape;
         public DrawEvent(Shape shape) {
@@ -67,7 +79,7 @@ public class EffSecDrawShape extends EffectSection {
 
     static {
         Skript.registerSection(EffSecDrawShape.class,
-                "draw [shape[s]] %shapes% [%directions% %locations%] [for %-players%]"
+                "[async:async[hronously]] draw [shape[s]] %shapes% [%directions% %locations%] [for %-players%]"
         );
         EventValues.registerEventValue(EffSecDrawShape.DrawEvent.class, Shape.class, new Getter<>() {
             @Override
@@ -83,6 +95,7 @@ public class EffSecDrawShape extends EffectSection {
 
     @Nullable
     private Trigger trigger;
+    private boolean async;
 
     @Override
     public boolean init(Expression<?>[] expressions, int i, Kleenean kleenean, ParseResult parseResult, @Nullable SectionNode sectionNode, @Nullable List<TriggerItem> list) {
@@ -100,13 +113,16 @@ public class EffSecDrawShape extends EffectSection {
             }
         }
 
+        async = parseResult.hasTag("async");
+
         return true;
     }
-
     @Override
     @Nullable
     protected TriggerItem walk(Event event) {
-        Object localVars = Variables.copyLocalVariables(event);
+        debug(event, true);
+
+        Delay.addDelayedEvent(event); // Mark this event as delayed
 
         Collection<Player> recipients = new ArrayList<>();
         if (players != null) {
@@ -114,6 +130,8 @@ public class EffSecDrawShape extends EffectSection {
         } else {
             recipients.addAll(Bukkit.getOnlinePlayers());
         }
+
+        Object localVars = Variables.copyLocalVariables(event);
 
         Consumer<Shape> consumer;
         if (trigger != null) {
@@ -128,6 +146,34 @@ public class EffSecDrawShape extends EffectSection {
             consumer = null;
         }
 
+        if (!async) {
+            long now = System.nanoTime();
+            SkriptParticle.info("Drawing shape synchronously: " + (now / 1000000) + "ms");
+            executeSync(event, consumer, recipients);
+            SkriptParticle.info("Finished drawing shape synchronously: " + (System.nanoTime() - now) / 1000000.0 + "ms");
+        } else {
+            // Clone shapes and run Consumer before going async
+            // We can't guarantee that the consumer will be thread-safe, so we need do this before going async
+            List<Shape> preppedShapes = new ArrayList<>();
+            Shape preppedShape;
+            for (Shape shape : shapes.getArray(event)) {
+                preppedShape = shape.clone();
+                if (consumer != null)
+                    consumer.accept(preppedShape);
+                preppedShapes.add(preppedShape);
+            }
+
+            Bukkit.getScheduler().runTaskAsynchronously(Skript.getInstance(), () -> {
+                long now = System.nanoTime();
+                SkriptParticle.info("Drawing shape asynchronously: " + (now / 1000000) + "ms");
+                executeAsync(locations.getArray(event), preppedShapes, recipients);
+                SkriptParticle.info("Finished drawing shape asynchronously: " + (System.nanoTime() - now) / 1000000.0 + "ms");
+            });
+        }
+        return getNext();
+    }
+
+    private void executeSync(Event event, Consumer<Shape> consumer, Collection<Player> recipients){
         Shape shapeCopy;
         for (Location location : locations.getArray(event)) {
             for (Shape shape : shapes.getArray(event)) {
@@ -140,8 +186,14 @@ public class EffSecDrawShape extends EffectSection {
                 }
             }
         }
+    }
 
-        return super.walk(event, false);
+    private void executeAsync(Location[] locations, Collection<Shape> shapes, Collection<Player> recipients) {
+        for (Location location : locations) {
+            for (Shape shape : shapes) {
+                shape.draw(location, null, null, recipients);
+            }
+        }
     }
 
     @Override

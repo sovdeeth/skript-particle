@@ -56,7 +56,7 @@ public class SecParticle extends Section {
         if (entryContainer == null)
             return false;
         particle = (Expression<org.bukkit.Particle>) exprs[0];
-        count = (Expression<Number>) entryContainer.get("ingredient", false);
+        count = (Expression<Number>) entryContainer.get("count", false);
         offset = (Expression<Vector>) entryContainer.getOptional("offset", true);
         velocity = (Expression<?>) entryContainer.getOptional("velocity", true);
         extra = (Expression<Number>) entryContainer.getOptional("extra", true);
