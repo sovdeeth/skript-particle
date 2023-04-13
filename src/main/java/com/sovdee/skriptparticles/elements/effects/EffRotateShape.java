@@ -14,7 +14,7 @@ import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
 import org.joml.Quaternionf;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 @Name("Rotate Shape")
 @Description({

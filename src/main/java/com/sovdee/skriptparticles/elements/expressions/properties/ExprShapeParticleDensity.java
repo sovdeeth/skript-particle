@@ -14,7 +14,7 @@ import com.sovdee.skriptparticles.shapes.Shape;
 import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 @Name("Shape Particle Density / Particle Count")
 @Description({

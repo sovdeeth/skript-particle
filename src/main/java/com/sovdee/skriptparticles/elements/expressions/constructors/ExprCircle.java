@@ -16,7 +16,7 @@ import com.sovdee.skriptparticles.shapes.Shape;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 @Name("Particle Circle")
 @Description({

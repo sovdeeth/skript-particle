@@ -14,7 +14,7 @@ import com.sovdee.skriptparticles.util.Quaternion;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 @Name("Shape Rotation")
 @Description("Describes a rotation around a vector by a given angle.")

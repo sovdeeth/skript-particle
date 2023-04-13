@@ -12,7 +12,7 @@ import com.sovdee.skriptparticles.shapes.Shape;
 import com.sovdee.skriptparticles.util.ParticleUtil;
 import org.bukkit.event.Event;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 @Name("Particle of Shape")
 @Description({

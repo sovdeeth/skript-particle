@@ -13,7 +13,7 @@ import com.sovdee.skriptparticles.particles.Particle;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 @Name("Particle With Data")
 @Description({

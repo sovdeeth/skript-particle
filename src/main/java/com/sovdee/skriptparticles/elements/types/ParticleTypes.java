@@ -19,21 +19,20 @@ import org.bukkit.Vibration;
 import org.jetbrains.annotations.NotNull;
 import org.skriptlang.skript.lang.converter.Converters;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 /*
  * Thanks to ShaneBee at SkBee for the original particle code.
  * This is meant to fill the gap when SkBee isn't installed.
  */
-
-
 public class ParticleTypes {
     static {
         if (Classes.getExactClassInfo(Particle.class) == null) {
             Classes.registerClass(new ClassInfo<>(Particle.class, "particle")
                     .user("particles?")
                     .name("Particle")
-                    .description("Represents a particle which can be used in the 'Particle Spawn' effect.",
+                    .description("A mirror of SkBee's Particle type. For use when SkBee is not installed.\n" +
+                            "Represents a particle which can be used as a shape's particle, or in the Draw Particle and Particle Spawn effects.",
                             "Some particles require extra data, these are distinguished by their data type within the square brackets.",
                             "DustOption, DustTransition and Vibration each have their own functions to build the appropriate data for these particles.")
                     .usage(ParticleUtil.getNamesAsString())
@@ -43,7 +42,7 @@ public class ParticleTypes {
                             "play 1 of block using dirt at location of player",
                             "play 1 of dust_color_transition using dustTransition(blue, green, 3) at location of player",
                             "play 1 of vibration using vibration({loc1}, {loc2}, 1 second) at {loc1}")
-                    .since("1.9.0")
+                    .since("1.0.0")
                     .parser(new Parser<>() {
 
                         @SuppressWarnings("NullableProblems")
@@ -115,10 +114,11 @@ public class ParticleTypes {
                     float size = ((Number) params[1][0]).floatValue();
                     return new DustOptions[]{new DustOptions(color, size)};
                 }
-            }.description("Creates a new dust option to be used with 'dust' particle. Color can either be a regular color or an RGB color using",
+            }.description("A mirror of SkBee's dustOption function. For use when SkBee is not installed.\n" +
+                            "Creates a new dust option to be used with 'dust' particle. Color can either be a regular color or an RGB color using",
                             "Skript's rgb() function. Size is the size the particle will be.")
                     .examples("set {_c} to dustOption(red, 1.5)", "set {_c} to dustOption(rgb(1, 255, 1), 3)")
-                    .since("1.9.0"));
+                    .since("1.0.0"));
         }
 
         if (Classes.getExactClassInfo(DustTransition.class) == null) {
@@ -142,11 +142,12 @@ public class ParticleTypes {
                             new DustTransition(fromColor, toColor, size)
                     };
                 }
-            }.description("Creates a new dust transition to be used with 'dust_color_transition' particle.",
+            }.description("A mirror of SkBee's dustTransition function. For use when SkBee is not installed.\n" +
+                            "Creates a new dust transition to be used with 'dust_color_transition' particle.",
                             "Color can either be a regular color or an RGB color using Skript's rgb() function.",
                             "Size is the size the particle will be. Requires MC 1.17+")
                     .examples("set {_d} to dustTransition(red, green, 10)", "set {_d} to dustTransition(blue, rgb(1,1,1), 5)")
-                    .since("1.11.1"));
+                    .since("1.0.0"));
         }
         if (Classes.getExactClassInfo(Vibration.class) == null) {
             Classes.registerClass(new ClassInfo<>(Vibration.class, "vibration")
@@ -164,16 +165,18 @@ public class ParticleTypes {
                     if (params[0].length == 0 || params[1].length == 0) {
                         return null;
                     }
+                    Location origin = new Location(null, 0, 0, 0);
                     Location destination = (Location) params[0][0];
                     int arrivalTime = (int) ((Timespan) params[1][0]).getTicks_i();
-                    Vibration vibration = new Vibration( new Vibration.Destination.BlockDestination(destination), arrivalTime);
+                    Vibration vibration = new Vibration(origin, new Vibration.Destination.BlockDestination(destination), arrivalTime);
                     return new Vibration[]{vibration};
                 }
-            }.description("Creates a new vibration to be used with 'vibration' particle.",
+            }.description("A mirror of SkBee's Vibration function. For use when SkBee is not installed.\n" +
+                            "Creates a new vibration to be used with 'vibration' particle.",
                             "TO = the destination location the particle will travel to.",
                             "ARRIVAL TIME = the time it will take to arrive at the destination location. Requires MC 1.17+")
                     .examples("set {_v} to vibration({loc1}, 10 seconds)")
-                    .since("1.11.1"));
+                    .since("1.0.0"));
         }
 
 

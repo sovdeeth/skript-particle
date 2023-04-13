@@ -12,7 +12,7 @@ import ch.njol.util.Kleenean;
 import com.sovdee.skriptparticles.shapes.Shape;
 import org.bukkit.event.Event;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 @Name("Toggle Axes")
 @Description({

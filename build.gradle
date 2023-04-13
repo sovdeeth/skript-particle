@@ -1,9 +1,11 @@
 plugins {
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
     id 'java'
 }
 
 group 'com.sovdee'
 version '1.0-SNAPSHOT'
+project.ext.jomlVersion = "1.10.5"
 
 configurations.all {
     resolutionStrategy.cacheChangingModulesFor 1, 'minutes'
@@ -20,8 +22,9 @@ repositories {
 }
 
 dependencies {
-    compileOnly("io.papermc.paper:paper-api:1.19.4-R0.1-SNAPSHOT")
-    implementation "com.github.SkriptLang:Skript:2.7.0-beta2"
+    compileOnly("io.papermc.paper:paper-api:1.17.1-R0.1-SNAPSHOT")
+    compileOnly("com.github.SkriptLang:Skript:2.7.0-beta2")
+    implementation "org.joml:joml:${jomlVersion}"
 }
 
 java {
@@ -29,6 +32,7 @@ java {
 }
 
 task copyJar(type: Copy) {
-    from "build/libs/skript-particles-1.0-SNAPSHOT.jar"
+    dependsOn shadowJar
+    from "build/libs/skript-particles-1.0-SNAPSHOT-all.jar"
     into "e:/PaperServer/plugins"
 }

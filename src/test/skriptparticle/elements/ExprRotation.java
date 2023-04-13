@@ -10,7 +10,7 @@ import com.sovdee.skriptparticles.util.Quaternion;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 public class ExprRotation extends SimpleExpression<Quaternion> {
 
