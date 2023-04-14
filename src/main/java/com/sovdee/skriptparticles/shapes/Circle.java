@@ -7,8 +7,6 @@ import java.util.Set;
 
 public class Circle extends RadialShape {
 
-    protected double radius;
-
     public Circle (double radius){
         super();
         this.style = Style.OUTLINE;
@@ -32,24 +30,13 @@ public class Circle extends RadialShape {
             case OUTLINE -> 2 * Math.PI * radius / particleCount;
             case SURFACE, FILL -> Math.sqrt(Math.PI * radius * radius / particleCount);
         };
-    }
-
-    @Override
-    public double getRadius() {
-        return radius;
-    }
-
-    @Override
-    public void setRadius(double radius) {
-        this.radius = radius;
         needsUpdate = true;
     }
 
     @Override
     public Shape clone() {
         Sphere sphere = new Sphere(radius);
-        this.copyTo(sphere);
-        return sphere;
+        return this.copyTo(sphere);
     }
 
     public String toString(){

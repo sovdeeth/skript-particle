@@ -33,7 +33,7 @@ public class EffRotateShape extends Effect {
 
     static {
         Skript.registerEffect(EffRotateShape.class,
-                "rotate shape[s] %shapes% around [relative:(relative|local)] (v:%-vector%|((:x|:y|:z)(-| )axis)) by %-number% [:degrees|:radians]",
+                "rotate shape[s] %shapes% around [relative:(relative|local)] (v:%-vector%|((:x|:y|:z)(-| )axis)) by %-number% [degrees|:radians]",
                 "rotate shape[s] %shapes% (by|with) [rotation] %quaternion%"
                 );
     }
@@ -44,7 +44,7 @@ public class EffRotateShape extends Effect {
     private Expression<Quaternionf> rotation;
     private String axis;
     private boolean relative = false;
-    private boolean convertToRadians = true;
+    private boolean isRadians = false;
     private boolean isAxisAngle = false;
 
     @Override
@@ -62,7 +62,7 @@ public class EffRotateShape extends Effect {
             axis = parseResult.hasTag("x") ? "x" : parseResult.hasTag("y") ? "y" : "z";
         }
         angle = (Expression<Number>) exprs[2];
-        convertToRadians = !parseResult.hasTag("radians");
+        isRadians = parseResult.hasTag("radians");
         return true;
     }
 
@@ -72,7 +72,7 @@ public class EffRotateShape extends Effect {
         if (isAxisAngle) {
             Number angle = this.angle.getSingle(event);
             if (angle == null) return;
-            if (convertToRadians) angle = Math.toRadians(angle.doubleValue());
+            if (!isRadians) angle = Math.toRadians(angle.doubleValue());
             Vector axis;
             if (this.axis != null) {
                 switch (this.axis) {
@@ -112,7 +112,7 @@ public class EffRotateShape extends Effect {
     public String toString(@Nullable Event event, boolean debug) {
         return "rotate shape " + shapes.toString(event, debug) + " around " + (relative ? "relative " : "") +
                 (vectorAxis != null ? "vector " + vectorAxis.toString(event, debug) : axis + " axis") + " by " +
-                angle.toString(event, debug) + (convertToRadians ? " radians" : " degrees");
+                angle.toString(event, debug) + (isRadians ? " radians" : " degrees");
     }
 
 }

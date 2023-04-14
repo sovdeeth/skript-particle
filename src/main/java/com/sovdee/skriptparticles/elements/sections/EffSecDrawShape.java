@@ -79,7 +79,7 @@ public class EffSecDrawShape extends EffectSection {
 
     static {
         Skript.registerSection(EffSecDrawShape.class,
-                "[async:async[hronously]] draw [shape[s]] %shapes% [%directions% %locations%] [for %-players%]"
+                "[async:async[hronously]] draw [shape[s]] %shapes% [%-directions% %-locations%] [for %-players%]"
         );
         EventValues.registerEventValue(EffSecDrawShape.DrawEvent.class, Shape.class, new Getter<>() {
             @Override
@@ -96,11 +96,16 @@ public class EffSecDrawShape extends EffectSection {
     @Nullable
     private Trigger trigger;
     private boolean async;
+    private boolean useShapeLocation;
 
     @Override
     public boolean init(Expression<?>[] expressions, int i, Kleenean kleenean, ParseResult parseResult, @Nullable SectionNode sectionNode, @Nullable List<TriggerItem> list) {
         shapes = (Expression<Shape>) expressions[0];
-        locations = Direction.combine((Expression<? extends Direction>) expressions[1], (Expression<? extends Location>) expressions[2]);
+        if (expressions[1] != null || expressions[2] != null) {
+            locations = Direction.combine((Expression<? extends Direction>) expressions[1], (Expression<? extends Location>) expressions[2]);
+        } else {
+            useShapeLocation = true;
+        }
         players = (Expression<Player>) expressions[3];
 
         if (sectionNode != null) {
@@ -166,7 +171,11 @@ public class EffSecDrawShape extends EffectSection {
             Bukkit.getScheduler().runTaskAsynchronously(Skript.getInstance(), () -> {
                 long now = System.nanoTime();
                 SkriptParticle.info("Drawing shape asynchronously: " + (now / 1000000) + "ms");
-                executeAsync(locations.getArray(event), preppedShapes, recipients);
+                if (useShapeLocation) {
+                    executeAsync(new Location[]{null}, preppedShapes, recipients);
+                } else {
+                    executeAsync(locations.getArray(event), preppedShapes, recipients);
+                }
                 SkriptParticle.info("Finished drawing shape asynchronously: " + (System.nanoTime() - now) / 1000000.0 + "ms");
             });
         }
@@ -175,7 +184,8 @@ public class EffSecDrawShape extends EffectSection {
 
     private void executeSync(Event event, Consumer<Shape> consumer, Collection<Player> recipients){
         Shape shapeCopy;
-        for (Location location : locations.getArray(event)) {
+        Location[] locations = useShapeLocation ? new Location[]{null} : this.locations.getArray(event);
+        for (Location location : locations) {
             for (Shape shape : shapes.getArray(event)) {
                 if (consumer != null) {
                     // copy the shape so that it can be modified by the consumer without affecting the original
@@ -191,6 +201,7 @@ public class EffSecDrawShape extends EffectSection {
     private void executeAsync(Location[] locations, Collection<Shape> shapes, Collection<Player> recipients) {
         for (Location location : locations) {
             for (Shape shape : shapes) {
+                SkriptParticle.info("Drawing shape: " + shape);
                 shape.draw(location, null, null, recipients);
             }
         }

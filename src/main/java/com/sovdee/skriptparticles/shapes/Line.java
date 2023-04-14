@@ -1,6 +1,7 @@
 package com.sovdee.skriptparticles.shapes;
 
 import com.sovdee.skriptparticles.util.MathUtil;
+import org.bukkit.Location;
 import org.bukkit.util.Vector;
 
 import java.util.Set;
@@ -22,6 +23,13 @@ public class Line extends Shape {
         super();
         this.start = start;
         this.end = end;
+    }
+
+    public Line(Location start, Location end) {
+        super();
+        this.start = new Vector(0, 0, 0);
+        this.end = end.toVector().subtract(start.toVector());
+        this.location = start.clone();
     }
 
     @Override
@@ -48,14 +56,13 @@ public class Line extends Shape {
     @Override
     public void setParticleCount(int particleCount) {
         particleDensity = (end.clone().subtract(start).length() / particleCount);
-        setNeedsUpdate(true);
+        needsUpdate = true;
     }
 
     @Override
     public Shape clone() {
         Line line = new Line(this.start, this.end);
-        this.copyTo(line);
-        return line;
+        return this.copyTo(line);
     }
 
     public String toString(){

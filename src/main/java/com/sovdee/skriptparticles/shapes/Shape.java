@@ -24,6 +24,7 @@ public abstract class Shape {
     protected Quaternion lastOrientation;
     protected double scale;
     protected Vector offset;
+    protected Location location;
     private final UUID uuid;
     protected Particle particle;
     protected double particleDensity = 0.25;
@@ -123,7 +124,7 @@ public abstract class Shape {
      * Draws a shape at a location, given a starting orientation and a particle to use
      * Caches the last orientation used to draw the shape, so that it can be updated if the orientation changes.
      */
-    public void draw(Location location, @Nullable Quaternion baseOrientation, @Nullable Particle particle, @Nullable Collection<Player> recipients) {
+    public void draw(@Nullable Location location, @Nullable Quaternion baseOrientation, @Nullable Particle particle, @Nullable Collection<Player> recipients) {
         // catch null values
         if (particle == null) {
             particle = (Particle) new Particle(org.bukkit.Particle.FLAME).parent(this).extra(0);
@@ -131,6 +132,15 @@ public abstract class Shape {
         if (baseOrientation == null) {
             baseOrientation = Quaternion.IDENTITY;
         }
+        if (location == null) {
+            if (this.location == null) {
+                // consider adding a warning here
+                SkriptParticle.warning("Shape " + this + " has no location set, and no location was provided to draw the shape at.");
+                return;
+            }
+            location = this.location;
+        }
+
         // cache the last location and orientation used to draw the shape
         lastLocation = location.clone();
         lastOrientation = (Quaternion) baseOrientation.clone().mul(orientation);
@@ -291,6 +301,20 @@ public abstract class Shape {
     }
 
     /*
+     * Sets the location of the shape. This is used as a fallback if the shape is drawn without a location.
+     */
+    public void setLocation(Location location) {
+        this.location = location.clone();
+    }
+
+    /*
+     * @Returns the location of the shape.
+     */
+    public Location getLocation() {
+        return location.clone();
+    }
+
+    /*
      * @Returns the UUID of the shape. Used for uniqueness during serialization.
      */
     public UUID getUUID() {
@@ -366,7 +390,10 @@ public abstract class Shape {
         shape.setOrientation(this.orientation);
         shape.setScale(this.scale);
         shape.setOffset(this.offset);
-        shape.setParticle(this.particle);
+        if (this.particle != null)
+            shape.setParticle(this.particle);
+        if (this.location != null)
+            shape.setLocation(this.location);
         shape.setParticleDensity(this.particleDensity);
         shape.setStyle(this.style);
         // ensure that the shape's points are updated, so we don't have to recalculate them unless we change the copy.
@@ -397,6 +424,7 @@ public abstract class Shape {
     private void setLastState(State state) {
         this.lastState = state;
     }
+
 
     protected record State(Style style, int orientationHash, double scale, int offsetHash, double particleDensity) {
 

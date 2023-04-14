@@ -6,9 +6,6 @@ import org.bukkit.util.Vector;
 import java.util.Set;
 
 public class Sphere extends RadialShape {
-
-    protected double radius;
-
     public Sphere (double radius){
         super();
         this.style = Shape.Style.SURFACE;
@@ -41,30 +38,19 @@ public class Sphere extends RadialShape {
         return points;
     }
 
-
-
-    public double getRadius() {
-        return radius;
-    }
-
-    public void setRadius(double radius) {
-        this.radius = radius;
-        needsUpdate = true;
-    }
-
     @Override
     public void setParticleCount(int count) {
         this.setParticleDensity(switch (style) {
             case OUTLINE,SURFACE -> Math.sqrt(4 * Math.PI * radius * radius / count);
             case FILL -> Math.cbrt(1.33333 * Math.PI * radius * radius * radius / count);
         });
+        needsUpdate = true;
     }
 
     @Override
     public Shape clone() {
         Sphere sphere = new Sphere(radius);
-        this.copyTo(sphere);
-        return sphere;
+        return this.copyTo(sphere);
     }
 
     public String toString(){
