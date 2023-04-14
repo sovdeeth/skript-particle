@@ -8,6 +8,8 @@
 ## Current Features:
 - Shapes:
   - Circles and Spheres
+  - Arcs and spherical caps
+  - Lines
 - Drawing:
   - Three styles: outline, surface, and filled. Some shapes only support one or two of these styles.
   - Rotation to any orientation.
@@ -19,6 +21,7 @@
   - Debug axes for clear visualization of the orientation of your shape.
   - Shapes are only calculated when they actually change, so you can draw the same shape many times without any performance hit.
   - Option to make all calculation and drawing asynchronous
+   - Ability to continuously draw a shape for a timespan
 - Particles:
   - Expression for custom particles
   - Section for custom particles
@@ -27,8 +30,7 @@
  - Shapes:
    - Regular and irregular 2d polygons, with optional height
    - Cylinders
-   - Arcs and spherical caps
-   - Lines, rectangles, and cuboids
+   - Rectangles, and cuboids
    - Helices
    - Ellipsoids
    - Bezier Curves
@@ -41,7 +43,6 @@
    - Gradient colour fields, with custom colour nodes.
  - Animation:
    - Ability to stretch out drawing a shape over a timespan
-   - Ability to continuously draw a shape for a timespan
    - Set up a pre-made animation in a custom structure, play back with one draw call 
  - Better particle syntax:
    - Particle motion tag, to allow motions based on the shape: inwards, outwards, clockwise, counter-clockwise
