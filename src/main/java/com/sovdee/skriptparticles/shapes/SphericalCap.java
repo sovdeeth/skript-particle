@@ -6,8 +6,9 @@ import org.bukkit.util.Vector;
 import java.util.HashSet;
 import java.util.Set;
 
-public class SphericalCap extends RadialShape {
+public class SphericalCap extends AbstractShape implements RadialShape, CutoffShape {
 
+    private double radius;
     private double cutoffAngle;
     private double cutoffAngleCos;
 
@@ -49,15 +50,27 @@ public class SphericalCap extends RadialShape {
         needsUpdate = true;
     }
 
-    public double cutoffAngle() {
+    @Override
+    public double getCutoffAngle() {
         return cutoffAngle;
     }
 
-    public SphericalCap cutoffAngle(double cutoffAngle) {
-        this.cutoffAngle = cutoffAngle;
-        this.cutoffAngleCos = Math.cos(cutoffAngle);
+    @Override
+    public void setCutoffAngle(double cutoffAngle) {
+        this.cutoffAngle = MathUtil.clamp(cutoffAngle, 0, Math.PI);
+        this.cutoffAngleCos = Math.cos(this.cutoffAngle);
         needsUpdate = true;
-        return this;
+    }
+
+    @Override
+    public double getRadius() {
+        return radius;
+    }
+
+    @Override
+    public void setRadius(double radius) {
+        this.radius = Math.max(radius,0);
+        needsUpdate = true;
     }
 
     @Override

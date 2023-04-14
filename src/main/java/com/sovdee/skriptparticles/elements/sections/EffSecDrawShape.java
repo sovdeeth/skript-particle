@@ -15,6 +15,7 @@ import ch.njol.skript.lang.TriggerItem;
 import ch.njol.skript.registrations.EventValues;
 import ch.njol.skript.util.Direction;
 import ch.njol.skript.util.Getter;
+import ch.njol.skript.util.Timespan;
 import ch.njol.skript.variables.Variables;
 import ch.njol.util.Kleenean;
 import com.sovdee.skriptparticles.SkriptParticle;
@@ -24,6 +25,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Consumer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -32,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Name("Draw Shape")
 @Description({
@@ -39,22 +42,24 @@ import java.util.concurrent.atomic.AtomicBoolean;
         "The code inside the draw shape section will be executed before drawing begins, and will not affect the original shapes.",
         "This means you can set particle data, or change the shape's location, rotation, or scale, without affecting the shape the next time it's drawn.",
         "",
-        "By default, this effect will run synchronously, meaning it will block the main thread until it's finished drawing. For most cases, this is fine. " +
-        "However, if you want to draw a lot of shapes at once, or if you want to draw large and complex shapes, you should consider using the async option.",
+        "By default, this effect will run asynchronously, meaning it will do all the calculation and drawing on a separate thread, instead of blocking your server's main thread. " +
+        "This is much better if you want to draw a lot of shapes at once, or if you want to draw large and complex shapes.",
         "Be aware that this changes the behavior of the section slightly. All the section code will first be executed synchronously, " +
         "and then the drawing will be done asynchronously. This means that the time the shape appears may be slightly delayed compared to the completion of the section code.",
         "Additionally, the code immediately after the draw shape section will be executed immediately, often before the drawing is finished. If you stumble across issues with this, " +
-        "please report them on the Skript-Particles GitHub page."
+        "please report them on the Skript-Particles GitHub page and use the synchronous option instead.",
+        "",
+        "Drawing a shape for a duration is async only."
 })
 @Examples({
         "draw a sphere with radius 1 at player's location",
         "draw (a sphere with radius 1 and a cube with radius 1) at player's location for (all players in radius 10 of player)",
-        "asynchronously draw a sphere with radius 1 at player's location",
+        "synchronously draw a sphere with radius 1 at player's location",
         "",
         "draw {_shape} at player's location:",
             "\tset event-shape's particle to dust using dustOption(red, 1)",
         "",
-        "asynchronously draw (a sphere with radius 1 and a cube with radius 1) at player's location:",
+        "synchronously draw (a sphere with radius 1 and a cube with radius 1) at player's location:",
             "\tset event-shape's radius to 2",
 })
 @Since("1.0.0")
@@ -79,7 +84,8 @@ public class EffSecDrawShape extends EffectSection {
 
     static {
         Skript.registerSection(EffSecDrawShape.class,
-                "[async:async[hronously]] draw [shape[s]] %shapes% [%-directions% %-locations%] [for %-players%]"
+                "[sync:sync[hronously]] draw [shape[s]] %shapes% [%-directions% %-locations%] [to %-players%]",
+                "draw [shape[s]] %shapes% [%-directions% %-locations%] [to %-players%] (duration:for) [duration] %timespan% [with (delay|refresh [rate]) [of] %-timespan%]"
         );
         EventValues.registerEventValue(EffSecDrawShape.DrawEvent.class, Shape.class, new Getter<>() {
             @Override
@@ -92,6 +98,10 @@ public class EffSecDrawShape extends EffectSection {
     private Expression<Location> locations;
     private Expression<Shape> shapes;
     private Expression<Player> players;
+    private Expression<Timespan> duration;
+    private Expression<Timespan> delay;
+
+    public static final Timespan ONE_TICK = Timespan.fromTicks_i(1);
 
     @Nullable
     private Trigger trigger;
@@ -118,7 +128,12 @@ public class EffSecDrawShape extends EffectSection {
             }
         }
 
-        async = parseResult.hasTag("async");
+        if (parseResult.hasTag("duration")) {
+            duration = (Expression<Timespan>) expressions[4];
+            delay = (Expression<Timespan>) expressions[5];
+        }
+
+        async = !parseResult.hasTag("sync");
 
         return true;
     }
@@ -168,16 +183,42 @@ public class EffSecDrawShape extends EffectSection {
                 preppedShapes.add(preppedShape);
             }
 
-            Bukkit.getScheduler().runTaskAsynchronously(Skript.getInstance(), () -> {
-                long now = System.nanoTime();
-                SkriptParticle.info("Drawing shape asynchronously: " + (now / 1000000) + "ms");
-                if (useShapeLocation) {
-                    executeAsync(new Location[]{null}, preppedShapes, recipients);
-                } else {
-                    executeAsync(locations.getArray(event), preppedShapes, recipients);
+ ;
+            long period, iterations;
+            if (duration == null) {
+                period = 1;
+                iterations = 1;
+            } else {
+                Timespan delay = (this.delay == null ? ONE_TICK : this.delay.getSingle(event));
+                Timespan duration = this.duration.getSingle(event);
+                if (delay == null || duration == null) return getNext();
+
+                period = Math.max(delay.getTicks_i(),1);
+                iterations = Math.max(duration.getTicks_i() / period, 1);
+            }
+            AtomicLong currentIteration = new AtomicLong(0);
+            final Object eventVars = Variables.copyLocalVariables(event);
+            BukkitRunnable runnable = new BukkitRunnable() {
+                @Override
+                public void run() {
+                    long now = System.nanoTime();
+                    SkriptParticle.info("Drawing shape asynchronously (iteration " + currentIteration + "): " + (now / 1000000) + "ms");
+                    if (useShapeLocation) {
+                        executeAsync(new Location[]{null}, preppedShapes, recipients);
+                    } else {
+                        Object tempVars = Variables.copyLocalVariables(event);
+                        Variables.setLocalVariables(event, eventVars);
+                        executeAsync(locations.getArray(event), preppedShapes, recipients);
+                        Variables.setLocalVariables(event, tempVars);
+                    }
+                    SkriptParticle.info("Finished drawing shape asynchronously: " + (System.nanoTime() - now) / 1000000.0 + "ms");
+                    if (currentIteration.incrementAndGet() >= iterations) {
+                        this.cancel();
+                    }
                 }
-                SkriptParticle.info("Finished drawing shape asynchronously: " + (System.nanoTime() - now) / 1000000.0 + "ms");
-            });
+            };
+            runnable.runTaskTimerAsynchronously(Skript.getInstance(), 0, period);
+
         }
         return getNext();
     }

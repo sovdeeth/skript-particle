@@ -12,9 +12,8 @@ import ch.njol.util.Kleenean;
 import com.sovdee.skriptparticles.shapes.Shape;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
-import org.joml.Quaternionf;
-
 import org.jetbrains.annotations.Nullable;
+import org.joml.Quaternionf;
 
 @Name("Rotate Shape")
 @Description({

@@ -5,7 +5,10 @@ import org.bukkit.util.Vector;
 
 import java.util.Set;
 
-public class Sphere extends RadialShape {
+public class Sphere extends AbstractShape implements RadialShape {
+
+    private double radius;
+
     public Sphere (double radius){
         super();
         this.style = Shape.Style.SURFACE;
@@ -48,6 +51,17 @@ public class Sphere extends RadialShape {
     }
 
     @Override
+    public double getRadius() {
+        return radius;
+    }
+
+    @Override
+    public void setRadius(double radius) {
+        this.radius = Math.max(radius,0);
+        needsUpdate = true;
+    }
+
+    @Override
     public Shape clone() {
         Sphere sphere = new Sphere(radius);
         return this.copyTo(sphere);
@@ -56,5 +70,4 @@ public class Sphere extends RadialShape {
     public String toString(){
         return style.toString() + " sphere with radius " + this.radius + " and density " + this.particleDensity;
     }
-
 }

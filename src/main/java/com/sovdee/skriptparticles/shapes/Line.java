@@ -6,7 +6,7 @@ import org.bukkit.util.Vector;
 
 import java.util.Set;
 
-public class Line extends Shape {
+public class Line extends AbstractShape implements LWHShape {
 
     private Vector start;
     private Vector end;
@@ -69,4 +69,34 @@ public class Line extends Shape {
         return "Line from " + this.start + " to " + this.end;
     }
 
+    @Override
+    public double getLength() {
+        return start.clone().subtract(end).length();
+    }
+
+    @Override
+    public void setLength(double length) {
+        Vector direction = end.clone().subtract(start).normalize();
+        end = start.clone().add(direction.multiply(length));
+    }
+
+    @Override
+    public double getWidth() {
+        return 0;
+    }
+
+    @Override
+    public void setWidth(double width) {
+        return;
+    }
+
+    @Override
+    public double getHeight() {
+        return 0;
+    }
+
+    @Override
+    public void setHeight(double height) {
+        return;
+    }
 }

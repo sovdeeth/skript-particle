@@ -10,7 +10,6 @@ import com.sovdee.skriptparticles.shapes.Shape;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
-
 import org.jetbrains.annotations.Nullable;
 
 @Name("Shape Offset")

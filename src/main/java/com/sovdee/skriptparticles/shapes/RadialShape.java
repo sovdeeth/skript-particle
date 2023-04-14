@@ -1,14 +1,16 @@
 package com.sovdee.skriptparticles.shapes;
 
-public abstract class RadialShape extends Shape {
-    protected double radius;
+public interface RadialShape extends Shape {
 
-    public double getRadius() {
-        return radius;
-    }
+    /*
+     * Gets the radius of the shape
+     * @return The radius of the shape
+     */
+    double getRadius();
 
-    public void setRadius(double radius) {
-        this.radius = radius;
-        needsUpdate = true;
-    }
+    /*
+     * Sets the radius of the shape
+     * @param radius The radius of the shape
+     */
+    void setRadius(double radius);
 }

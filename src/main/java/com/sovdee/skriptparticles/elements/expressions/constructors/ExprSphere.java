@@ -54,7 +54,7 @@ public class ExprSphere extends SimpleExpression<Sphere>{
     protected Sphere @NotNull [] get(@NotNull Event event) {
         Number radius = this.radius.getSingle(event);
         if (radius == null || radius.doubleValue() <= 0) {
-            Skript.error("The radius of the sphere must be greater than 0; defaulting to 1. (radius: " + radius + ")");
+            Skript.warning("The radius of the sphere must be greater than 0; defaulting to 1. (radius: " + radius + ")");
             radius = 1;
         }
         Sphere sphere = new Sphere(radius.doubleValue());

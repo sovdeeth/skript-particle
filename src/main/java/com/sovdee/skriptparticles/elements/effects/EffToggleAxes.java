@@ -11,7 +11,6 @@ import ch.njol.skript.lang.SkriptParser;
 import ch.njol.util.Kleenean;
 import com.sovdee.skriptparticles.shapes.Shape;
 import org.bukkit.event.Event;
-
 import org.jetbrains.annotations.Nullable;
 
 @Name("Toggle Axes")

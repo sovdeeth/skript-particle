@@ -5,9 +5,10 @@ import org.bukkit.util.Vector;
 
 import java.util.Set;
 
-public class Arc extends RadialShape {
+public class Arc extends AbstractShape implements RadialShape, CutoffShape {
 
     private double cutoffAngle;
+    private double radius;
 
     public Arc(double radius, double cutoffAngle){
         super();
@@ -39,7 +40,18 @@ public class Arc extends RadialShape {
     }
 
     public void setCutoffAngle(double cutoffAngle) {
-        this.cutoffAngle = cutoffAngle;
+        this.cutoffAngle = MathUtil.clamp(cutoffAngle, 0, 2*Math.PI);
+        needsUpdate = true;
+    }
+
+    @Override
+    public double getRadius() {
+        return radius;
+    }
+
+    @Override
+    public void setRadius(double radius) {
+        this.radius = Math.max(radius,0);
         needsUpdate = true;
     }
 
@@ -47,5 +59,9 @@ public class Arc extends RadialShape {
     public Shape clone() {
         Arc arc = new Arc(this.radius, this.cutoffAngle);
         return this.copyTo(arc);
+    }
+
+    public String toString(){
+        return style.toString() + " arc with radius " + this.radius + " and density " + this.particleDensity;
     }
 }

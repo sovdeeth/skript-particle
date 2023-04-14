@@ -13,7 +13,6 @@ import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
 import com.sovdee.skriptparticles.shapes.Arc;
 import com.sovdee.skriptparticles.shapes.Shape;
-import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
 
@@ -77,8 +76,10 @@ public class ExprArc extends SimpleExpression<Arc> {
         if (!isRadians)
             angle = Math.toRadians(angle);
 
-        angle = MathUtil.clamp(angle, 0, 2*Math.PI);
-        radius = Math.max(radius, 0);
+        if (radius <= 0) {
+            Skript.warning("The radius of the arc must be greater than 0; defaulting to 1. (radius: " + radius + ")");
+            radius = 1;
+        }
 
         Arc arc = new Arc(radius, angle);
         if (isSector)
