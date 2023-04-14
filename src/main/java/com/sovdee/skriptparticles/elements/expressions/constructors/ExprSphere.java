@@ -76,6 +76,6 @@ public class ExprSphere extends SimpleExpression<Sphere>{
     @Override
     @NotNull
     public String toString(@Nullable Event event, boolean debug) {
-        return "sphere";
+        return "sphere with radius " + radius.toString(event, debug);
     }
 }

@@ -114,12 +114,10 @@ public class ExprLine extends SimpleExpression<Line> {
 
     @Override
     public String toString(@Nullable Event event, boolean debug) {
-        if (event == null)
-            return "a line";
         return switch (matchedPattern) {
-            case 0 -> "a line from " + startVector.getSingle(event) + " to " + endVector.getSingle(event);
-            case 1 -> "a line from " + startLocation.getSingle(event) + " to " + endLocation.getSingle(event);
-            case 2 -> "a line in direction " + direction.getSingle(event) + " with length " + length.getSingle(event);
+            case 0 -> "a line from " + startVector.toString(event, debug) + " to " + endVector.toString(event, debug);
+            case 1 -> "a line from " + startLocation.toString(event, debug) + " to " + endLocation.toString(event, debug);
+            case 2 -> "a line in direction " + direction.toString(event, debug) + " with length " + length.toString(event, debug);
             default -> "a line";
         };
     }
