@@ -20,8 +20,10 @@ import ch.njol.skript.variables.Variables;
 import ch.njol.util.Kleenean;
 import com.sovdee.skriptparticles.SkriptParticle;
 import com.sovdee.skriptparticles.shapes.Shape;
+import com.sovdee.skriptparticles.util.DynamicLocation;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
@@ -84,8 +86,8 @@ public class EffSecDrawShape extends EffectSection {
 
     static {
         Skript.registerSection(EffSecDrawShape.class,
-                "[sync:sync[hronously]] draw [shape[s]] %shapes% [%-directions% %-locations%] [to %-players%]",
-                "draw [shape[s]] %shapes% [%-directions% %-locations%] [to %-players%] (duration:for) [duration] %timespan% [with (delay|refresh [rate]) [of] %-timespan%]"
+                "[sync:sync[hronously]] draw [shape[s]] %shapes% [%-directions% %-locations/entities%] [to %-players%]",
+                "draw [shape[s]] %shapes% [[%-directions%] %-locations/entities%] [to %-players%] (duration:for) [duration] %timespan% [with (delay|refresh [rate]) [of] %-timespan%]"
         );
         EventValues.registerEventValue(EffSecDrawShape.DrawEvent.class, Shape.class, new Getter<>() {
             @Override
@@ -95,7 +97,8 @@ public class EffSecDrawShape extends EffectSection {
         }, EventValues.TIME_NOW);
     }
 
-    private Expression<Location> locations;
+    private Expression<?> locations;
+    private Expression<Direction> directions;
     private Expression<Shape> shapes;
     private Expression<Player> players;
     private Expression<Timespan> duration;
@@ -111,8 +114,11 @@ public class EffSecDrawShape extends EffectSection {
     @Override
     public boolean init(Expression<?>[] expressions, int i, Kleenean kleenean, ParseResult parseResult, @Nullable SectionNode sectionNode, @Nullable List<TriggerItem> list) {
         shapes = (Expression<Shape>) expressions[0];
-        if (expressions[1] != null || expressions[2] != null) {
-            locations = Direction.combine((Expression<? extends Direction>) expressions[1], (Expression<? extends Location>) expressions[2]);
+
+        if (expressions[2] != null) {
+            if (expressions[1] != null)
+                directions = (Expression<Direction>) expressions[1];
+            locations = expressions[2];
         } else {
             useShapeLocation = true;
         }
@@ -166,10 +172,28 @@ public class EffSecDrawShape extends EffectSection {
             consumer = null;
         }
 
+        // Figure out what locations to draw at, or what entities to follow
+        List<DynamicLocation> locations = new ArrayList<>();
+        Direction direction = null;
+        if (!useShapeLocation) {
+            if (directions != null)
+                direction = directions.getSingle(event);
+            for (Object location : this.locations.getArray(event)) {
+                if (location instanceof Entity) {
+                    locations.add(new DynamicLocation((Entity) location, direction));
+                } else if (location instanceof Location) {
+                    locations.add(new DynamicLocation((Location) location, direction));
+                }
+            }
+        } else {
+            // blank value means use shape location
+            locations.add(new DynamicLocation());
+        }
+
         if (!async) {
             long now = System.nanoTime();
             SkriptParticle.info("Drawing shape synchronously: " + (now / 1000000) + "ms");
-            executeSync(event, consumer, recipients);
+            executeSync(event, locations, consumer, recipients);
             SkriptParticle.info("Finished drawing shape synchronously: " + (System.nanoTime() - now) / 1000000.0 + "ms");
         } else {
             // Clone shapes and run Consumer before going async
@@ -183,7 +207,6 @@ public class EffSecDrawShape extends EffectSection {
                 preppedShapes.add(preppedShape);
             }
 
- ;
             long period, iterations;
             if (duration == null) {
                 period = 1;
@@ -197,20 +220,12 @@ public class EffSecDrawShape extends EffectSection {
                 iterations = Math.max(duration.getTicks_i() / period, 1);
             }
             AtomicLong currentIteration = new AtomicLong(0);
-            final Object eventVars = Variables.copyLocalVariables(event);
             BukkitRunnable runnable = new BukkitRunnable() {
                 @Override
                 public void run() {
                     long now = System.nanoTime();
                     SkriptParticle.info("Drawing shape asynchronously (iteration " + currentIteration + "): " + (now / 1000000) + "ms");
-                    if (useShapeLocation) {
-                        executeAsync(new Location[]{null}, preppedShapes, recipients);
-                    } else {
-                        Object tempVars = Variables.copyLocalVariables(event);
-                        Variables.setLocalVariables(event, eventVars);
-                        executeAsync(locations.getArray(event), preppedShapes, recipients);
-                        Variables.setLocalVariables(event, tempVars);
-                    }
+                    executeAsync(locations, preppedShapes, recipients);
                     SkriptParticle.info("Finished drawing shape asynchronously: " + (System.nanoTime() - now) / 1000000.0 + "ms");
                     if (currentIteration.incrementAndGet() >= iterations) {
                         this.cancel();
@@ -223,10 +238,11 @@ public class EffSecDrawShape extends EffectSection {
         return getNext();
     }
 
-    private void executeSync(Event event, Consumer<Shape> consumer, Collection<Player> recipients){
+    private void executeSync(Event event, Collection<DynamicLocation> locations, Consumer<Shape> consumer, Collection<Player> recipients){
         Shape shapeCopy;
-        Location[] locations = useShapeLocation ? new Location[]{null} : this.locations.getArray(event);
-        for (Location location : locations) {
+        Location location;
+        for (DynamicLocation dynamicLocation : locations) {
+            location = dynamicLocation.getLocation();
             for (Shape shape : shapes.getArray(event)) {
                 if (consumer != null) {
                     // copy the shape so that it can be modified by the consumer without affecting the original
@@ -239,8 +255,10 @@ public class EffSecDrawShape extends EffectSection {
         }
     }
 
-    private void executeAsync(Location[] locations, Collection<Shape> shapes, Collection<Player> recipients) {
-        for (Location location : locations) {
+    private void executeAsync(Collection<DynamicLocation> locations, Collection<Shape> shapes, Collection<Player> recipients) {
+        Location location;
+        for (DynamicLocation dynamicLocation : locations) {
+            location = dynamicLocation.getLocation();
             for (Shape shape : shapes) {
                 SkriptParticle.info("Drawing shape: " + shape);
                 shape.draw(location, null, null, recipients);
