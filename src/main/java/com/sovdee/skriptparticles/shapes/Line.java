@@ -1,7 +1,8 @@
 package com.sovdee.skriptparticles.shapes;
 
+import com.sovdee.skriptparticles.util.DynamicLocation;
 import com.sovdee.skriptparticles.util.MathUtil;
-import org.bukkit.Location;
+import com.sovdee.skriptparticles.util.Quaternion;
 import org.bukkit.util.Vector;
 
 import java.util.Set;
@@ -10,6 +11,11 @@ public class Line extends AbstractShape implements LWHShape {
 
     private Vector start;
     private Vector end;
+
+    private DynamicLocation startLocation;
+    private DynamicLocation endLocation;
+    private boolean isDynamic = false;
+
 
     public Line() {
         this(new Vector(0, 0, 0), new Vector(0, 0, 0));
@@ -25,11 +31,35 @@ public class Line extends AbstractShape implements LWHShape {
         this.end = end;
     }
 
-    public Line(Location start, Location end) {
+    public Line(DynamicLocation start, DynamicLocation end) {
         super();
-        this.start = new Vector(0, 0, 0);
-        this.end = end.toVector().subtract(start.toVector());
+        if (start.isDynamic() || end.isDynamic()) {
+            this.startLocation = start.clone();
+            this.endLocation = end.clone();
+            this.isDynamic = true;
+        } else {
+            this.start = new Vector(0, 0, 0);
+            this.end = end.getLocation().toVector().subtract(start.getLocation().toVector());
+        }
         this.location = start.clone();
+    }
+
+    // Ensure that the points are always needing to be updated if the start or end location is dynamic
+    @Override
+    public Set<Vector> getPoints(Quaternion orientation) {
+        Set<Vector> points = super.getPoints(orientation);
+        if (isDynamic)
+            this.needsUpdate = true;
+        return points;
+    }
+
+    @Override
+    public Set<Vector> generatePoints() {
+        if (isDynamic) {
+            this.start = new Vector(0, 0, 0);
+            this.end = endLocation.getLocation().toVector().subtract(startLocation.getLocation().toVector());
+        }
+        return super.generatePoints();
     }
 
     @Override
@@ -61,7 +91,8 @@ public class Line extends AbstractShape implements LWHShape {
 
     @Override
     public Shape clone() {
-        Line line = new Line(this.start, this.end);
+        Line line = (isDynamic ? new Line(this.startLocation, this.endLocation) : new Line(this.start, this.end));
+        line.isDynamic = this.isDynamic;
         return this.copyTo(line);
     }
 

@@ -1,6 +1,7 @@
 package com.sovdee.skriptparticles.shapes;
 
 import com.sovdee.skriptparticles.particles.Particle;
+import com.sovdee.skriptparticles.util.DynamicLocation;
 import com.sovdee.skriptparticles.util.Quaternion;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -74,7 +75,7 @@ public interface Shape extends Cloneable {
      * The provided consumer is run before the shape is drawn, allowing for the shape to be modified before drawing.
      * This method should not be called by a complex shape, but only by the user via EffSecDrawShape.
      */
-    void draw(Location location, Consumer<Shape> consumer, @Nullable Collection<Player> recipients);
+    void draw(@Nullable Location location, Consumer<Shape> consumer, @Nullable Collection<Player> recipients);
 
     /*
      * @Returns the relative X axis of the shape, either using its default orientation, or the last orientation used to draw the shape.
@@ -162,12 +163,12 @@ public interface Shape extends Cloneable {
     /*
      * Sets the location of the shape. This is used as a fallback if the shape is drawn without a location.
      */
-    void setLocation(Location location);
+    void setLocation(DynamicLocation location);
 
     /*
      * @Returns the location of the shape.
      */
-    Location getLocation();
+    DynamicLocation getLocation();
 
     /*
      * @Returns the UUID of the shape. Used for uniqueness during serialization.

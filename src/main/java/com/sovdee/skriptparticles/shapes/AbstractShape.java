@@ -2,6 +2,7 @@ package com.sovdee.skriptparticles.shapes;
 
 import com.sovdee.skriptparticles.SkriptParticle;
 import com.sovdee.skriptparticles.particles.Particle;
+import com.sovdee.skriptparticles.util.DynamicLocation;
 import com.sovdee.skriptparticles.util.ParticleUtil;
 import com.sovdee.skriptparticles.util.Quaternion;
 import org.bukkit.Location;
@@ -24,7 +25,7 @@ public abstract class AbstractShape implements Shape {
     protected Quaternion lastOrientation;
     protected double scale;
     protected Vector offset;
-    protected Location location;
+    protected DynamicLocation location;
     private final UUID uuid;
     protected Particle particle;
     protected double particleDensity = 0.25;
@@ -139,7 +140,7 @@ public abstract class AbstractShape implements Shape {
                 SkriptParticle.warning("Shape " + this + " has no location set, and no location was provided to draw the shape at.");
                 return;
             }
-            location = this.location;
+            location = this.location.getLocation();
         }
 
         // cache the last location and orientation used to draw the shape
@@ -178,7 +179,7 @@ public abstract class AbstractShape implements Shape {
      * This method should not be called by a complex shape, but only by the user via EffSecDrawShape.
      */
     @Override
-    public void draw(Location location, Consumer<Shape> consumer, @Nullable Collection<Player> recipients) {
+    public void draw(@Nullable Location location, Consumer<Shape> consumer, @Nullable Collection<Player> recipients) {
         consumer.accept(this);
         draw(location, this.orientation, this.particle, recipients);
     }
@@ -322,7 +323,7 @@ public abstract class AbstractShape implements Shape {
      * Sets the location of the shape. This is used as a fallback if the shape is drawn without a location.
      */
     @Override
-    public void setLocation(Location location) {
+    public void setLocation(DynamicLocation location) {
         this.location = location.clone();
     }
 
@@ -330,7 +331,7 @@ public abstract class AbstractShape implements Shape {
      * @Returns the location of the shape.
      */
     @Override
-    public Location getLocation() {
+    public DynamicLocation getLocation() {
         return location.clone();
     }
 
