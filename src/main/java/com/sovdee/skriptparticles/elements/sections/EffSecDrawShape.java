@@ -207,6 +207,8 @@ public class EffSecDrawShape extends EffectSection {
                 preppedShapes.add(preppedShape);
             }
 
+            if (preppedShapes.isEmpty()) return getNext();
+
             long period, iterations;
             if (duration == null) {
                 period = 1;

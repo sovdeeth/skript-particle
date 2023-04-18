@@ -2,6 +2,7 @@ package com.sovdee.skriptparticles.shapes;
 
 import com.sovdee.skriptparticles.util.DynamicLocation;
 import com.sovdee.skriptparticles.util.Quaternion;
+import org.bukkit.Location;
 import org.bukkit.util.Vector;
 
 import java.util.HashSet;
@@ -12,9 +13,9 @@ public class Cuboid extends AbstractShape implements LWHShape {
     private double halfLength;
     private double halfWidth;
     private double halfHeight;
-    private double xStep;
-    private double zStep;
-    private double yStep;
+    private double lengthStep;
+    private double widthStep;
+    private double heightStep;
     private Vector centerOffset = new Vector(0, 0, 0);
     private DynamicLocation negativeCorner;
     private DynamicLocation positiveCorner;
@@ -30,54 +31,56 @@ public class Cuboid extends AbstractShape implements LWHShape {
     
     public Cuboid(Vector negativeCorner, Vector positiveCorner){
         super();
-        this.halfWidth = (positiveCorner.getX() - negativeCorner.getX()) / 2;
-        this.halfLength = (positiveCorner.getZ() - negativeCorner.getZ()) / 2;
-        this.halfHeight = (positiveCorner.getY() - negativeCorner.getY()) / 2;
+        this.halfLength = Math.abs(positiveCorner.getX() - negativeCorner.getX()) / 2;
+        this.halfWidth = Math.abs(positiveCorner.getZ() - negativeCorner.getZ()) / 2;
+        this.halfHeight = Math.abs(positiveCorner.getY() - negativeCorner.getY()) / 2;
         centerOffset = positiveCorner.clone().add(negativeCorner).multiply(0.5);
         calculateSteps();
     }
     
     public Cuboid(DynamicLocation negativeCorner, DynamicLocation positiveCorner){
         super();
+        Location negative = negativeCorner.getLocation();
+        Location positive = positiveCorner.getLocation();
         if (negativeCorner.isDynamic() || positiveCorner.isDynamic()) {
             this.negativeCorner = negativeCorner.clone();
             this.positiveCorner = positiveCorner.clone();
             isDynamic = true;
         } else {
-            this.halfWidth = (positiveCorner.getLocation().getX() - negativeCorner.getLocation().getX()) / 2;
-            this.halfLength = (positiveCorner.getLocation().getZ() - negativeCorner.getLocation().getZ()) / 2;
-            this.halfHeight = (positiveCorner.getLocation().getY() - negativeCorner.getLocation().getY()) / 2;
+            this.halfLength = Math.abs(positive.getX() - negative.getX()) / 2;
+            this.halfWidth = Math.abs(positive.getZ() - negative.getZ()) / 2;
+            this.halfHeight = Math.abs(positive.getY() - negative.getY()) / 2;
         }
-        location = new DynamicLocation(negativeCorner.getLocation().add(positiveCorner.getLocation().subtract(negativeCorner.getLocation()).toVector().multiply(0.5)));
+        location = new DynamicLocation(negative.clone().add(positive.subtract(negative).toVector().multiply(0.5)));
         calculateSteps();
     }
 
     private void calculateSteps() {
-        xStep = 2 * halfWidth / Math.round(2 * halfWidth / particleDensity);
-        zStep = 2 * halfLength / Math.round(2 * halfLength / particleDensity);
-        yStep = 2 * halfHeight / Math.round(2 * halfHeight / particleDensity);
+        widthStep = 2 * halfWidth / Math.round(2 * halfWidth / particleDensity);
+        lengthStep = 2 * halfLength / Math.round(2 * halfLength / particleDensity);
+        heightStep = 2 * halfHeight / Math.round(2 * halfHeight / particleDensity);
     }
 
     @Override
     public Set<Vector> generateOutline() {
         HashSet<Vector> points = new HashSet<>();
-        for (double x = -halfWidth; x <= halfWidth; x += xStep) {
-            points.add(new Vector(x, -halfHeight, -halfLength));
-            points.add(new Vector(x, -halfHeight, halfLength));
-            points.add(new Vector(x, halfHeight, -halfLength));
-            points.add(new Vector(x, halfHeight, halfLength));
+        for (double x = -halfLength; x <= halfLength; x += lengthStep) {
+            points.add(new Vector(x, -halfHeight, -halfWidth));
+            points.add(new Vector(x, -halfHeight, halfWidth));
+            points.add(new Vector(x, halfHeight, -halfWidth));
+            points.add(new Vector(x, halfHeight, halfWidth));
         }
-        for (double y = -halfHeight + yStep; y < halfHeight; y += yStep) {
-            points.add(new Vector(-halfWidth, y, -halfLength));
-            points.add(new Vector(-halfWidth, y, halfLength));
-            points.add(new Vector(halfWidth, y, -halfLength));
-            points.add(new Vector(halfWidth, y, halfLength));
+        for (double y = -halfHeight + heightStep; y < halfHeight; y += heightStep) {
+            points.add(new Vector(-halfLength, y, -halfWidth));
+            points.add(new Vector(-halfLength, y, halfWidth));
+            points.add(new Vector(halfLength, y, -halfWidth));
+            points.add(new Vector(halfLength, y, halfWidth));
         }
-        for (double z = -halfLength + zStep; z < halfLength; z += zStep) {
-            points.add(new Vector(-halfWidth, -halfHeight, z));
-            points.add(new Vector(-halfWidth, halfHeight, z));
-            points.add(new Vector(halfWidth, -halfHeight, z));
-            points.add(new Vector(halfWidth, halfHeight, z));
+        for (double z = -halfWidth + widthStep; z < halfWidth; z += widthStep) {
+            points.add(new Vector(-halfLength, -halfHeight, z));
+            points.add(new Vector(-halfLength, halfHeight, z));
+            points.add(new Vector(halfLength, -halfHeight, z));
+            points.add(new Vector(halfLength, halfHeight, z));
         }
         return points;
     }
@@ -85,22 +88,22 @@ public class Cuboid extends AbstractShape implements LWHShape {
     @Override
     public Set<Vector> generateSurface() {
         HashSet<Vector> points = new HashSet<>();
-        for (double x = -halfWidth; x <= halfWidth; x += xStep) {
-            for (double z = -halfLength; z <= halfLength; z += zStep) {
+        for (double x = -halfLength; x <= halfLength; x += lengthStep) {
+            for (double z = -halfWidth; z <= halfWidth; z += widthStep) {
                 points.add(new Vector(x, -halfHeight, z));
                 points.add(new Vector(x, halfHeight, z));
             }
         }
-        for (double y = -halfHeight + yStep; y < halfHeight; y += yStep) {
-            for (double z = -halfLength; z <= halfLength; z += zStep) {
-                points.add(new Vector(-halfWidth, y, z));
-                points.add(new Vector(halfWidth, y, z));
+        for (double y = -halfHeight + heightStep; y < halfHeight; y += heightStep) {
+            for (double z = -halfWidth; z <= halfWidth; z += widthStep) {
+                points.add(new Vector(-halfLength, y, z));
+                points.add(new Vector(halfLength, y, z));
             }
         }
-        for (double x = -halfWidth + xStep; x < halfWidth; x += xStep) {
-            for (double y = -halfHeight + yStep; y < halfHeight; y += yStep) {
-                points.add(new Vector(x, y, -halfLength));
-                points.add(new Vector(x, y, halfLength));
+        for (double x = -halfLength + lengthStep; x < halfLength; x += lengthStep) {
+            for (double y = -halfHeight + heightStep; y < halfHeight; y += heightStep) {
+                points.add(new Vector(x, y, -halfWidth));
+                points.add(new Vector(x, y, halfWidth));
             }
         }
         return points;
@@ -109,9 +112,9 @@ public class Cuboid extends AbstractShape implements LWHShape {
     @Override
     public Set<Vector> generateFilled() {
         HashSet<Vector> points = new HashSet<>();
-        for (double x = -halfWidth; x <= halfWidth; x += xStep) {
-            for (double y = -halfHeight; y <= halfHeight; y += yStep) {
-                for (double z = -halfLength; z <= halfLength; z += zStep) {
+        for (double x = -halfLength; x <= halfLength; x += lengthStep) {
+            for (double y = -halfHeight; y <= halfHeight; y += heightStep) {
+                for (double z = -halfWidth; z <= halfWidth; z += widthStep) {
                     points.add(new Vector(x, y, z));
                 }
             }
@@ -122,10 +125,12 @@ public class Cuboid extends AbstractShape implements LWHShape {
     @Override
     public Set<Vector> generatePoints() {
         if (isDynamic) {
-            this.halfWidth = (positiveCorner.getLocation().getX() - negativeCorner.getLocation().getX()) / 2;
-            this.halfLength = (positiveCorner.getLocation().getZ() - negativeCorner.getLocation().getZ()) / 2;
-            this.halfHeight = (positiveCorner.getLocation().getY() - negativeCorner.getLocation().getY()) / 2;
-            location = new DynamicLocation(negativeCorner.getLocation().add(positiveCorner.getLocation().subtract(negativeCorner.getLocation()).toVector().multiply(0.5)));
+            Location negative = negativeCorner.getLocation();
+            Location positive = positiveCorner.getLocation();
+            this.halfLength = Math.abs(positive.getX() - negative.getX()) / 2;
+            this.halfWidth = Math.abs(positive.getZ() - negative.getZ()) / 2;
+            this.halfHeight = Math.abs(positive.getY() - negative.getY()) / 2;
+            location = new DynamicLocation(negative.clone().add(positive.subtract(negative).toVector().multiply(0.5)));
         }
         calculateSteps();
         Set<Vector> points = super.generatePoints();
@@ -171,16 +176,19 @@ public class Cuboid extends AbstractShape implements LWHShape {
     @Override
     public void setLength(double length) {
         this.halfLength = length / 2;
+        this.needsUpdate = true;
     }
 
     @Override
     public void setWidth(double width) {
         this.halfWidth = width / 2;
+        this.needsUpdate = true;
     }
 
     @Override
     public void setHeight(double height) {
         this.halfHeight = height / 2;
+        this.needsUpdate = true;
     }
 
     @Override

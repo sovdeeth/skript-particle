@@ -70,7 +70,6 @@ public class DynamicLocation {
      * If the location is null, returns origin in null world
      * @return the current location of the dynamic location
      */
-    @NotNull
     public Location getLocation() {
         Location location = this.location;
 
@@ -80,11 +79,8 @@ public class DynamicLocation {
         if (direction != null && location != null)
             location = direction.getRelative(location);
 
-        if (location != null) {
+        if (location != null)
             location = location.clone();
-        } else {
-            location = new Location(null, 0, 0, 0);
-        }
         return location;
     }
 

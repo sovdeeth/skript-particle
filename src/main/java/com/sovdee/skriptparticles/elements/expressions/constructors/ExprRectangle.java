@@ -1,6 +1,10 @@
 package com.sovdee.skriptparticles.elements.expressions.constructors;
 
 import ch.njol.skript.Skript;
+import ch.njol.skript.doc.Description;
+import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Name;
+import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.ExpressionType;
 import ch.njol.skript.lang.SkriptParser;
@@ -13,73 +17,95 @@ import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
 
-public class ExprRectangle extends SimpleExpression<Rectangle> {
+import static com.sovdee.skriptparticles.shapes.Rectangle.XY;
+import static com.sovdee.skriptparticles.shapes.Rectangle.XZ;
+import static com.sovdee.skriptparticles.shapes.Rectangle.YZ;
 
-    // TODO: zy and xy planes
+@Name("Particle Rectangle")
+@Description({
+        "Creates a rectangle from a length and a width, or from two corners. The length and width must be greater than 0.",
+        "When defining a rectangle from two corners, the corners can either be vectors or locations/entities. " +
+        "You cannot use both vectors and locations/entities, but you can mix and match locations and entities." +
+        "When using locations, this is a shape that can be drawn without a specific location. It will be drawn between the two given locations.",
+        "Note that the rectangle defaults to the xz plane, or parallel to the ground, with x being width and z being length. " +
+        "You can change this to the xy or yz plane by using the 'xy' or 'yz'. In all cases, the first axis is length and the second is width."
+})
+@Examples({
+        "set {_shape} to rectangle with length 10 and width 5",
+        "set {_shape} to a yz rectangle from vector(0, 0, 0) to vector(10, 10, 10)",
+        "draw a rectangle with length 10 and width 5 at player",
+        "",
+        "# note that the following does not require a location to be drawn at",
+        "draw a rectangle from player to player's target"
+})
+@Since("1.0.0")
+public class ExprRectangle extends SimpleExpression<Rectangle> {
 
     static {
         Skript.registerExpression(ExprRectangle.class, Rectangle.class, ExpressionType.COMBINED,
-                "[a] [solid:(solid|filled)] rectangle [with|of] length %number%[,] [and] width %number%",
-                "[a] [solid:(solid|filled)] rectangle [with|of] width %number%[,] [and] length %number%",
-                "[a] [solid:(solid|filled)] rectangle (from|with corners [at]) %location/entity/vector% (to|and) %location/entity/vector%"
+                "[a] [solid:(solid|filled)] [:xz|:xy|:yz] rectangle [with|of] length %number%[,] [and] width %number%",
+                "[a] [solid:(solid|filled)] [:xz|:xy|:yz] rectangle (from|with corners [at]) %location/entity/vector% (to|and) %location/entity/vector%"
         );
     }
 
     private Expression<Number> lengthExpr;
     private Expression<Number> widthExpr;
-    private boolean isSolid;
+    private Shape.Style style;
     private Expression<?> corner1Expr;
     private Expression<?> corner2Expr;
     private int matchedPattern;
+    private int plane;
 
     @Override
     public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, SkriptParser.ParseResult parseResult) {
-        isSolid = parseResult.hasTag("solid");
+        style = parseResult.hasTag("solid") ? Shape.Style.SURFACE : Shape.Style.OUTLINE;
         this.matchedPattern = matchedPattern;
         if (matchedPattern == 0) {
             lengthExpr = (Expression<Number>) exprs[0];
             widthExpr = (Expression<Number>) exprs[1];
-        } else if (matchedPattern == 1) {
-            lengthExpr = (Expression<Number>) exprs[1];
-            widthExpr = (Expression<Number>) exprs[0];
         } else {
             corner1Expr = exprs[0];
             corner2Expr = exprs[1];
         }
+        plane = XZ;
+        if (parseResult.hasTag("xy")) plane = XY;
+        else if (parseResult.hasTag("yz")) plane = YZ;
         return true;
     }
 
     @Override
     protected @Nullable Rectangle[] get(Event event) {
         Rectangle rectangle;
-        if (matchedPattern <= 1) {
+        if (matchedPattern == 0) {
             if (lengthExpr == null || widthExpr == null) return new Rectangle[0];
             Number length = lengthExpr.getSingle(event);
             Number width = widthExpr.getSingle(event);
             if (length == null || width == null) return new Rectangle[0];
-            rectangle = new Rectangle(length.doubleValue(), width.doubleValue());
+            rectangle = new Rectangle(length.doubleValue(), width.doubleValue(), plane);
         } else {
             if (corner1Expr == null || corner2Expr == null) return new Rectangle[0];
             Object corner1 = corner1Expr.getSingle(event);
             Object corner2 = corner2Expr.getSingle(event);
             if (corner1 == null || corner2 == null) return new Rectangle[0];
 
-            // if both are vectors, create a static rectangle
+            // vector check
             if (corner1 instanceof Vector && corner2 instanceof Vector) {
-                rectangle = new Rectangle((Vector) corner1, (Vector) corner2);
+                // if both are vectors, create a static rectangle
+                rectangle = new Rectangle((Vector) corner1, (Vector) corner2, plane);
                 return new Rectangle[]{rectangle};
             } else if (corner1 instanceof Vector || corner2 instanceof Vector) {
-                return new Rectangle[0]; // if only one is a vector, return empty array
-            }
-
-            // if neither are vectors, create a dynamic rectangle
-            corner1 = DynamicLocation.fromLocationEntity(corner1);
-            corner2 = DynamicLocation.fromLocationEntity(corner2);
-            if (corner1 == null || corner2 == null)
+                // if only one is a vector, return empty array
                 return new Rectangle[0];
-            rectangle = new Rectangle((DynamicLocation) corner1, (DynamicLocation) corner2);
+            } else {
+                // if neither are vectors, create a dynamic rectangle
+                corner1 = DynamicLocation.fromLocationEntity(corner1);
+                corner2 = DynamicLocation.fromLocationEntity(corner2);
+                if (corner1 == null || corner2 == null)
+                    return new Rectangle[0];
+                rectangle = new Rectangle((DynamicLocation) corner1, (DynamicLocation) corner2, plane);
+            }
         }
-        if (isSolid) rectangle.setStyle(Shape.Style.SURFACE);
+        rectangle.setStyle(style);
         return new Rectangle[]{rectangle};
     }
 
@@ -95,10 +121,17 @@ public class ExprRectangle extends SimpleExpression<Rectangle> {
 
     @Override
     public String toString(@Nullable Event event, boolean debug) {
-        return (isSolid ? "solid " : "") + switch (matchedPattern) {
-            case 0 -> "rectangle with length " + lengthExpr.toString(event, debug) + " and width " + widthExpr.toString(event, debug);
-            case 1 -> "rectangle from " + corner1Expr.toString(event, debug) + " to " + corner2Expr.toString(event, debug);
-            default -> "";
-        };
+        return (style == Shape.Style.SURFACE ? "solid " : "") +
+                switch (plane) {
+                    case XZ -> " xz ";
+                    case XY -> " xy ";
+                    case YZ -> " yz ";
+                    default -> "";
+                } +
+                switch (matchedPattern) {
+                    case 0 -> "rectangle with length " + lengthExpr.toString(event, debug) + " and width " + widthExpr.toString(event, debug);
+                    case 1 -> "rectangle from " + corner1Expr.toString(event, debug) + " to " + corner2Expr.toString(event, debug);
+                    default -> "";
+                };
     }
 }
