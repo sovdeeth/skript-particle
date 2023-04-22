@@ -52,21 +52,20 @@ public class ExprShapeScale extends SimplePropertyExpression<Shape, Number> {
         if (shapes.length == 0)
             return;
 
-        double deltaValue = ((Number) delta[0]).doubleValue();
+        double change = (delta[0] != null) ? ((Number) delta[0]).doubleValue() : 1;
         switch (mode) {
             case REMOVE:
-                deltaValue = -deltaValue;
+                change = -change;
             case ADD:
                 for (Shape shape : shapes) {
-                    shape.setScale(shape.getScale() + deltaValue);
+                    shape.setScale(shape.getScale() + change);
                 }
                 break;
             case DELETE:
             case RESET:
-                deltaValue = 1;
             case SET:
                 for (Shape shape : shapes) {
-                    shape.setScale(deltaValue);
+                    shape.setScale(change);
                 }
                 break;
             case REMOVE_ALL:

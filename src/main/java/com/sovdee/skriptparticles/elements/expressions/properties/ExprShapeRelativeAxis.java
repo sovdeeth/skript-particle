@@ -14,7 +14,7 @@ import org.bukkit.util.Vector;
 
 import org.jetbrains.annotations.Nullable;
 
-@Name("Shape Relative Axis")
+@Name("Shape Relative Plane")
 @Description({
         "Returns the relative axis of a shape. These are the x, y, z axis of the shape AFTER rotation.",
         "These are meant to be used to work within the rotated frame of reference of the shape."

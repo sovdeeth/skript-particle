@@ -76,7 +76,7 @@ public class ExprShapeParticleDensity extends SimplePropertyExpression<Shape, Nu
         Shape[] shapes = getExpr().getArray(event);
         if (shapes.length == 0)
             return;
-        double change = ((Number) delta[0]).doubleValue();
+        double change = (delta[0] == null) ? 0.25 : ((Number) delta[0]).doubleValue();
         switch (mode) {
             case REMOVE:
                 change = -change;
@@ -90,18 +90,16 @@ public class ExprShapeParticleDensity extends SimplePropertyExpression<Shape, Nu
                         shape.setParticleCount(Math.max(1, shape.getParticleCount() + (int) change));
                 }
                 break;
-            case SET:
-                for (Shape shape : shapes) {
-                    if (flag)
-                        shape.setParticleDensity(MathUtil.clamp(1/change, 0.001, 1000));
-                    else
-                        shape.setParticleCount(Math.max(1, (int) change));
-                }
-                break;
             case DELETE:
             case RESET:
+            case SET:
+                change = flag ? MathUtil.clamp(change, 0.001, 1000) : Math.max(1, (int) change);
                 for (Shape shape : shapes) {
-                    shape.setParticleDensity(0.25);
+                    if (flag) {
+                        shape.setParticleDensity(change);
+                    } else {
+                        shape.setParticleCount((int) change);
+                    }
                 }
                 break;
             case REMOVE_ALL:

@@ -6,6 +6,7 @@ import ch.njol.skript.lang.ParseContext;
 import ch.njol.skript.registrations.Classes;
 import com.sovdee.skriptparticles.shapes.CutoffShape;
 import com.sovdee.skriptparticles.shapes.LWHShape;
+import com.sovdee.skriptparticles.shapes.PolyShape;
 import com.sovdee.skriptparticles.shapes.RadialShape;
 import com.sovdee.skriptparticles.shapes.Shape;
 
@@ -124,6 +125,38 @@ public class ShapeTypes {
 
                     @Override
                     public String toVariableNameString(CutoffShape shape) {
+                        return "shape:" + shape.getUUID();
+                    }
+                })
+        );
+
+        // Polygonal Shape
+        Classes.registerClass(new ClassInfo<>(PolyShape.class, "polyshape")
+                .user("poly ?shapes?")
+                .name("Polygonal/Polyhedral Shape")
+                .description(
+                        "Represents an abstract particle shape that is a polygon or polyhedron, with a side length and side count.\n" +
+                        "Irregular shapes are included in this category, but do not support changing either side count or side length."
+                )
+                .parser(new Parser<>() {
+
+                    @Override
+                    public PolyShape parse(String input, ParseContext context) {
+                        return null;
+                    }
+
+                    @Override
+                    public boolean canParse(ParseContext context) {
+                        return false;
+                    }
+
+                    @Override
+                    public String toString(PolyShape o, int flags) {
+                        return o.toString();
+                    }
+
+                    @Override
+                    public String toVariableNameString(PolyShape shape) {
                         return "shape:" + shape.getUUID();
                     }
                 })

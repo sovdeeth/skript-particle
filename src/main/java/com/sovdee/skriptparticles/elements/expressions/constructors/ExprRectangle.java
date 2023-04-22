@@ -17,10 +17,6 @@ import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
 
-import static com.sovdee.skriptparticles.shapes.Rectangle.XY;
-import static com.sovdee.skriptparticles.shapes.Rectangle.XZ;
-import static com.sovdee.skriptparticles.shapes.Rectangle.YZ;
-
 @Name("Particle Rectangle")
 @Description({
         "Creates a rectangle from a length and a width, or from two corners. The length and width must be greater than 0.",
@@ -54,7 +50,7 @@ public class ExprRectangle extends SimpleExpression<Rectangle> {
     private Expression<?> corner1Expr;
     private Expression<?> corner2Expr;
     private int matchedPattern;
-    private int plane;
+    private Rectangle.Plane plane;
 
     @Override
     public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, SkriptParser.ParseResult parseResult) {
@@ -67,9 +63,9 @@ public class ExprRectangle extends SimpleExpression<Rectangle> {
             corner1Expr = exprs[0];
             corner2Expr = exprs[1];
         }
-        plane = XZ;
-        if (parseResult.hasTag("xy")) plane = XY;
-        else if (parseResult.hasTag("yz")) plane = YZ;
+        plane = Rectangle.Plane.XZ;
+        if (parseResult.hasTag("xy")) plane = Rectangle.Plane.XY;
+        else if (parseResult.hasTag("yz")) plane = Rectangle.Plane.YZ;
         return true;
     }
 
@@ -126,7 +122,6 @@ public class ExprRectangle extends SimpleExpression<Rectangle> {
                     case XZ -> " xz ";
                     case XY -> " xy ";
                     case YZ -> " yz ";
-                    default -> "";
                 } +
                 switch (matchedPattern) {
                     case 0 -> "rectangle with length " + lengthExpr.toString(event, debug) + " and width " + widthExpr.toString(event, debug);

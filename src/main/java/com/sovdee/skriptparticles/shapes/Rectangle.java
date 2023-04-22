@@ -15,11 +15,10 @@ import java.util.Set;
  */
 public class Rectangle extends AbstractShape implements LWHShape {
 
-    // axes
-    public static final int XZ = 0;
-    public static final int XY = 1;
-    public static final int YZ = 2;
-    private int axis = XZ;
+    public enum Plane {
+        XZ, XY, YZ
+    }
+    private Plane plane;
 
     private double halfLength;
     private double halfWidth;
@@ -30,20 +29,20 @@ public class Rectangle extends AbstractShape implements LWHShape {
     private DynamicLocation positiveCorner;
     private boolean isDynamic = false;
 
-    public Rectangle(double length, double width, int axis){
+    public Rectangle(double length, double width, Plane plane){
         super();
-        this.axis = axis;
+        this.plane = plane;
         this.halfWidth = width / 2;
         this.halfLength = length / 2;
         calculateSteps();
     }
 
-    public Rectangle(Vector negativeCorner, Vector positiveCorner, int axis){
+    public Rectangle(Vector negativeCorner, Vector positiveCorner, Plane plane){
         super();
-        this.axis = axis;
+        this.plane = plane;
         setLengthWidth(negativeCorner, positiveCorner);
         centerOffset = positiveCorner.clone().add(negativeCorner).multiply(0.5);
-        switch (axis) {
+        switch (plane) {
             case XZ -> centerOffset.setY(0);
             case XY -> centerOffset.setZ(0);
             case YZ -> centerOffset.setX(0);
@@ -51,9 +50,9 @@ public class Rectangle extends AbstractShape implements LWHShape {
         calculateSteps();
     }
 
-    public Rectangle(DynamicLocation negativeCorner, DynamicLocation positiveCorner, int axis){
+    public Rectangle(DynamicLocation negativeCorner, DynamicLocation positiveCorner, Plane plane){
         super();
-        this.axis = axis;
+        this.plane = plane;
         Location negative = negativeCorner.getLocation();
         Location positive = positiveCorner.getLocation();
         if (negativeCorner.isDynamic() || positiveCorner.isDynamic()) {
@@ -65,7 +64,7 @@ public class Rectangle extends AbstractShape implements LWHShape {
         }
         // get center of rectangle
         Vector offset = positive.toVector().subtract(negative.toVector()).multiply(0.5);
-        switch (axis) {
+        switch (plane) {
             case XZ -> offset.setY(0);
             case XY -> offset.setZ(0);
             case YZ -> offset.setX(0);
@@ -78,31 +77,28 @@ public class Rectangle extends AbstractShape implements LWHShape {
         setLengthWidth(a.toVector(), b.toVector());
     }
     private void setLengthWidth(Vector a, Vector b) {
-        double length = switch (axis) {
+        double length = switch (plane) {
             case XZ, XY -> Math.abs(a.getX() - b.getX());
             case YZ -> Math.abs(a.getY() - b.getY());
-            default -> 0;
         };
-        double width = switch (axis) {
+        double width = switch (plane) {
             case XZ, YZ -> Math.abs(a.getZ() - b.getZ());
             case XY -> Math.abs(a.getY() - b.getY());
-            default -> 0;
         };
         this.halfWidth = Math.abs(width) / 2;
         this.halfLength = Math.abs(length) / 2;
     }
 
     private Vector vectorFromLengthWidth(double length, double width) {
-        return switch (axis) {
+        return switch (plane) {
             case XZ -> new Vector(length, 0, width);
             case XY -> new Vector(length, width, 0);
             case YZ -> new Vector(0, length, width);
-            default -> new Vector(0, 0, 0);
         };
     }
 
     /**
-     * Calculates the nearest factor to particleDensity as step size for the x and z axis
+     * Calculates the nearest factor to particleDensity as step size for the x and z plane
      * Used to ensure the shape has a uniform density of particles
      */
     private void calculateSteps() {
@@ -143,7 +139,7 @@ public class Rectangle extends AbstractShape implements LWHShape {
             setLengthWidth(neg, pos);
             // get center of rectangle
             Vector offset = pos.toVector().subtract(neg.toVector()).multiply(0.5);
-            switch (axis) {
+            switch (plane) {
                 case XZ -> offset.setY(0);
                 case XY -> offset.setZ(0);
                 case YZ -> offset.setX(0);
@@ -206,25 +202,27 @@ public class Rectangle extends AbstractShape implements LWHShape {
     public void setHeight(double height) {
     }
 
-    public int getAxis() {
-        return axis;
+    public Plane getPlane() {
+        return plane;
     }
 
-    public void setAxis(int axis) {
-        this.axis = axis;
+    public void setPlane(Plane plane) {
+        this.plane = plane;
+        this.needsUpdate = true;
     }
 
     @Override
     public Shape clone() {
-        Rectangle rectangle = (isDynamic ? new Rectangle(negativeCorner, positiveCorner, axis): new Rectangle(this.getLength(), this.getWidth(), axis));
+        Rectangle rectangle = (isDynamic ? new Rectangle(negativeCorner, positiveCorner, plane): new Rectangle(this.getLength(), this.getWidth(), plane));
         rectangle.isDynamic = this.isDynamic;
         return this.copyTo(rectangle);
     }
 
     @Override
     public String toString() {
+        String axis = this.plane.toString().toLowerCase();
         if (isDynamic)
-            return "rectangle from " + negativeCorner.toString() + " to " + positiveCorner.toString();
-        return "rectangle with length " + this.getLength() + " and width " + this.getWidth();
+            return axis + " rectangle from " + negativeCorner.toString() + " to " + positiveCorner.toString();
+        return axis + " rectangle with length " + this.getLength() + " and width " + this.getWidth();
     }
 }

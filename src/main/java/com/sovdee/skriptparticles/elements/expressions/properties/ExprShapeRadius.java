@@ -8,12 +8,8 @@ import ch.njol.skript.doc.Since;
 import ch.njol.skript.expressions.base.PropertyExpression;
 import ch.njol.skript.expressions.base.SimplePropertyExpression;
 import com.sovdee.skriptparticles.shapes.RadialShape;
-import com.sovdee.skriptparticles.shapes.Shape;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Name("Shape Radius")
 @Description({
@@ -27,7 +23,7 @@ import java.util.List;
         "reset {_shape}'s radius"
 })
 @Since("1.0.0")
-public class ExprShapeRadius extends SimplePropertyExpression<Shape, Number> {
+public class ExprShapeRadius extends SimplePropertyExpression<RadialShape, Number> {
 
     static {
         PropertyExpression.register(ExprShapeRadius.class, Number.class, "radius", "radialshapes");
@@ -35,11 +31,8 @@ public class ExprShapeRadius extends SimplePropertyExpression<Shape, Number> {
 
     @Override
     @Nullable
-    public Number convert(Shape shape) {
-        if (shape instanceof RadialShape){
-            return ((RadialShape) shape).getRadius();
-        }
-        return null;
+    public Number convert(RadialShape shape) {
+        return shape.getRadius();
     }
 
     @Override
@@ -55,21 +48,11 @@ public class ExprShapeRadius extends SimplePropertyExpression<Shape, Number> {
     public void change(Event event, @Nullable Object[] delta, ChangeMode mode) {
         if ((mode == ChangeMode.ADD || mode == ChangeMode.SET || mode == ChangeMode.REMOVE) && (delta == null || delta.length == 0))
             return;
-        Shape[] shapes = getExpr().getArray(event);
-        if (shapes.length == 0)
+        RadialShape[] radialShapes = getExpr().getArray(event);
+        if (radialShapes.length == 0)
             return;
 
-        if (delta[0] == null)
-            return;
-
-        List<RadialShape> radialShapes = new ArrayList<>();
-        for (Shape shape : shapes) {
-            if (shape instanceof RadialShape){
-                radialShapes.add((RadialShape) shape);
-            }
-        }
-
-        double deltaValue = ((Number) delta[0]).doubleValue();
+        double deltaValue = (delta[0] != null) ? ((Number) delta[0]).doubleValue() : 1;
         switch (mode) {
             case REMOVE:
                 deltaValue = -deltaValue;
@@ -80,7 +63,6 @@ public class ExprShapeRadius extends SimplePropertyExpression<Shape, Number> {
                 break;
             case RESET:
             case DELETE:
-                deltaValue = 1;
             case SET:
                 deltaValue = Math.max(0.001, deltaValue);
                 for (RadialShape shape : radialShapes) {

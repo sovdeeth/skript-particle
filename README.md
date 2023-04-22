@@ -111,7 +111,7 @@ complex shape named "magic-circle":
         set {_line} to line between {_v1} and {_v2}
         
         loop 6 times:
-            rotate shape {_line} around y-axis by 60 degrees 
+            rotate shape {_line} around y-plane by 60 degrees 
             add a copy of {_line} to shapes
 
 ```

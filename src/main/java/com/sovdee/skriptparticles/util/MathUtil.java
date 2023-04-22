@@ -90,8 +90,8 @@ public class MathUtil {
         return points;
     }
 
-    public static List<Vector> calculateRegularPolygon(double radius, double angle, double particleDensity) {
-        List<Vector> points = new ArrayList<>();
+    public static Set<Vector> calculateRegularPolygon(double radius, double angle, double particleDensity) {
+        Set<Vector> points = new HashSet<>();
         Vector vertex = new Vector(radius, 0, 0);
         for (double i = 0; i < 2*Math.PI; i += angle) {
             points.addAll(calculateLine(vertex.clone().rotateAroundY(i), vertex.clone().rotateAroundY(i + angle), particleDensity));

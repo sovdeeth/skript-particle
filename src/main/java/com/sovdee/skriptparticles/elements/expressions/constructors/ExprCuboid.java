@@ -1,6 +1,10 @@
 package com.sovdee.skriptparticles.elements.expressions.constructors;
 
 import ch.njol.skript.Skript;
+import ch.njol.skript.doc.Description;
+import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Name;
+import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.ExpressionType;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
@@ -13,12 +17,26 @@ import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
 
+@Name("Particle Cuboid")
+@Description({
+        "Creates a cuboid from a length, a width, and a height, or from two corners.",
+        "The specified length, width, and height must be greater than 0. Length is the x-axis, width is the z-axis, and height is the y-axis",
+        "When defining a cuboid from two corners, the corners can either be vectors or locations/entities. " +
+        "You cannot use both vectors and locations/entities, but you can mix and match locations and entities." +
+        "When using locations, this is a shape that can be drawn without a specific location. It will be drawn between the two given locations.",
+})
+@Examples({
+        "set {_shape} to a solid cuboid with length 10, width 10, and height 10",
+        "set {_shape} to a hollow cuboid from vector(-5, -5, -5) to vector(5, 5, 5)",
+        "draw a cuboid from player to player's target"
+})
+@Since("1.0.0")
 public class ExprCuboid extends SimpleExpression<Cuboid> {
 
     static {
         Skript.registerExpression(ExprCuboid.class, Cuboid.class, ExpressionType.COMBINED,
-                    "[a[n]] [(outlined|wireframe[d])|:hollow|:solid] cuboid [with|of] length %number%[,] [and] width %number%[,] [and] height %number%",
-                "[a[n]] [(outlined|wireframe[d])|:hollow|:solid] cuboid (from|between) %location/entity/vector% (to|and) %location/entity/vector%");
+                    "[a] [:hollow|:solid] cuboid [with|of] length %number%[,] [and] width %number%[,] [and] height %number%",
+                "[a] [:hollow|:solid] cuboid (from|between) %location/entity/vector% (to|and) %location/entity/vector%");
 
     }
 
