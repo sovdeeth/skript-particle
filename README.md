@@ -10,7 +10,8 @@
   - Circles and Spheres
   - Arcs and spherical caps
   - Lines
-  - Rectangles, and cuboids
+  - 2D Regular Polygons
+  - Rectangles and cuboids
 - Drawing:
   - Three styles: outline, surface, and filled. Some shapes only support one or two of these styles.
   - Rotation to any orientation.
@@ -29,7 +30,7 @@
 
  ## Planned Features:
  - Shapes:
-   - Regular and irregular 2d polygons, with optional height
+   - irregular polygons, polygons with optional height
    - Cylinders
    - Helices
    - Ellipsoids

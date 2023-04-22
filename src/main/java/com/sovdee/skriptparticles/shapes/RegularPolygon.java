@@ -8,6 +8,8 @@ import java.util.Set;
 
 public class RegularPolygon extends AbstractShape implements PolyShape, RadialShape {
 
+    // TODO: Height
+
     private double angle;
     private double radius;
 
