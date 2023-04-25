@@ -4,10 +4,17 @@ import ch.njol.skript.doc.Description;
 import ch.njol.skript.doc.Examples;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
-import ch.njol.skript.expressions.base.SimplePropertyExpression;
+import ch.njol.skript.expressions.base.PropertyExpression;
+import ch.njol.skript.lang.Expression;
+import ch.njol.skript.lang.SkriptParser;
+import ch.njol.util.Kleenean;
 import com.sovdee.skriptparticles.shapes.Shape;
+import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Name("Shape Points")
 @Description({
@@ -21,26 +28,34 @@ import org.jetbrains.annotations.Nullable;
         "set {_randomVectorInEllipsoid} to random element of points of (ellipsoid of radius 10, 5, 2)"
 })
 @Since("1.0.0")
-public class ExprShapePoints extends SimplePropertyExpression<Shape, Vector[]> {
+public class ExprShapePoints extends PropertyExpression<Shape, Vector> {
 
     static {
-        register(ExprShapePoints.class, Vector[].class, "[shape|particle] points", "shapes");
+        register(ExprShapePoints.class, Vector.class, "points", "shapes");
     }
 
     @Override
-    @Nullable
-    public Vector[] convert(Shape shape) {
-        return shape.getPoints().toArray(new Vector[0]);
+    public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, SkriptParser.ParseResult parseResult) {
+        setExpr((Expression<Shape>) exprs[0]);
+        return true;
     }
 
     @Override
-    public Class<? extends Vector[]> getReturnType() {
-        return Vector[].class;
+    protected Vector[] get(Event event, Shape[] source) {
+        List<Vector> points = new ArrayList<>();
+        for (Shape shape : source) {
+            points.addAll(shape.getPoints());
+        }
+        return points.toArray(new Vector[0]);
     }
 
     @Override
-    protected String getPropertyName() {
-        return "shape points";
+    public Class<? extends Vector> getReturnType() {
+        return Vector.class;
     }
 
+    @Override
+    public String toString(@Nullable Event event, boolean debug) {
+        return "points of " + getExpr().toString(event, debug);
+    }
 }

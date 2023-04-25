@@ -103,6 +103,6 @@ public class ExprCircle extends SimpleExpression<Circle>{
     @NotNull
     public String toString(@Nullable Event event, boolean debug) {
         return (isCylinder ? "circle of radius " + radius.toString(event, debug) :
-                "cylinder of radius " + radius.toString(event, debug) + " and height " + height.toString(event, debug));
+                "cylinder of radius " + radius.toString(event, debug) + " and height " + (height != null ? height.toString(event, debug) : "0"));
     }
 }
