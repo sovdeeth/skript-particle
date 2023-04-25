@@ -6,52 +6,83 @@ import org.bukkit.util.Vector;
 import java.util.HashSet;
 import java.util.Set;
 
-public class RegularPolygon extends AbstractShape implements PolyShape, RadialShape {
-
-    // TODO: Height
+public class RegularPolygon extends AbstractShape implements PolyShape, RadialShape, LWHShape {
 
     private double angle;
     private double radius;
+    private double height;
 
     public RegularPolygon(int sides, double radius) {
-        super();
-        this.angle = (Math.PI * 2) / sides;
-        this.radius = radius;
-        this.style = Style.OUTLINE;
+        this((Math.PI * 2) / sides, radius, 0);
     }
 
     public RegularPolygon(double angle, double radius) {
+        this(angle, radius, 0);
+    }
+
+    public RegularPolygon(int sides, double radius, double height) {
+        this((Math.PI * 2) / sides, radius, height);
+    }
+
+    public RegularPolygon(double angle, double radius, double height) {
         super();
         this.angle = angle;
         this.radius = radius;
+        this.height = height;
         this.style = Style.OUTLINE;
     }
 
     @Override
     public Set<Vector> generateOutline() {
-        return MathUtil.calculateRegularPolygon(this.radius, this.angle, this.particleDensity);
+        if (height == 0)
+            return MathUtil.calculateRegularPolygon(this.radius, this.height, this.particleDensity, true);
+        return MathUtil.calculateRegularPrism(this.radius, this.angle, this.height, this.particleDensity, true);
     }
 
     @Override
     public Set<Vector> generateSurface() {
-        Set<Vector> points = new HashSet<>();
-        double apothem = radius * Math.cos(this.angle/2);
-        double radiusStep = radius / Math.round(apothem/particleDensity);
-        for (double subRadius = radius; subRadius >= 0; subRadius -= radiusStep) {
-            points.addAll(MathUtil.calculateRegularPolygon(subRadius, angle, particleDensity));
+        if (height == 0)
+            return MathUtil.calculateRegularPolygon(this.radius, this.height, this.particleDensity, false);
+        return MathUtil.calculateRegularPrism(this.radius, this.angle, this.height, this.particleDensity, false);
+    }
+
+    @Override
+    public Set<Vector> generateFilled() {
+        if (height == 0)
+            return generateSurface();
+        Set<Vector> polygon = MathUtil.calculateRegularPolygon(this.radius, this.height, this.particleDensity, false);
+        Set<Vector> points = new HashSet<>(polygon);
+        double heightStep = height / Math.round(height / particleDensity);
+        for (double i = 0; i < height; i += heightStep) {
+            for (Vector vector : polygon) {
+                points.add(vector.clone().setY(i));
+            }
         }
-        points.add(new Vector(0, 0, 0));
         return points;
     }
 
     @Override
     public void setParticleCount(int particleCount) {
-
+        int sides = getSides();
+        particleDensity = switch (style) {
+            case OUTLINE -> {
+                if (height == 0)
+                    yield 2 * sides * radius * Math.sin(angle / 2) / particleCount;
+                yield (4 * sides * radius * Math.sin(angle / 2) + height * sides) / particleCount;
+            }
+            case SURFACE -> {
+                if (height == 0)
+                    yield Math.sqrt(sides * radius * radius * Math.sin(angle) / 2 / particleCount);
+                yield (sides * radius * radius * Math.sin(angle) + getSideLength() * sides * height) / particleCount;
+            }
+            case FILL -> (sides * radius * radius * Math.sin(angle) * height) / particleCount;
+        };
+        needsUpdate = true;
     }
 
     @Override
     public void setSides(int sides) {
-        this.angle = (Math.PI * 2) / sides;
+        this.angle = (Math.PI * 2) / Math.max(sides, 3);
         needsUpdate = true;
     }
 
@@ -63,6 +94,7 @@ public class RegularPolygon extends AbstractShape implements PolyShape, RadialSh
     @Override
     public void setSideLength(double sideLength) {
         this.radius = sideLength / (2 * Math.sin(this.angle / 2));
+        this.radius = Math.max(radius, MathUtil.EPSILON);
         needsUpdate = true;
     }
 
@@ -78,19 +110,45 @@ public class RegularPolygon extends AbstractShape implements PolyShape, RadialSh
 
     @Override
     public void setRadius(double radius) {
-        this.radius = radius;
+        this.radius = Math.max(radius, MathUtil.EPSILON);
+        needsUpdate = true;
+    }
+
+    @Override
+    public double getLength() {
+        return 0;
+    }
+
+    @Override
+    public double getWidth() {
+        return 0;
+    }
+
+    @Override
+    public double getHeight() {
+        return height;
+    }
+
+    @Override
+    public void setLength(double length) {}
+
+    @Override
+    public void setWidth(double width) {}
+
+    @Override
+    public void setHeight(double height) {
+        this.height = Math.max(height, 0);
         needsUpdate = true;
     }
 
     @Override
     public Shape clone() {
-        RegularPolygon clone = new RegularPolygon(this.angle, this.radius);
-        this.copyTo(clone);
-        return clone;
+        return this.copyTo(new RegularPolygon(angle, radius, height));
     }
 
     @Override
     public String toString() {
         return "regular polygon with " + getSides() + " sides and radius " + getRadius();
     }
+
 }

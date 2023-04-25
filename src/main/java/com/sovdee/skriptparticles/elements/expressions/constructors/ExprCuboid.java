@@ -35,7 +35,7 @@ public class ExprCuboid extends SimpleExpression<Cuboid> {
 
     static {
         Skript.registerExpression(ExprCuboid.class, Cuboid.class, ExpressionType.COMBINED,
-                    "[a] [:hollow|:solid] cuboid [with|of] length %number%[,] [and] width %number%[,] [and] height %number%",
+                "[a] [:hollow|:solid] cuboid [with|of] length %number%[,] [and] width %number%[,] [and] height %number%",
                 "[a] [:hollow|:solid] cuboid (from|between) %location/entity/vector% (to|and) %location/entity/vector%");
 
     }

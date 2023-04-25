@@ -28,6 +28,8 @@ import org.jetbrains.annotations.Nullable;
 })
 public class ExprRegularPolygon extends SimpleExpression<RegularPolygon> {
 
+    // TODO: add height
+
     static {
         Skript.registerExpression(ExprRegularPolygon.class, RegularPolygon.class, ExpressionType.COMBINED,
                 "[a] [solid:(solid|filled)] regular polygon with %number% sides(,| and) radius %number%",

@@ -10,6 +10,8 @@ import java.util.Set;
 
 public class Cuboid extends AbstractShape implements LWHShape {
 
+    // TODO: Merge Rectangle and Cuboid???
+
     private double halfLength;
     private double halfWidth;
     private double halfHeight;

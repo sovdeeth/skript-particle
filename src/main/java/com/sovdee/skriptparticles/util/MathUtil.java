@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class MathUtil {
     public static final double PHI = Math.PI * (3.0 - Math.sqrt(5.0));
@@ -13,6 +14,8 @@ public class MathUtil {
     public static final double PHI_SQUARED = PHI * PHI;
     public static final double[] SPHERE_THETA_COS = new double[4096];
     public static final double[] SPHERE_THETA_SIN = new double[4096];
+    public static final double EPSILON = 0.0001;
+
     static {
         for (int i = 0; i < SPHERE_THETA_COS.length; i++) {
             SPHERE_THETA_COS[i] = Math.cos(MathUtil.PHI * i);
@@ -90,11 +93,39 @@ public class MathUtil {
         return points;
     }
 
-    public static Set<Vector> calculateRegularPolygon(double radius, double angle, double particleDensity) {
+    public static Set<Vector> calculateRegularPolygon(double radius, double angle, double particleDensity, boolean wireframe) {
+        Set<Vector> points = new HashSet<>();
+        double apothem = radius * Math.cos(angle/2);
+        double radiusStep = radius / Math.round(apothem/particleDensity);
+        if (wireframe) {
+            radiusStep = 2 * radius;
+        } else {
+            points.add(new Vector(0, 0, 0));
+        }
+        for (double subRadius = radius; subRadius >= 0; subRadius -= radiusStep) {
+            Vector vertex = new Vector(subRadius, 0, 0);
+            for (double i = 0; i < 2*Math.PI; i += angle) {
+                points.addAll(calculateLine(vertex.clone().rotateAroundY(i), vertex.clone().rotateAroundY(i + angle), particleDensity));
+            }
+        }
+        return points;
+    }
+
+    public static Set<Vector> calculateRegularPrism(double radius, double angle, double height, double particleDensity, boolean wireframe) {
         Set<Vector> points = new HashSet<>();
         Vector vertex = new Vector(radius, 0, 0);
         for (double i = 0; i < 2*Math.PI; i += angle) {
-            points.addAll(calculateLine(vertex.clone().rotateAroundY(i), vertex.clone().rotateAroundY(i + angle), particleDensity));
+            Vector currentVertex = vertex.clone().rotateAroundY(i);
+            for (Vector vector : calculateLine(currentVertex, vertex.clone().rotateAroundY(i + angle), particleDensity)) {
+                points.add(vector);
+                if (wireframe) {
+                    points.add(vector.clone().setY(height));
+                } else {
+                    points.addAll(calculateLine(vector, vector.clone().setY(height), particleDensity));
+                }
+            }
+            if (wireframe)
+                points.addAll(calculateLine(currentVertex, currentVertex.clone().setY(height), particleDensity));
         }
         return points;
     }
@@ -107,8 +138,8 @@ public class MathUtil {
         return connectedPoints;
     }
 
-    public static List<Vector> calculateEllipse(double r1, double r2, double particleDensity, double cutoffAngle) {
-        List<Vector> points = new ArrayList<>();
+    public static Set<Vector> calculateEllipse(double r1, double r2, double particleDensity, double cutoffAngle) {
+        Set<Vector> points = new HashSet<>();
         double theta = 0.0;
         double twoPi = Math.PI*2.0;
         double deltaTheta = 0.0001;
@@ -139,6 +170,43 @@ public class MathUtil {
                 nextPoint++;
             }
             run += computeDpt(r1, r2, theta);
+        }
+        return points;
+    }
+
+    public static Set<Vector> calculateEllipticalDisc(double r1, double r2, double particleDensity, double cutoffAngle){
+        Set<Vector> points = new HashSet<>();
+        int steps = (int) Math.round(r1 / particleDensity);
+        double r;
+        for (double i = 1; i <= steps; i += 1){
+            r = i / steps;
+            points.addAll(calculateEllipse(r1 * r, r2 * r, particleDensity, cutoffAngle));
+        }
+        return points;
+    }
+
+    public static Set<Vector> calculateCylinder(double r1, double height, double particleDensity, double cutoffAngle) {
+        Set<Vector> points = calculateDisc(r1, particleDensity, cutoffAngle);
+        points.addAll(points.stream().map(v -> v.clone().setY(height)).collect(Collectors.toSet()));
+        // wall
+        Set<Vector> wall = calculateCircle(r1, particleDensity, cutoffAngle);
+        return addCylinderWall(height, particleDensity, points, wall);
+    }
+
+    public static Set<Vector> calculateCylinder(double r1, double r2, double height, double particleDensity, double cutoffAngle) {
+        Set<Vector> points = calculateEllipticalDisc(r1, r2, particleDensity, cutoffAngle);
+        points.addAll(points.stream().map(v -> v.clone().setY(height)).collect(Collectors.toSet()));
+        // wall
+        Set<Vector> wall = calculateEllipse(r1, r2, particleDensity, cutoffAngle);
+        return addCylinderWall(height, particleDensity, points, wall);
+    }
+
+    private static Set<Vector> addCylinderWall(double height, double particleDensity, Set<Vector> points, Set<Vector> wall) {
+        double heightStep = height / Math.round(height / particleDensity);
+        for (double i = heightStep; i <= height - heightStep; i += heightStep){
+            for (Vector vector : wall) {
+                points.add(vector.clone().setY(i));
+            }
         }
         return points;
     }
