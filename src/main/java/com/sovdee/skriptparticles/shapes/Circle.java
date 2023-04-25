@@ -3,35 +3,32 @@ package com.sovdee.skriptparticles.shapes;
 import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.util.Vector;
 
-import java.util.HashSet;
 import java.util.Set;
 
-public class Circle extends AbstractShape implements RadialShape, CutoffShape, LWHShape {
+public class Circle extends AbstractShape implements RadialShape, LWHShape {
 
-    private double radius;
-    private double cutoffAngle;
-    private double height;
+    protected double radius;
+    protected double cutoffAngle;
+    protected double height;
 
     public Circle (double radius){
-        this(radius, 0, 2*Math.PI);
+        this(radius, 0);
     }
+
 
     public Circle (double radius, double height){
-        this(radius, height, 2*Math.PI);
-    }
-
-    public Circle (double radius, double height, double cutoffAngle){
         super();
         this.radius = radius;
         this.height = height;
-        this.cutoffAngle = cutoffAngle;
+        this.cutoffAngle = 2*Math.PI;
     }
 
     @Override
     public Set<Vector> generateOutline() {
+        Set<Vector> circle = MathUtil.calculateCircle(radius, particleDensity, cutoffAngle);
         if (height != 0)
-            return generateSurface();
-        return MathUtil.calculateCircle(radius, particleDensity, cutoffAngle);
+            return MathUtil.fillVertically(circle, height, particleDensity);
+        return circle;
     }
 
 
@@ -44,17 +41,10 @@ public class Circle extends AbstractShape implements RadialShape, CutoffShape, L
 
     @Override
     public Set<Vector> generateFilled() {
-        if (height == 0)
-            return generateSurface();
         Set<Vector> disc = MathUtil.calculateDisc(radius, particleDensity, cutoffAngle);
-        Set<Vector> points = new HashSet<>(disc);
-        double heightStep = height / Math.round(height / particleDensity);
-        for (double i = 0; i < height; i += heightStep) {
-            for (Vector vector : disc) {
-                points.add(vector.clone().setY(i));
-            }
-        }
-        return points;
+        if (height != 0)
+            return MathUtil.fillVertically(disc, height, particleDensity);
+        return disc;
     }
 
     @Override
@@ -81,18 +71,6 @@ public class Circle extends AbstractShape implements RadialShape, CutoffShape, L
         this.radius = Math.max(radius,0);
         needsUpdate = true;
     }
-
-    @Override
-    public double getCutoffAngle() {
-        return cutoffAngle;
-    }
-
-    @Override
-    public void setCutoffAngle(double cutoffAngle) {
-        this.cutoffAngle = MathUtil.clamp(cutoffAngle, 0, 2*Math.PI);
-        needsUpdate = true;
-    }
-
     @Override
     public double getLength() {
         return 0;
@@ -122,7 +100,7 @@ public class Circle extends AbstractShape implements RadialShape, CutoffShape, L
 
     @Override
     public Shape clone() {
-        return this.copyTo(new Circle(radius, height, cutoffAngle));
+        return this.copyTo(new Circle(radius, height));
     }
 
     public String toString(){

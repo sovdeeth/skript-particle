@@ -3,7 +3,6 @@ package com.sovdee.skriptparticles.shapes;
 import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.util.Vector;
 
-import java.util.HashSet;
 import java.util.Set;
 
 public class Ellipse extends AbstractShape implements LWHShape, CutoffShape {
@@ -53,14 +52,7 @@ public class Ellipse extends AbstractShape implements LWHShape, CutoffShape {
             return generateSurface();
         // otherwise, make a solid cylinder
         Set<Vector> disc = MathUtil.calculateEllipticalDisc(lRadius, wRadius, particleDensity, cutoffAngle);
-        Set<Vector> points = new HashSet<>(disc);
-        double heightStep = height / Math.round(height / particleDensity);
-        for (double i = 0; i < height; i += heightStep) {
-            for (Vector vector : disc) {
-                points.add(vector.clone().setY(i));
-            }
-        }
-        return points;
+        return MathUtil.fillVertically(disc, height, particleDensity);
     }
 
     @Override

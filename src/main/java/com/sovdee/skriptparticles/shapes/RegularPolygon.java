@@ -3,7 +3,6 @@ package com.sovdee.skriptparticles.shapes;
 import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.util.Vector;
 
-import java.util.HashSet;
 import java.util.Set;
 
 public class RegularPolygon extends AbstractShape implements PolyShape, RadialShape, LWHShape {
@@ -35,14 +34,14 @@ public class RegularPolygon extends AbstractShape implements PolyShape, RadialSh
     @Override
     public Set<Vector> generateOutline() {
         if (height == 0)
-            return MathUtil.calculateRegularPolygon(this.radius, this.height, this.particleDensity, true);
+            return MathUtil.calculateRegularPolygon(this.radius, this.angle, this.particleDensity, true);
         return MathUtil.calculateRegularPrism(this.radius, this.angle, this.height, this.particleDensity, true);
     }
 
     @Override
     public Set<Vector> generateSurface() {
         if (height == 0)
-            return MathUtil.calculateRegularPolygon(this.radius, this.height, this.particleDensity, false);
+            return MathUtil.calculateRegularPolygon(this.radius, this.angle, this.particleDensity, false);
         return MathUtil.calculateRegularPrism(this.radius, this.angle, this.height, this.particleDensity, false);
     }
 
@@ -50,15 +49,8 @@ public class RegularPolygon extends AbstractShape implements PolyShape, RadialSh
     public Set<Vector> generateFilled() {
         if (height == 0)
             return generateSurface();
-        Set<Vector> polygon = MathUtil.calculateRegularPolygon(this.radius, this.height, this.particleDensity, false);
-        Set<Vector> points = new HashSet<>(polygon);
-        double heightStep = height / Math.round(height / particleDensity);
-        for (double i = 0; i < height; i += heightStep) {
-            for (Vector vector : polygon) {
-                points.add(vector.clone().setY(i));
-            }
-        }
-        return points;
+        Set<Vector> polygon = MathUtil.calculateRegularPolygon(this.radius, this.angle, this.particleDensity, false);
+        return MathUtil.fillVertically(polygon, height, particleDensity);
     }
 
     @Override

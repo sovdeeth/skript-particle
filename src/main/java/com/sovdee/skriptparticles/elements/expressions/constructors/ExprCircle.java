@@ -33,7 +33,7 @@ public class ExprCircle extends SimpleExpression<Circle>{
     static {
         Skript.registerExpression(ExprCircle.class, Circle.class, ExpressionType.COMBINED,
                 "[a] (circle|:disc) [with|of] radius %number%",
-                "[a] [:hollow|:solid] cylinder [with|of] radius %number%[,| and] height %number%");
+                "[a] ([hollow|2:solid] cylinder|1:tube) [with|of] radius %number%[,| and] height %number%");
     }
 
     private Expression<Number> radius;
@@ -64,7 +64,11 @@ public class ExprCircle extends SimpleExpression<Circle>{
                 }
             }
 
-            style = parseResult.hasTag("solid") ? Shape.Style.FILL : Shape.Style.SURFACE;
+            style = switch (parseResult.mark) {
+                case 0 -> Shape.Style.SURFACE;
+                case 1 -> Shape.Style.OUTLINE;
+                default -> Shape.Style.FILL;
+            };
         } else {
             style = parseResult.hasTag("disc") ? Shape.Style.SURFACE : Shape.Style.OUTLINE;
         }
@@ -78,7 +82,7 @@ public class ExprCircle extends SimpleExpression<Circle>{
             radius = 1;
         }
 
-        double height = this.height.getOptionalSingle(event).orElse(0).doubleValue();
+        double height = (isCylinder) ? this.height.getOptionalSingle(event).orElse(0).doubleValue() : 0;
         if (height < 0) {
             height = 0;
         }

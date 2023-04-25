@@ -65,7 +65,6 @@ public abstract class AbstractShape implements Shape {
     public Set<Vector> getPoints(Quaternion orientation) {
         State state = getState(orientation);
         if (needsUpdate || !lastState.equals(state) || points.isEmpty()) {
-            SkriptParticle.info("Updating shape " + this + " for reason: " + (needsUpdate ? "needsUpdate" : points.isEmpty() ? "points.isEmpty()" : "lastState != getState()"));
             points = generatePoints();
             for (Vector point : points) {
                 orientation.transform(point);

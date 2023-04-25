@@ -12,7 +12,7 @@ import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
 import com.sovdee.skriptparticles.shapes.Shape;
-import com.sovdee.skriptparticles.shapes.Sphere;
+import com.sovdee.skriptparticles.shapes.SphericalCap;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,10 +27,10 @@ import org.jetbrains.annotations.Nullable;
         "set {_shape} to a spherical sector of radius 3 and angle 90 degrees"
 })
 @Since("1.0.0")
-public class ExprSphericalCap extends SimpleExpression<Sphere> {
+public class ExprSphericalCap extends SimpleExpression<SphericalCap> {
 
     static {
-        Skript.registerExpression(ExprSphericalCap.class, Sphere.class, ExpressionType.COMBINED,
+        Skript.registerExpression(ExprSphericalCap.class, SphericalCap.class, ExpressionType.COMBINED,
                 "[a] spherical (cap|:sector) (with|of) radius %number%[,| and] [cutoff] angle %number% [degrees|:radians]");
     }
 
@@ -67,9 +67,9 @@ public class ExprSphericalCap extends SimpleExpression<Sphere> {
 
     @Override
     @Nullable
-    protected Sphere[] get(Event event) {
+    protected SphericalCap[] get(Event event) {
         if (radius.getSingle(event) == null || angle.getSingle(event) == null)
-            return new Sphere[0];
+            return new SphericalCap[0];
 
         double radius = this.radius.getSingle(event).doubleValue();
         double angle = this.angle.getSingle(event).doubleValue();
@@ -81,11 +81,11 @@ public class ExprSphericalCap extends SimpleExpression<Sphere> {
             radius = 1;
         }
 
-        Sphere cap = new Sphere(radius, angle);
+        SphericalCap cap = new SphericalCap(radius, angle);
         if (isSector)
             cap.setStyle(Shape.Style.FILL);
 
-        return new Sphere[]{cap};
+        return new SphericalCap[]{cap};
     }
 
     @Override
@@ -94,8 +94,8 @@ public class ExprSphericalCap extends SimpleExpression<Sphere> {
     }
 
     @Override
-    public Class<? extends Sphere> getReturnType() {
-        return Sphere.class;
+    public Class<? extends SphericalCap> getReturnType() {
+        return SphericalCap.class;
     }
 
     @Override

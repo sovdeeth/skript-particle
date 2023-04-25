@@ -94,6 +94,7 @@ public class MathUtil {
     }
 
     public static Set<Vector> calculateRegularPolygon(double radius, double angle, double particleDensity, boolean wireframe) {
+        angle = Math.max(angle, MathUtil.EPSILON);
         Set<Vector> points = new HashSet<>();
         double apothem = radius * Math.cos(angle/2);
         double radiusStep = radius / Math.round(apothem/particleDensity);
@@ -190,7 +191,8 @@ public class MathUtil {
         points.addAll(points.stream().map(v -> v.clone().setY(height)).collect(Collectors.toSet()));
         // wall
         Set<Vector> wall = calculateCircle(r1, particleDensity, cutoffAngle);
-        return addCylinderWall(height, particleDensity, points, wall);
+        points.addAll(fillVertically(wall, height, particleDensity));
+        return points;
     }
 
     public static Set<Vector> calculateCylinder(double r1, double r2, double height, double particleDensity, double cutoffAngle) {
@@ -198,16 +200,7 @@ public class MathUtil {
         points.addAll(points.stream().map(v -> v.clone().setY(height)).collect(Collectors.toSet()));
         // wall
         Set<Vector> wall = calculateEllipse(r1, r2, particleDensity, cutoffAngle);
-        return addCylinderWall(height, particleDensity, points, wall);
-    }
-
-    private static Set<Vector> addCylinderWall(double height, double particleDensity, Set<Vector> points, Set<Vector> wall) {
-        double heightStep = height / Math.round(height / particleDensity);
-        for (double i = heightStep; i <= height - heightStep; i += heightStep){
-            for (Vector vector : wall) {
-                points.add(vector.clone().setY(i));
-            }
-        }
+        points.addAll(fillVertically(wall, height, particleDensity));
         return points;
     }
 
@@ -215,5 +208,16 @@ public class MathUtil {
         double dpt_sin = Math.pow(r1*Math.sin(theta), 2.0);
         double dpt_cos = Math.pow( r2*Math.cos(theta), 2.0);
         return Math.sqrt(dpt_sin + dpt_cos);
+    }
+
+    public static Set<Vector> fillVertically(Set<Vector> vectors, double height, double particleDensity) {
+        Set<Vector> points = new HashSet<>(vectors);
+        double heightStep = height / Math.round(height / particleDensity);
+        for (double i = 0; i < height; i += heightStep) {
+            for (Vector vector : vectors) {
+                points.add(vector.clone().setY(i));
+            }
+        }
+        return points;
     }
 }

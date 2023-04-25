@@ -262,7 +262,6 @@ public class EffSecDrawShape extends EffectSection {
         for (DynamicLocation dynamicLocation : locations) {
             location = dynamicLocation.getLocation();
             for (Shape shape : shapes) {
-                SkriptParticle.info("Drawing shape: " + shape);
                 shape.draw(location, null, null, recipients);
             }
         }

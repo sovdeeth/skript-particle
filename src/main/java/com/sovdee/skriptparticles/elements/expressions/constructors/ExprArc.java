@@ -11,7 +11,7 @@ import ch.njol.skript.lang.Literal;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
-import com.sovdee.skriptparticles.shapes.Circle;
+import com.sovdee.skriptparticles.shapes.Arc;
 import com.sovdee.skriptparticles.shapes.Shape;
 import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
@@ -30,10 +30,10 @@ import org.jetbrains.annotations.Nullable;
         "set {_shape} to a cylindrical sector of radius 1, height 0.5, and angle 45"
 })
 @Since("1.0.0")
-public class ExprArc extends SimpleExpression<Circle> {
+public class ExprArc extends SimpleExpression<Arc> {
 
     static {
-        Skript.registerExpression(ExprArc.class, Circle.class, ExpressionType.COMBINED,
+        Skript.registerExpression(ExprArc.class, Arc.class, ExpressionType.COMBINED,
                 "[a[n]] [circular] (arc|:sector) (with|of) radius %number%[,| and] [cutoff] angle %number% [degrees|:radians]",
                 "[a[n]] [cylindrical] (arc|:sector) (with|of) radius %number%[,| and] height %-number%[,] [and] [cutoff] angle %number% [degrees|:radians]");
     }
@@ -85,13 +85,13 @@ public class ExprArc extends SimpleExpression<Circle> {
 
     @Override
     @Nullable
-    protected Circle[] get(Event event) {
+    protected Arc[] get(Event event) {
         if (radius.getSingle(event) == null || angle.getSingle(event) == null)
-            return new Circle[0];
+            return new Arc[0];
 
         double radius = this.radius.getSingle(event).doubleValue();
         double angle = this.angle.getSingle(event).doubleValue();
-        double height = this.height.getOptionalSingle(event).orElse(0).doubleValue();
+        double height = (this.height != null) ? this.height.getOptionalSingle(event).orElse(0).doubleValue() : 0;
         if (!isRadians)
             angle = Math.toRadians(angle);
 
@@ -101,11 +101,11 @@ public class ExprArc extends SimpleExpression<Circle> {
         height = Math.max(height, 0);
         angle = MathUtil.clamp(angle, 0, 2 * Math.PI);
 
-        Circle arc = new Circle(radius, height, angle);
+        Arc arc = new Arc(radius, height, angle);
         if (isSector)
-            arc.setStyle(Shape.Style.SURFACE);
+            arc.setStyle(Shape.Style.FILL);
 
-        return new Circle[]{arc};
+        return new Arc[]{arc};
     }
 
     @Override
@@ -114,8 +114,8 @@ public class ExprArc extends SimpleExpression<Circle> {
     }
 
     @Override
-    public Class<? extends Circle> getReturnType() {
-        return Circle.class;
+    public Class<? extends Arc> getReturnType() {
+        return Arc.class;
     }
 
     @Override

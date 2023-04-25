@@ -5,21 +5,17 @@ import org.bukkit.util.Vector;
 
 import java.util.Set;
 
-public class Sphere extends AbstractShape implements RadialShape, CutoffShape {
+public class Sphere extends AbstractShape implements RadialShape {
 
-    private double radius;
-    private double cutoffAngle;
-    private double cutoffAngleCos;
+    protected double radius;
+    protected double cutoffAngle;
+    protected double cutoffAngleCos;
 
     public Sphere (double radius){
-        this(radius, 2*Math.PI);
-    }
-
-    public Sphere (double radius, double cutoffAngle){
         super();
         this.radius = radius;
-        this.cutoffAngle = cutoffAngle;
-        this.cutoffAngleCos = Math.cos(cutoffAngle);
+        this.cutoffAngle = 2 * Math.PI;
+        this.cutoffAngleCos = 1.0;
         this.style = Style.SURFACE;
     }
 
@@ -70,19 +66,8 @@ public class Sphere extends AbstractShape implements RadialShape, CutoffShape {
     }
 
     @Override
-    public double getCutoffAngle() {
-        return cutoffAngle;
-    }
-
-    @Override
-    public void setCutoffAngle(double cutoffAngle) {
-        this.cutoffAngle = MathUtil.clamp(cutoffAngle, 0, Math.PI);
-        this.cutoffAngleCos = Math.cos(this.cutoffAngle);
-    }
-
-    @Override
     public Shape clone() {
-        return this.copyTo(new Sphere(radius, cutoffAngle));
+        return this.copyTo(new Sphere(radius));
     }
 
     public String toString(){
