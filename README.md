@@ -24,7 +24,7 @@
   - Debug axes for clear visualization of the orientation of your shape.
   - Shapes are only calculated when they actually change, so you can draw the same shape many times without any performance hit.
   - Option to make all calculation and drawing synchronous (async by default)
-   - Ability to continuously draw a shape for a timespan (async only)
+     - Ability to continuously draw a shape for a timespan (async only)
   - Dynamic locations, so particles can follow an entity with no additional user effort
 - Particles:
   - Expression for custom particles
