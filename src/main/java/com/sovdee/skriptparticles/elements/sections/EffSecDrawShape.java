@@ -225,10 +225,7 @@ public class EffSecDrawShape extends EffectSection {
             BukkitRunnable runnable = new BukkitRunnable() {
                 @Override
                 public void run() {
-                    long now = System.nanoTime();
-                    SkriptParticle.info("Drawing shape asynchronously (iteration " + currentIteration + "): " + (now / 1000000) + "ms");
                     executeAsync(locations, preppedShapes, recipients);
-                    SkriptParticle.info("Finished drawing shape asynchronously: " + (System.nanoTime() - now) / 1000000.0 + "ms");
                     if (currentIteration.incrementAndGet() >= iterations) {
                         this.cancel();
                     }
