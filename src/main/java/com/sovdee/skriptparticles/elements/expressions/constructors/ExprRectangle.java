@@ -39,7 +39,7 @@ public class ExprRectangle extends SimpleExpression<Rectangle> {
 
     static {
         Skript.registerExpression(ExprRectangle.class, Rectangle.class, ExpressionType.COMBINED,
-                "[a] [solid:(solid|filled)] [:xz|:xy|:yz] rectangle [with|of] length %number%[,] [and] width %number%",
+                "[a] [solid:(solid|filled)] [:xz|:xy|:yz] rectangle (with|of) length %number% and width %number%",
                 "[a] [solid:(solid|filled)] [:xz|:xy|:yz] rectangle (from|with corners [at]) %location/entity/vector% (to|and) %location/entity/vector%"
         );
     }
@@ -73,16 +73,16 @@ public class ExprRectangle extends SimpleExpression<Rectangle> {
     protected @Nullable Rectangle[] get(Event event) {
         Rectangle rectangle;
         if (matchedPattern == 0) {
-            if (lengthExpr == null || widthExpr == null) return new Rectangle[0];
+            if (lengthExpr == null || widthExpr == null) return null;
             Number length = lengthExpr.getSingle(event);
             Number width = widthExpr.getSingle(event);
-            if (length == null || width == null) return new Rectangle[0];
+            if (length == null || width == null) return null;
             rectangle = new Rectangle(length.doubleValue(), width.doubleValue(), plane);
         } else {
-            if (corner1Expr == null || corner2Expr == null) return new Rectangle[0];
+            if (corner1Expr == null || corner2Expr == null) return null;
             Object corner1 = corner1Expr.getSingle(event);
             Object corner2 = corner2Expr.getSingle(event);
-            if (corner1 == null || corner2 == null) return new Rectangle[0];
+            if (corner1 == null || corner2 == null) return null;
 
             // vector check
             if (corner1 instanceof Vector && corner2 instanceof Vector) {
@@ -91,13 +91,13 @@ public class ExprRectangle extends SimpleExpression<Rectangle> {
                 return new Rectangle[]{rectangle};
             } else if (corner1 instanceof Vector || corner2 instanceof Vector) {
                 // if only one is a vector, return empty array
-                return new Rectangle[0];
+                return null;
             } else {
                 // if neither are vectors, create a dynamic rectangle
                 corner1 = DynamicLocation.fromLocationEntity(corner1);
                 corner2 = DynamicLocation.fromLocationEntity(corner2);
                 if (corner1 == null || corner2 == null)
-                    return new Rectangle[0];
+                    return null;
                 rectangle = new Rectangle((DynamicLocation) corner1, (DynamicLocation) corner2, plane);
             }
         }

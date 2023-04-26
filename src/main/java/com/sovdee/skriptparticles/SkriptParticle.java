@@ -20,7 +20,7 @@ public class SkriptParticle extends JavaPlugin {
     // MODERATE
         // proper particle density for regular polyhedra
         // Particle motion (vector, inwards, outwards)
-        // Particle section
+        // Particle section (just needs testing
             // create a new %particle% [particle]:
             //- count: int
             //- offset: vector

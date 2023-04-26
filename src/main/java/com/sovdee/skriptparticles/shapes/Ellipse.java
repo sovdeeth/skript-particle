@@ -5,54 +5,48 @@ import org.bukkit.util.Vector;
 
 import java.util.Set;
 
-public class Ellipse extends AbstractShape implements LWHShape, CutoffShape {
+public class Ellipse extends AbstractShape implements LWHShape {
 
-    private double lRadius;
-    private double wRadius;
-    private double height;
-    private double cutoffAngle;
+    protected double lengthRadius;
+    protected double widthRadius;
+    protected double height;
+    protected double cutoffAngle;
 
-    public Ellipse(double lRadius, double wRadius) {
-        this(lRadius, wRadius, 0, 2 * Math.PI);
+    public Ellipse(double lengthRadius, double widthRadius) {
+        this(lengthRadius, widthRadius, 0);
     }
 
-    public Ellipse(double lRadius, double wRadius, double height) {
-        this(lRadius, wRadius, height, 2 * Math.PI);
-    }
-
-    public Ellipse(double lRadius, double wRadius, double height, double cutoffAngle) {
+    public Ellipse(double lengthRadius, double widthRadius, double height) {
         super();
-        this.lRadius = lRadius;
-        this.wRadius = wRadius;
+        this.lengthRadius = lengthRadius;
+        this.widthRadius = widthRadius;
         this.height = height;
-        this.cutoffAngle = cutoffAngle;
+        this.cutoffAngle = 2 * Math.PI;
     }
 
     @Override
     public Set<Vector> generateOutline() {
-        if (height != 0) {
-            return generateSurface();
-        }
-        return MathUtil.calculateEllipse(lRadius, wRadius, particleDensity, cutoffAngle);
+        Set<Vector> ellipse = MathUtil.calculateEllipse(lengthRadius, widthRadius, particleDensity, cutoffAngle);
+        if (height != 0)
+            return MathUtil.fillVertically(ellipse, height, particleDensity);
+        return ellipse;
     }
 
     @Override
     public Set<Vector> generateSurface() {
         // if height is not 0, make it a cylinder
         if (height != 0) {
-            return MathUtil.calculateCylinder(lRadius, wRadius, height, particleDensity, cutoffAngle);
+            return MathUtil.calculateCylinder(lengthRadius, widthRadius, height, particleDensity, cutoffAngle);
         }
-        return MathUtil.calculateEllipticalDisc(lRadius, wRadius, particleDensity, cutoffAngle);
+        return MathUtil.calculateEllipticalDisc(lengthRadius, widthRadius, particleDensity, cutoffAngle);
     }
 
     @Override
     public Set<Vector> generateFilled() {
-        // if height is 0, revert to surface
-        if (height == 0)
-            return generateSurface();
-        // otherwise, make a solid cylinder
-        Set<Vector> disc = MathUtil.calculateEllipticalDisc(lRadius, wRadius, particleDensity, cutoffAngle);
-        return MathUtil.fillVertically(disc, height, particleDensity);
+        Set<Vector> disc = MathUtil.calculateEllipticalDisc(lengthRadius, widthRadius, particleDensity, cutoffAngle);
+        if (height != 0)
+            return MathUtil.fillVertically(disc, height, particleDensity);
+        return disc;
     }
 
     @Override
@@ -60,22 +54,22 @@ public class Ellipse extends AbstractShape implements LWHShape, CutoffShape {
         switch (style) {
             case OUTLINE -> {
                 // this is so fucking cringe
-                double h = (lRadius - wRadius) * (lRadius - wRadius) / ((lRadius + wRadius) + (lRadius + wRadius));
-                double circumferenceXY = Math.PI * (lRadius + wRadius) * (1 + (3 * h / (10 + Math.sqrt(4 - 3 * h))));
+                double h = (lengthRadius - widthRadius) * (lengthRadius - widthRadius) / ((lengthRadius + widthRadius) + (lengthRadius + widthRadius));
+                double circumferenceXY = Math.PI * (lengthRadius + widthRadius) * (1 + (3 * h / (10 + Math.sqrt(4 - 3 * h))));
                 this.particleDensity = circumferenceXY / particleCount;
             }
-            case SURFACE, FILL -> this.particleDensity = Math.sqrt((Math.PI * lRadius * wRadius) / particleCount);
+            case SURFACE, FILL -> this.particleDensity = Math.sqrt((Math.PI * lengthRadius * widthRadius) / particleCount);
         }
     }
 
     @Override
     public double getLength() {
-        return lRadius * 2;
+        return lengthRadius * 2;
     }
 
     @Override
     public double getWidth() {
-        return wRadius * 2;
+        return widthRadius * 2;
     }
 
     @Override
@@ -85,13 +79,13 @@ public class Ellipse extends AbstractShape implements LWHShape, CutoffShape {
 
     @Override
     public void setLength(double length) {
-        lRadius = Math.max(length / 2, MathUtil.EPSILON);
+        lengthRadius = Math.max(length / 2, MathUtil.EPSILON);
         needsUpdate = true;
     }
 
     @Override
     public void setWidth(double width) {
-        wRadius = Math.max(width / 2, MathUtil.EPSILON);
+        widthRadius = Math.max(width / 2, MathUtil.EPSILON);
         needsUpdate = true;
     }
 
@@ -102,18 +96,7 @@ public class Ellipse extends AbstractShape implements LWHShape, CutoffShape {
     }
 
     @Override
-    public double getCutoffAngle() {
-        return cutoffAngle;
-    }
-
-    @Override
-    public void setCutoffAngle(double cutoffAngle) {
-        this.cutoffAngle = MathUtil.clamp(cutoffAngle, 0, 2*Math.PI);
-        needsUpdate = true;
-    }
-
-    @Override
     public Shape clone() {
-        return this.copyTo(new Ellipse(lRadius, wRadius, height, cutoffAngle));
+        return this.copyTo(new Ellipse(lengthRadius, widthRadius, height));
     }
 }

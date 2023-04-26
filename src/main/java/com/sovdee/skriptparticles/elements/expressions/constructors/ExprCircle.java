@@ -32,8 +32,8 @@ public class ExprCircle extends SimpleExpression<Circle>{
 
     static {
         Skript.registerExpression(ExprCircle.class, Circle.class, ExpressionType.COMBINED,
-                "[a] (circle|:disc) [with|of] radius %number%",
-                "[a] ([hollow|2:solid] cylinder|1:tube) [with|of] radius %number%[,| and] height %number%");
+                "[a] (circle|:disc) (with|of) radius %number%",
+                "[a] ([hollow|2:solid] cylinder|1:tube) (with|of) radius %number% and height %number%");
     }
 
     private Expression<Number> radius;
@@ -46,22 +46,18 @@ public class ExprCircle extends SimpleExpression<Circle>{
         isCylinder = matchedPattern == 1;
 
         radius = (Expression<Number>) exprs[0];
-        if (radius instanceof Literal) {
-            if (((Literal<Number>) radius).getSingle().doubleValue() <= 0){
-                Skript.error("The radius of the "+ (isCylinder ? "cylinder" : "circle") + " must be greater than 0. (radius: " +
-                        ((Literal<Number>) radius).getSingle().doubleValue() + ")");
-                return false;
-            }
+        if (radius instanceof Literal<Number> literal && literal.getSingle().doubleValue() <= 0){
+            Skript.error("The radius of the "+ (isCylinder ? "cylinder" : "circle") + " must be greater than 0. (radius: " +
+                    ((Literal<Number>) radius).getSingle().doubleValue() + ")");
+            return false;
         }
 
         if (isCylinder) {
             height = (Expression<Number>) exprs[1];
-            if (height instanceof Literal) {
-                if (((Literal<Number>) height).getSingle().doubleValue() < 0){
-                    Skript.error("The height of the cylinder must be greater than or equal to 0. (height: " +
-                            ((Literal<Number>) height).getSingle().doubleValue() + ")");
-                    return false;
-                }
+            if (height instanceof Literal<Number> literal && literal.getSingle().doubleValue() < 0){
+                Skript.error("The height of the cylinder must be greater than or equal to 0. (height: " +
+                        ((Literal<Number>) height).getSingle().doubleValue() + ")");
+                return false;
             }
 
             style = switch (parseResult.mark) {
@@ -76,18 +72,18 @@ public class ExprCircle extends SimpleExpression<Circle>{
     }
 
     @Override
-    protected Circle @NotNull [] get(@NotNull Event event) {
+    @Nullable
+    protected Circle[] get(@NotNull Event event) {
         Number radius = this.radius.getSingle(event);
-        if (radius == null || radius.doubleValue() <= 0) {
-            radius = 1;
+        Number height = this.height != null ? this.height.getSingle(event) : 0;
+        if (radius == null || height == null) {
+            return null;
         }
-
-        double height = (isCylinder) ? this.height.getOptionalSingle(event).orElse(0).doubleValue() : 0;
-        if (height < 0) {
+        if (height.doubleValue() < 0) {
             height = 0;
         }
 
-        Circle circle = new Circle(radius.doubleValue(), height);
+        Circle circle = new Circle(radius.doubleValue(), height.doubleValue());
         circle.setStyle(style);
         return new Circle[]{circle};
     }

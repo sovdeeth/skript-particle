@@ -7,6 +7,7 @@ import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.ExpressionType;
+import ch.njol.skript.lang.Literal;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
@@ -59,6 +60,13 @@ public class ExprLine extends SimpleExpression<Line> {
             case 1 -> {
                 direction = (Expression<Vector>) exprs[0];
                 length = (Expression<Number>) exprs[1];
+
+                if (length instanceof Literal<Number> literal) {
+                    if (literal.getSingle().doubleValue() <= 0) {
+                        Skript.error("The length of a line must be greater than 0.");
+                        return false;
+                    }
+                }
             }
         }
         this.matchedPattern = matchedPattern;
@@ -74,29 +82,29 @@ public class ExprLine extends SimpleExpression<Line> {
                 Object start = this.start.getSingle(event);
                 Object end = this.end.getSingle(event);
                 // if both are vectors, create a line from them
-                if (start instanceof Vector && end instanceof Vector) {
-                    line = new Line((Vector) start, (Vector) end);
+                if (start instanceof Vector startVector && end instanceof Vector endVector) {
+                    line = new Line(startVector, endVector);
                     break;
                 } else if (start instanceof Vector || end instanceof Vector) {
-                    return new Line[0];
+                    return null;
                 }
                 // if neither are vectors, create a dynamic line
                 start = DynamicLocation.fromLocationEntity(start);
                 end = DynamicLocation.fromLocationEntity(end);
                 if (end == null || start == null)
-                    return new Line[0];
+                    return null;
                 line = new Line((DynamicLocation) start,(DynamicLocation) end);
             }
             case 1 -> {
                 if (direction.getSingle(event) == null)
-                    return new Line[0];
+                    return null;
                 Vector v = direction.getSingle(event);
                 if (length != null && length.getSingle(event) != null)
                     v.multiply(length.getSingle(event).doubleValue());
                 line = new Line(v);
             }
             default -> {
-                return new Line[0];
+                return null;
             }
         }
         return new Line[]{line};

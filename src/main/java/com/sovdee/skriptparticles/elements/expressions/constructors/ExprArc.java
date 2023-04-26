@@ -19,7 +19,7 @@ import org.jetbrains.annotations.Nullable;
 
 @Name("Particle Arc or Sector")
 @Description({
-        "Creates an arc or sector with the given radius and angle. The radius must be greater than 0 and the height, if given, must be positive.",
+        "Creates an arc or sector with the given radius and cutoff angle. The radius must be greater than 0 and the height, if given, must be positive.",
         "The angle must be between 0 and 360 degrees. If the angle is 360 degrees, the shape will be a circle or cylinder.",
         "An arc is a portion of the circle's circumference. A sector is a portion of the circle's area."
 })
@@ -34,8 +34,8 @@ public class ExprArc extends SimpleExpression<Arc> {
 
     static {
         Skript.registerExpression(ExprArc.class, Arc.class, ExpressionType.COMBINED,
-                "[a[n]] [circular] (arc|:sector) (with|of) radius %number%[,| and] [cutoff] angle %number% [degrees|:radians]",
-                "[a[n]] [cylindrical] (arc|:sector) (with|of) radius %number%[,| and] height %-number%[,] [and] [cutoff] angle %number% [degrees|:radians]");
+                "[a[n]] [circular] (arc|:sector) (with|of) radius %number% and [cutoff] angle [of] %number% [degrees|:radians]",
+                "[a[n]] [cylindrical] (arc|:sector) (with|of) radius %number%(,| and) height %-number%[,] and [cutoff] angle [of] %number% [degrees|:radians]");
     }
 
     private Expression<Number> radius;
@@ -56,24 +56,18 @@ public class ExprArc extends SimpleExpression<Arc> {
         isRadians = parseResult.hasTag("radians");
         isSector = parseResult.hasTag("sector");
 
-        if (radius instanceof Literal) {
-            double r = ((Literal<Number>) radius).getSingle().doubleValue();
-            if (r <= 0){
-                Skript.error("The radius of the arc must be greater than 0. (radius: " + r + ")");
-                return false;
-            }
+        if (radius instanceof Literal<Number> literal && literal.getSingle().doubleValue() <= 0) {
+            Skript.error("The radius of the arc must be greater than 0. (radius: " + literal.getSingle().doubleValue() + ")");
+            return false;
         }
 
-        if (height instanceof Literal) {
-            double h = ((Literal<Number>) height).getSingle().doubleValue();
-            if (h < 0){
-                Skript.error("The height of the arc must be greater than or equal to 0. (height: " + h + ")");
-                return false;
-            }
+        if (height instanceof Literal<Number> literal && literal.getSingle().doubleValue() < 0) {
+            Skript.error("The height of the arc cannot be negative. (height: " + literal.getSingle().doubleValue() + ")");
+            return false;
         }
 
-        if (angle instanceof Literal) {
-            double c = ((Literal<Number>) angle).getSingle().doubleValue();
+        if (angle instanceof Literal<Number> literal) {
+            double c = literal.getSingle().doubleValue();
             if (c <= 0 || c > 360){
                 Skript.error("The cutoff angle of the arc must be between 0 and 360. (angle: " + c + ")");
                 return false;
@@ -86,22 +80,22 @@ public class ExprArc extends SimpleExpression<Arc> {
     @Override
     @Nullable
     protected Arc[] get(Event event) {
-        if (radius.getSingle(event) == null || angle.getSingle(event) == null)
-            return new Arc[0];
+        Number radius = this.radius.getSingle(event);
+        Number angle = this.angle.getSingle(event);
+        Number height = (this.height != null) ? this.height.getSingle(event) : 0;
+        if (radius == null || angle == null || height == null)
+            return null;
 
-        double radius = this.radius.getSingle(event).doubleValue();
-        double angle = this.angle.getSingle(event).doubleValue();
-        double height = (this.height != null) ? this.height.getOptionalSingle(event).orElse(0).doubleValue() : 0;
         if (!isRadians)
-            angle = Math.toRadians(angle);
+            angle = Math.toRadians(angle.doubleValue());
 
-        if (radius <= 0)
+        if (radius.doubleValue() <= 0)
             radius = 1;
 
-        height = Math.max(height, 0);
-        angle = MathUtil.clamp(angle, 0, 2 * Math.PI);
+        height = Math.max(height.doubleValue(), 0);
+        angle = MathUtil.clamp(angle.doubleValue(), 0, 2 * Math.PI);
 
-        Arc arc = new Arc(radius, height, angle);
+        Arc arc = new Arc(radius.doubleValue(), height.doubleValue(), angle.doubleValue());
         if (isSector)
             arc.setStyle(Shape.Style.FILL);
 

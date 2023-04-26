@@ -35,7 +35,7 @@ public class ExprCuboid extends SimpleExpression<Cuboid> {
 
     static {
         Skript.registerExpression(ExprCuboid.class, Cuboid.class, ExpressionType.COMBINED,
-                "[a] [:hollow|:solid] cuboid [with|of] length %number%[,] [and] width %number%[,] [and] height %number%",
+                "[a] [:hollow|:solid] cuboid (with|of) length %number%(,| and) width %number%[,] and height %number%",
                 "[a] [:hollow|:solid] cuboid (from|between) %location/entity/vector% (to|and) %location/entity/vector%");
 
     }
@@ -79,18 +79,18 @@ public class ExprCuboid extends SimpleExpression<Cuboid> {
         Cuboid cuboid;
         // from width, length, height
         if (matchedPattern == 0) {
-            if (width == null || length == null || height == null) return new Cuboid[0];
+            if (width == null || length == null || height == null) return null;
             Number width = this.width.getSingle(event);
             Number length = this.length.getSingle(event);
             Number height = this.height.getSingle(event);
-            if (width == null || length == null || height == null) return new Cuboid[0];
+            if (width == null || length == null || height == null) return null;
             cuboid = new Cuboid(width.doubleValue(), length.doubleValue(), height.doubleValue());
         // from location/entity/vector to location/entity/vector
         } else {
-            if (corner1 == null || corner2 == null) return new Cuboid[0];
+            if (corner1 == null || corner2 == null) return null;
             Object corner1 = this.corner1.getSingle(event);
             Object corner2 = this.corner2.getSingle(event);
-            if (corner1 == null || corner2 == null) return new Cuboid[0];
+            if (corner1 == null || corner2 == null) return null;
 
             // vector check
             if (corner1 instanceof Vector && corner2 instanceof Vector) {
@@ -98,13 +98,13 @@ public class ExprCuboid extends SimpleExpression<Cuboid> {
                 cuboid = new Cuboid((Vector) corner1, (Vector) corner2);
             } else if (corner1 instanceof Vector || corner2 instanceof Vector) {
                 // if one is a vector, return empty array
-                return new Cuboid[0];
+                return null;
             } else {
                 // if neither are vectors, create a dynamic cuboid
                 corner1 = DynamicLocation.fromLocationEntity(corner1);
                 corner2 = DynamicLocation.fromLocationEntity(corner2);
                 if (corner1 == null || corner2 == null)
-                    return new Cuboid[0];
+                    return null;
                 cuboid = new Cuboid((DynamicLocation) corner1, (DynamicLocation) corner2);
             }
         }

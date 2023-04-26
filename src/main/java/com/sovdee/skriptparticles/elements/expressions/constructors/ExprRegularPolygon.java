@@ -28,12 +28,12 @@ import org.jetbrains.annotations.Nullable;
 })
 public class ExprRegularPolygon extends SimpleExpression<RegularPolygon> {
 
-    // TODO: add height
+    // TODO: add ExprRegularPrism
 
     static {
         Skript.registerExpression(ExprRegularPolygon.class, RegularPolygon.class, ExpressionType.COMBINED,
-                "[a] [solid:(solid|filled)] regular polygon with %number% sides(,| and) radius %number%",
-                "[a] [solid:(solid|filled)] regular polygon with %number% sides(,| and) side length %number%",
+                "[a] [solid:(solid|filled)] regular polygon with %number% sides and radius %number%",
+                "[a] [solid:(solid|filled)] regular polygon with %number% sides and side length %number%",
                 "[a[n]] [solid:(solid|filled)] (3:[equilateral ]triangle|4:square|5:pentagon|6:hexagon|7:heptagon|8:octagon) with radius %number%",
                 "[a[n]] [solid:(solid|filled)] (3:[equilateral ]triangle|4:square|5:pentagon|6:hexagon|7:heptagon|8:octagon) with side length %number%"
         );
@@ -68,28 +68,19 @@ public class ExprRegularPolygon extends SimpleExpression<RegularPolygon> {
             }
         }
 
-        if (sides instanceof Literal<Number>) {
-            int sidesValue = ((Literal<Number>) sides).getSingle().intValue();
-            if (sidesValue < 3) {
-                Skript.error("The number of sides must be at least 3.");
-                return false;
-            }
+        if (sides instanceof Literal<Number> literal && literal.getSingle().intValue() < 3) {
+            Skript.error("The number of sides must be at least 3. (sides: " + literal.getSingle() + ")");
+            return false;
         }
 
-        if (sideLength instanceof Literal<Number>) {
-            double sideLengthValue = ((Literal<Number>) sideLength).getSingle().doubleValue();
-            if (sideLengthValue <= 0) {
-                Skript.error("The side length must be greater than 0.");
-                return false;
-            }
+        if (radius instanceof Literal<Number> literal && literal.getSingle().doubleValue() <= 0) {
+            Skript.error("The radius must be greater than 0. (radius: " + literal.getSingle() + ")");
+            return false;
         }
 
-        if (radius instanceof Literal<Number>) {
-            double radiusValue = ((Literal<Number>) radius).getSingle().doubleValue();
-            if (radiusValue <= 0) {
-                Skript.error("The radius must be greater than 0.");
-                return false;
-            }
+        if (sideLength instanceof Literal<Number> literal && literal.getSingle().doubleValue() <= 0) {
+            Skript.error("The side length must be greater than 0. (side length: " + literal.getSingle() + ")");
+            return false;
         }
 
         return true;

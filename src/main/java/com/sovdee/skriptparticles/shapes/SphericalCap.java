@@ -19,6 +19,7 @@ public class SphericalCap extends Sphere implements CutoffShape {
     public void setCutoffAngle(double cutoffAngle) {
         this.cutoffAngle = MathUtil.clamp(cutoffAngle, 0, Math.PI);
         this.cutoffAngleCos = Math.cos(this.cutoffAngle);
+        needsUpdate = true;
     }
 
     @Override

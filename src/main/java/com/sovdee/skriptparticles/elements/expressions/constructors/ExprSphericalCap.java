@@ -18,7 +18,7 @@ import org.jetbrains.annotations.Nullable;
 
 @Name("Particle Spherical Cap")
 @Description({
-        "Creates a spherical cap or spherical sector shape with the given radius and angle. The radius must be greater than 0.",
+        "Creates a spherical cap or spherical sector shape with the given radius and cutoff angle. The radius must be greater than 0.",
         "The angle must be between 0 and 180 degrees. If the angle is 180 degrees, the shape will be a sphere.",
         "A spherical cap is a portion of the surface of a sphere. A spherical sector, or spherical cone, is essentially a cone with a rounded base."
 })
@@ -31,7 +31,7 @@ public class ExprSphericalCap extends SimpleExpression<SphericalCap> {
 
     static {
         Skript.registerExpression(ExprSphericalCap.class, SphericalCap.class, ExpressionType.COMBINED,
-                "[a] spherical (cap|:sector) (with|of) radius %number%[,| and] [cutoff] angle %number% [degrees|:radians]");
+                "[a] spherical (cap|:sector) (with|of) radius %number% and [cutoff] angle [of] %number% [degrees|:radians]");
     }
 
     private Expression<Number> radius;
@@ -46,16 +46,13 @@ public class ExprSphericalCap extends SimpleExpression<SphericalCap> {
         isRadians = parseResult.hasTag("radians");
         isSector = parseResult.hasTag("sector");
 
-        if (radius instanceof Literal) {
-            double r = ((Literal<Number>) radius).getSingle().doubleValue();
-            if (r <= 0){
-                Skript.error("The radius of the spherical cap must be greater than 0. (radius: " + r + ")");
-                return false;
-            }
+        if (radius instanceof Literal<Number> literal && literal.getSingle().doubleValue() <= 0) {
+            Skript.error("The radius of the spherical cap must be greater than 0. (radius: " + literal.getSingle().doubleValue() + ")");
+            return false;
         }
 
-        if (angle instanceof Literal) {
-            double c = ((Literal<Number>) angle).getSingle().doubleValue();
+        if (angle instanceof Literal<Number> literal) {
+            double c = literal.getSingle().doubleValue();
             if (c <= 0 || c > 180){
                 Skript.error("The cutoff angle of the spherical cap must be between 0 and 180. (angle: " + c + ")");
                 return false;
