@@ -7,10 +7,11 @@
  
 ## Current Features:
 - Shapes:
-  - Circles and Spheres
-  - Arcs and spherical caps
+  - Circles, Ellipses, and Spheres
+  - Cylinders and Elliptical Cylinders
+  - Arcs and Spherical Caps
   - Lines
-  - 2D Regular Polygons
+  - 2D Regular Polygons and Prisms
   - Rectangles and cuboids
 - Drawing:
   - Three styles: outline, surface, and filled. Some shapes only support one or two of these styles.
@@ -22,16 +23,16 @@
     - Full support for SkBee's particle data syntaxes
   - Debug axes for clear visualization of the orientation of your shape.
   - Shapes are only calculated when they actually change, so you can draw the same shape many times without any performance hit.
-  - Option to make all calculation and drawing asynchronous
-   - Ability to continuously draw a shape for a timespan
+  - Option to make all calculation and drawing synchronous (async by default)
+   - Ability to continuously draw a shape for a timespan (async only)
+  - Dynamic locations, so particles can follow an entity with no additional user effort
 - Particles:
   - Expression for custom particles
   - Section for custom particles
 
  ## Planned Features:
  - Shapes:
-   - irregular polygons, polygons with optional height
-   - Cylinders
+   - irregular polygons
    - Helices
    - Ellipsoids
    - Bezier Curves
