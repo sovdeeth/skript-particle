@@ -13,6 +13,7 @@ import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
 import com.sovdee.skriptparticles.shapes.Shape;
 import com.sovdee.skriptparticles.shapes.Sphere;
+import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
 
@@ -54,9 +55,7 @@ public class ExprSphere extends SimpleExpression<Sphere>{
         if (radius == null)
             return null;
 
-        if (radius.doubleValue() <= 0) {
-            radius = 1;
-        }
+        radius = Math.max(radius.doubleValue(), MathUtil.EPSILON);
 
         Sphere sphere = new Sphere(radius.doubleValue());
         if (isSolid) sphere.setStyle(Shape.Style.FILL);

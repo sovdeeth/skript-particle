@@ -13,6 +13,7 @@ import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
 import com.sovdee.skriptparticles.shapes.Line;
 import com.sovdee.skriptparticles.util.DynamicLocation;
+import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
@@ -96,11 +97,14 @@ public class ExprLine extends SimpleExpression<Line> {
                 line = new Line((DynamicLocation) start,(DynamicLocation) end);
             }
             case 1 -> {
-                if (direction.getSingle(event) == null)
-                    return null;
                 Vector v = direction.getSingle(event);
-                if (length != null && length.getSingle(event) != null)
-                    v.multiply(length.getSingle(event).doubleValue());
+                Number length = this.length.getSingle(event);
+                if (v == null)
+                    return null;
+
+                if (length != null)
+                    v.multiply(Math.max(length.doubleValue(), MathUtil.EPSILON));
+
                 line = new Line(v);
             }
             default -> {

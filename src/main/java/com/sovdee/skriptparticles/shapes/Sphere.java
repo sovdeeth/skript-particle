@@ -14,8 +14,8 @@ public class Sphere extends AbstractShape implements RadialShape {
     public Sphere (double radius){
         super();
         this.radius = radius;
-        this.cutoffAngle = 2 * Math.PI;
-        this.cutoffAngleCos = 1.0;
+        this.cutoffAngle = Math.PI;
+        this.cutoffAngleCos = -1.0;
         this.style = Style.SURFACE;
     }
 

@@ -89,9 +89,7 @@ public class ExprArc extends SimpleExpression<Arc> {
         if (!isRadians)
             angle = Math.toRadians(angle.doubleValue());
 
-        if (radius.doubleValue() <= 0)
-            radius = 1;
-
+        radius = Math.max(radius.doubleValue(), MathUtil.EPSILON);
         height = Math.max(height.doubleValue(), 0);
         angle = MathUtil.clamp(angle.doubleValue(), 0, 2 * Math.PI);
 

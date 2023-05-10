@@ -13,6 +13,7 @@ import ch.njol.util.Kleenean;
 import com.sovdee.skriptparticles.shapes.Cuboid;
 import com.sovdee.skriptparticles.shapes.Shape.Style;
 import com.sovdee.skriptparticles.util.DynamicLocation;
+import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
@@ -84,6 +85,9 @@ public class ExprCuboid extends SimpleExpression<Cuboid> {
             Number length = this.length.getSingle(event);
             Number height = this.height.getSingle(event);
             if (width == null || length == null || height == null) return null;
+            width = Math.max(width.doubleValue(), MathUtil.EPSILON);
+            length = Math.max(length.doubleValue(), MathUtil.EPSILON);
+            height = Math.max(height.doubleValue(), MathUtil.EPSILON);
             cuboid = new Cuboid(width.doubleValue(), length.doubleValue(), height.doubleValue());
         // from location/entity/vector to location/entity/vector
         } else {

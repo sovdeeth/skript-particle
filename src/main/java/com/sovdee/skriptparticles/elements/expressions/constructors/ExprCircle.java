@@ -13,6 +13,7 @@ import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
 import com.sovdee.skriptparticles.shapes.Circle;
 import com.sovdee.skriptparticles.shapes.Shape;
+import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
 
@@ -76,12 +77,11 @@ public class ExprCircle extends SimpleExpression<Circle>{
     protected Circle[] get(@NotNull Event event) {
         Number radius = this.radius.getSingle(event);
         Number height = this.height != null ? this.height.getSingle(event) : 0;
-        if (radius == null || height == null) {
+        if (radius == null || height == null)
             return null;
-        }
-        if (height.doubleValue() < 0) {
-            height = 0;
-        }
+
+        radius = Math.max(radius.doubleValue(), MathUtil.EPSILON);
+        height = Math.max(height.doubleValue(), 0);
 
         Circle circle = new Circle(radius.doubleValue(), height.doubleValue());
         circle.setStyle(style);

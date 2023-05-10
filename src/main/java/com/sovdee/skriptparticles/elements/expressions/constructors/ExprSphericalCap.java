@@ -13,6 +13,7 @@ import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
 import com.sovdee.skriptparticles.shapes.Shape;
 import com.sovdee.skriptparticles.shapes.SphericalCap;
+import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
 
@@ -65,20 +66,16 @@ public class ExprSphericalCap extends SimpleExpression<SphericalCap> {
     @Override
     @Nullable
     protected SphericalCap[] get(Event event) {
-        if (radius.getSingle(event) == null || angle.getSingle(event) == null)
-            return new SphericalCap[0];
+        Number radius = this.radius.getSingle(event);
+        Number angle = this.angle.getSingle(event);
+        if (radius == null || angle == null)
+            return null;
 
-        double radius = this.radius.getSingle(event).doubleValue();
-        double angle = this.angle.getSingle(event).doubleValue();
+        radius = Math.max(radius.doubleValue(), MathUtil.EPSILON);
         if (!isRadians)
-            angle = Math.toRadians(angle);
+            angle = Math.toRadians(angle.doubleValue());
 
-        if (radius <= 0) {
-            Skript.warning("The radius of the cap must be greater than 0; defaulting to 1. (radius: " + radius + ")");
-            radius = 1;
-        }
-
-        SphericalCap cap = new SphericalCap(radius, angle);
+        SphericalCap cap = new SphericalCap(radius.doubleValue(), angle.doubleValue());
         if (isSector)
             cap.setStyle(Shape.Style.FILL);
 

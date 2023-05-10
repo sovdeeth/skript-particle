@@ -13,6 +13,7 @@ import ch.njol.skript.lang.util.SimpleLiteral;
 import ch.njol.util.Kleenean;
 import com.sovdee.skriptparticles.shapes.RegularPolygon;
 import com.sovdee.skriptparticles.shapes.Shape.Style;
+import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
 
@@ -105,6 +106,9 @@ public class ExprRegularPolygon extends SimpleExpression<RegularPolygon> {
                 return null;
             radius = radius.doubleValue() / (2 * Math.sin(Math.PI / sides.doubleValue()));
         }
+
+        sides = Math.max(sides.intValue(), 3);
+        radius = Math.max(radius.doubleValue(), MathUtil.EPSILON);
         RegularPolygon polygon = new RegularPolygon(sides.intValue(), radius.doubleValue());
         polygon.setStyle(style);
         return new RegularPolygon[] {polygon};

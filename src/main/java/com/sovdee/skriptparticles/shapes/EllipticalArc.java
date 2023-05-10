@@ -7,12 +7,12 @@ import java.util.Set;
 
 public class EllipticalArc extends Ellipse implements CutoffShape {
 
-    public EllipticalArc(double lengthRadius, double widthRadius, double cutoffAngle) {
-        this(lengthRadius, widthRadius, 0, cutoffAngle);
+    public EllipticalArc(double xRadius, double zRadius, double cutoffAngle) {
+        this(xRadius, zRadius, 0, cutoffAngle);
     }
 
-    public EllipticalArc(double lengthRadius, double widthRadius, double height, double cutoffAngle) {
-        super(lengthRadius, widthRadius, height);
+    public EllipticalArc(double xRadius, double zRadius, double height, double cutoffAngle) {
+        super(xRadius, zRadius, height);
         this.cutoffAngle = cutoffAngle;
     }
 
@@ -34,6 +34,6 @@ public class EllipticalArc extends Ellipse implements CutoffShape {
 
     @Override
     public Shape clone() {
-        return this.copyTo(new EllipticalArc(lengthRadius, widthRadius, height, cutoffAngle));
+        return this.copyTo(new EllipticalArc(xRadius, zRadius, height, cutoffAngle));
     }
 }

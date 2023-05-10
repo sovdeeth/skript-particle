@@ -7,7 +7,7 @@
  
 ## Current Features:
 - Shapes:
-  - Circles, Ellipses, and Spheres
+  - Circles, Ellipses, Spheres, and Ellipsoids
   - Cylinders and Elliptical Cylinders
   - Arcs and Spherical Caps
   - Lines
@@ -34,7 +34,6 @@
  - Shapes:
    - irregular polygons
    - Helices
-   - Ellipsoids
    - Bezier Curves
    - Regular polyhedra
    - Custom shapes defined by a function

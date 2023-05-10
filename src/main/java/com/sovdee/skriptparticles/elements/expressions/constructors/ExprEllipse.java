@@ -1,6 +1,10 @@
 package com.sovdee.skriptparticles.elements.expressions.constructors;
 
 import ch.njol.skript.Skript;
+import ch.njol.skript.doc.Description;
+import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Name;
+import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.ExpressionType;
 import ch.njol.skript.lang.Literal;
@@ -10,9 +14,22 @@ import ch.njol.util.Kleenean;
 import com.sovdee.skriptparticles.shapes.Ellipse;
 import com.sovdee.skriptparticles.shapes.Shape;
 import com.sovdee.skriptparticles.shapes.Shape.Style;
+import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
 
+@Name("Particle Ellipse or Elliptical Cylinder")
+@Description({
+        "Creates a ellipse, elliptical disc, or elliptical cylinder shape with the given radii. The radii must be greater than 0.",
+        "The first radius is the x radius, and the second radius is the z radius. These are relative to the shape's rotation, " +
+        "so they only correspond exactly to the x and z axes if the shape is not rotated."
+})
+@Examples({
+        "set {_shape} to oval with radii 10 and 3",
+        "set {_shape} to a solid ellipse of radius 3 and 5",
+        "set {_shape} to a hollow elliptical cylinder with radii 3 and 6 and height 5"
+})
+@Since("1.0.0")
 public class ExprEllipse extends SimpleExpression<Ellipse> {
 
     static {
@@ -21,15 +38,15 @@ public class ExprEllipse extends SimpleExpression<Ellipse> {
                 "[a[n]] [hollow|2:solid] elliptical (cylinder|1:tube) (with|of) radi(i|us) %number%(,| and) %number%[,] and height %number%");
     }
 
-    private Expression<Number> lengthRadius;
-    private Expression<Number> widthRadius;
+    private Expression<Number> xRadius;
+    private Expression<Number> zRadius;
     private Expression<Number> height;
     private Style style;
 
     @Override
     public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, ParseResult parseResult) {
-        lengthRadius = (Expression<Number>) exprs[0];
-        widthRadius = (Expression<Number>) exprs[1];
+        xRadius = (Expression<Number>) exprs[0];
+        zRadius = (Expression<Number>) exprs[1];
         style = Style.OUTLINE;
         if (parseResult.hasTag("surface")) {
             style = Style.SURFACE;
@@ -43,13 +60,13 @@ public class ExprEllipse extends SimpleExpression<Ellipse> {
             };
         }
 
-        if (lengthRadius instanceof Literal<Number> literal && literal.getSingle().doubleValue() <= 0) {
+        if (xRadius instanceof Literal<Number> literal && literal.getSingle().doubleValue() <= 0) {
             Skript.error("The radius of the ellipse must be greater than 0. (length radius: " +
                     literal.getSingle().doubleValue() + ")");
             return false;
         }
 
-        if (widthRadius instanceof Literal<Number> literal && literal.getSingle().doubleValue() <= 0) {
+        if (zRadius instanceof Literal<Number> literal && literal.getSingle().doubleValue() <= 0) {
             Skript.error("The radius of the ellipse must be greater than 0. (width radius: " +
                     literal.getSingle().doubleValue() + ")");
             return false;
@@ -67,13 +84,17 @@ public class ExprEllipse extends SimpleExpression<Ellipse> {
     @Override
     @Nullable
     protected Ellipse[] get(Event event) {
-        Number lengthRadius = this.lengthRadius.getSingle(event);
-        Number widthRadius = this.widthRadius.getSingle(event);
+        Number xRadius = this.xRadius.getSingle(event);
+        Number zRadius = this.zRadius.getSingle(event);
         Number height = this.height == null ? 0 : this.height.getSingle(event);
-        if (lengthRadius == null || widthRadius == null || height == null) {
+        if (xRadius == null || zRadius == null || height == null)
             return null;
-        }
-        Ellipse ellipse = new Ellipse(lengthRadius.doubleValue(), widthRadius.doubleValue(), height.doubleValue());
+
+        xRadius = Math.max(xRadius.doubleValue(), MathUtil.EPSILON);
+        zRadius = Math.max(zRadius.doubleValue(), MathUtil.EPSILON);
+        height = Math.max(height.doubleValue(), 0);
+
+        Ellipse ellipse = new Ellipse(xRadius.doubleValue(), zRadius.doubleValue(), height.doubleValue());
         ellipse.setStyle(style);
         return new Ellipse[]{ellipse};
     }
@@ -90,8 +111,8 @@ public class ExprEllipse extends SimpleExpression<Ellipse> {
 
     @Override
     public String toString(@Nullable Event event, boolean debug) {
-        return (height == null ? "ellipse of x radius " + lengthRadius.toString(event, debug) + " and z radius " + widthRadius.toString(event, debug)  :
-                "elliptical cylinder of x radius " + lengthRadius.toString(event, debug) + " and z radius " + widthRadius.toString(event, debug) +
+        return (height == null ? "ellipse of x radius " + xRadius.toString(event, debug) + " and z radius " + zRadius.toString(event, debug)  :
+                "elliptical cylinder of x radius " + xRadius.toString(event, debug) + " and z radius " + zRadius.toString(event, debug) +
                         " and height " + (height != null ? height.toString(event, debug) : "0"));
     }
 }

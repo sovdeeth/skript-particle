@@ -13,6 +13,7 @@ import ch.njol.util.Kleenean;
 import com.sovdee.skriptparticles.shapes.Rectangle;
 import com.sovdee.skriptparticles.shapes.Shape;
 import com.sovdee.skriptparticles.util.DynamicLocation;
+import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
@@ -77,6 +78,8 @@ public class ExprRectangle extends SimpleExpression<Rectangle> {
             Number length = lengthExpr.getSingle(event);
             Number width = widthExpr.getSingle(event);
             if (length == null || width == null) return null;
+            length = Math.max(length.doubleValue(), MathUtil.EPSILON);
+            width = Math.max(width.doubleValue(), MathUtil.EPSILON);
             rectangle = new Rectangle(length.doubleValue(), width.doubleValue(), plane);
         } else {
             if (corner1Expr == null || corner2Expr == null) return null;
