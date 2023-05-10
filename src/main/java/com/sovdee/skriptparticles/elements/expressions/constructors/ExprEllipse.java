@@ -20,6 +20,7 @@ import org.jetbrains.annotations.Nullable;
 
 @Name("Particle Ellipse or Elliptical Cylinder")
 @Description({
+        "WARNING: This shape is expensive to render at the moment. Use with caution.",
         "Creates a ellipse, elliptical disc, or elliptical cylinder shape with the given radii. The radii must be greater than 0.",
         "The first radius is the x radius, and the second radius is the z radius. These are relative to the shape's rotation, " +
         "so they only correspond exactly to the x and z axes if the shape is not rotated."

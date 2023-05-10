@@ -19,6 +19,7 @@ import org.jetbrains.annotations.Nullable;
 
 @Name("Particle Elliptical Arc or Sector")
 @Description({
+        "WARNING: This shape is expensive to render at the moment. Use with caution.",
         "Creates an elliptical arc or sector with the given radii and cutoff angle. The radii must be greater than 0 and the height, if given, must be positive.",
         "The angle must be between 0 and 360 degrees. If the angle is 360 degrees, the shape will be a ellipse or elliptical cylinder.",
         "An arc is a portion of the ellipse's circumference. A sector is a portion of the ellipse's area."

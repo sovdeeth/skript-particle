@@ -130,7 +130,7 @@ public class Ellipsoid extends AbstractShape implements LWHShape {
 
     @Override
     public void setHeight(double height) {
-        zRadius = Math.max(height / 2, MathUtil.EPSILON);
+        yRadius = Math.max(height / 2, MathUtil.EPSILON);
         needsUpdate = true;
     }
 

@@ -14,31 +14,12 @@ public class SkriptParticle extends JavaPlugin {
     private static Logger logger;
 
 
-    // todo before alpha
-    // SIMPLE
-        // Properties
-    // MODERATE
-        // proper particle density for regular polyhedra
-        // Particle motion (vector, inwards, outwards)
-        // Particle section (just needs testing
-            // create a new %particle% [particle]:
-            //- count: int
-            //- offset: vector
-            //- velocity: vector or inwards/outwards (exclusive w/ offset & count)
-            //- extra: double
-            //- data: dustOptions, item, etc. (take skbee code)
-            //- - if particle is dust, allow "color: color" and "size: double"
-            //- force: boolean
-    // HARD/LONG
-        // Surface fill for arbitrary polygons
-        // DOCUMENTATION
-
-    // Eventually:
-    // Better interface use
-    // everything for bezier curves
-    // Arbitrary 3d shapes w/ points
-    // Shapes defined by equations
-    //  - Chladni patterns?
+    // todo before beta
+    // Irregular Polygons
+    // Regular Polyhedra
+    // Fix Ellipse/Ellipsoid performance?
+    // bstats
+    // TEST EVERYTHING
 
 
 

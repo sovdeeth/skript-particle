@@ -10,6 +10,7 @@
   - Circles, Ellipses, Spheres, and Ellipsoids
   - Cylinders and Elliptical Cylinders
   - Arcs and Spherical Caps
+  - Helices
   - Lines
   - 2D Regular Polygons and Prisms
   - Rectangles and cuboids
@@ -33,7 +34,6 @@
  ## Planned Features:
  - Shapes:
    - irregular polygons
-   - Helices
    - Bezier Curves
    - Regular polyhedra
    - Custom shapes defined by a function

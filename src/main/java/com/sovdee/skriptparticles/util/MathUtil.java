@@ -80,6 +80,22 @@ public class MathUtil {
         return points;
     }
 
+    public static Set<Vector> calculateHelix(double radius, double height, double slope, int direction, double particleDensity) {
+        Set<Vector> points = new HashSet<>();
+        if (radius <= 0 || height <= 0) {
+            return points;
+        }
+        double loops = Math.abs(height / slope);
+        double length = slope * slope + radius * radius;
+        double stepSize = particleDensity / length;
+        for (double t = 0; t < loops; t += stepSize) {
+            double x = radius * Math.cos(direction * t);
+            double z = radius * Math.sin(direction * t);
+            points.add(new Vector(x, t*slope, z));
+        }
+        return points;
+    }
+
     public static Set<Vector> calculateLine(Vector start, Vector end, double particleDensity){
         Set<Vector> points = new HashSet<>();
         Vector direction = end.clone().subtract(start);

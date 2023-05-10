@@ -19,6 +19,7 @@ import org.jetbrains.annotations.Nullable;
 
 @Name("Particle Ellipsoid")
 @Description({
+        "WARNING: This shape is very expensive to render at the moment. Use with caution.",
         "Creates a ellipsoid shape with the given radii. The radii must be greater than 0.",
         "The first radius is the x radius, and the second is the y radius, and the last is the z radius. " +
         "These are relative to the shape's rotation, so they only correspond exactly to the world axes if the shape is not rotated.",
@@ -50,19 +51,19 @@ public class ExprEllipsoid extends SimpleExpression<Ellipsoid> {
         zRadius = (Expression<Number>) exprs[2];
 
         if (xRadius instanceof Literal<Number> literal && literal.getSingle().doubleValue() <= 0) {
-            Skript.error("The x radius of the ellipse must be greater than 0. (x radius: " +
+            Skript.error("The x radius of the ellipsoid must be greater than 0. (x radius: " +
                     literal.getSingle().doubleValue() + ")");
             return false;
         }
 
-        if (yRadius instanceof Literal<Number> literal && literal.getSingle().doubleValue() < 0) {
-            Skript.error("The y radius of the elliptical cylinder must be greater than or equal to 0. (y radius: " +
+        if (yRadius instanceof Literal<Number> literal && literal.getSingle().doubleValue() <= 0) {
+            Skript.error("The y radius of the ellipsoid must be greater than  0. (y radius: " +
                     literal.getSingle().doubleValue() + ")");
             return false;
         }
 
         if (zRadius instanceof Literal<Number> literal && literal.getSingle().doubleValue() <= 0) {
-            Skript.error("The z radius of the ellipse must be greater than 0. (z radius: " +
+            Skript.error("The z radius of the ellipsoid must be greater than 0. (z radius: " +
                     literal.getSingle().doubleValue() + ")");
             return false;
         }
