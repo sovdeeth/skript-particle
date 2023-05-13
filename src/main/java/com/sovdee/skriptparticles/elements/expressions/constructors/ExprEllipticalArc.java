@@ -19,10 +19,10 @@ import org.jetbrains.annotations.Nullable;
 
 @Name("Particle Elliptical Arc or Sector")
 @Description({
-        "WARNING: This shape is expensive to render at the moment. Use with caution.",
         "Creates an elliptical arc or sector with the given radii and cutoff angle. The radii must be greater than 0 and the height, if given, must be positive.",
         "The angle must be between 0 and 360 degrees. If the angle is 360 degrees, the shape will be a ellipse or elliptical cylinder.",
-        "An arc is a portion of the ellipse's circumference. A sector is a portion of the ellipse's area."
+        "An arc is a portion of the ellipse's circumference. A sector is a portion of the ellipse's area.",
+        "NOTE: Very eccentric elliptical sectors (those with a large difference between the x and z radii) may have many more particles than expected. Be careful."
 })
 @Examples({
         "set {_shape} to an elliptical arc with radii 10 and 3 and cutoff angle of 90 degrees",
@@ -47,6 +47,9 @@ public class ExprEllipticalArc extends SimpleExpression<EllipticalArc> {
 
     @Override
     public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, ParseResult parseResult) {
+//        Skript.error("Elliptical arcs are currently disabled. If you know how to efficiently compute the inverse of the " +
+//                "elliptic integral of the second kind, please send me a message on Discord or Github.");
+//        return false;
         xRadius = (Expression<Number>) exprs[0];
         zRadius = (Expression<Number>) exprs[1];
         if (matchedPattern == 1) {

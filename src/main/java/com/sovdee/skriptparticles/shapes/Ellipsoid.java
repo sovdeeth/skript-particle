@@ -36,19 +36,19 @@ public class Ellipsoid extends AbstractShape implements LWHShape {
 
     @Override
     public Set<Vector> generateSurface() {
-        Set<Vector> ellipse;
+        List<Vector> ellipse;
         if (xRadius > zRadius) {
             ellipse = XY_ROTATION.transform(MathUtil.calculateEllipse(xRadius, yRadius, particleDensity, 2 * Math.PI));
         } else {
             ellipse = ZY_ROTATION.transform(MathUtil.calculateEllipse(yRadius, zRadius, particleDensity, 2 * Math.PI));
         }
-        return generateEllipsoid(ellipse.stream().toList(), 1);
+        return generateEllipsoid(ellipse, 1);
     }
 
     @Override
     public Set<Vector> generateFilled() {
         Set<Vector> points = new HashSet<>();
-        Set<Vector> ellipse;
+        List<Vector> ellipse;
         double radius = Math.max(xRadius, zRadius);
         int steps = (int) Math.round(radius / particleDensity);
         for (int i = steps; i > 0; i--){
@@ -58,14 +58,14 @@ public class Ellipsoid extends AbstractShape implements LWHShape {
             } else {
                 ellipse = ZY_ROTATION.transform(MathUtil.calculateEllipse(yRadius * r, zRadius * r, particleDensity, 2 * Math.PI));
             }
-            points.addAll(generateEllipsoid(ellipse.stream().toList(), r));
+            points.addAll(generateEllipsoid(ellipse, r));
         }
         return points;
     }
 
     private Set<Vector> generateEllipsoid(List<Vector> ellipse, double r) {
         Set<Vector> points = new HashSet<>();
-        for (int i = 0; i < Math.ceil(ellipse.size() / 4.0); i++){
+        for (int i = 0; i < Math.ceil(ellipse.size() / 4.0); i++) {
             double y = ellipse.get(i).getY();
             double theta = Math.asin(y / (yRadius * r));
             for (Vector v2 : MathUtil.calculateEllipse(r * xRadius * Math.cos(theta), r * zRadius * Math.cos(theta), particleDensity, 2*Math.PI)){

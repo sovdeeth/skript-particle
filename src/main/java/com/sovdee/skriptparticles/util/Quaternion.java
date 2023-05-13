@@ -4,8 +4,8 @@ import org.bukkit.util.Vector;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /*
@@ -22,6 +22,10 @@ public class Quaternion extends Quaternionf implements Cloneable {
         super();
     }
 
+    public Quaternion(double x, double y, double z, double w) {
+        super((float) x, (float) y, (float) z, (float) w);
+    }
+
     public Quaternion(float x, float y, float z, float w) {
         super(x, y, z, w);
     }
@@ -36,7 +40,12 @@ public class Quaternion extends Quaternionf implements Cloneable {
         this.set(quaternion);
     }
 
-    public Set<Vector> transform(Collection<Vector> vectors) {
+    public List<Vector> transform(List<Vector> vectors) {
+        vectors.replaceAll(this::transform);
+        return vectors;
+    }
+
+    public Set<Vector> transform(Set<Vector> vectors) {
         Set<Vector> newVectors = new HashSet<>();
         for (Vector vector : vectors) {
             newVectors.add(this.transform(vector));

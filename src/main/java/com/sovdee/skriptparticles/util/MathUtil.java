@@ -147,55 +147,46 @@ public class MathUtil {
         return points;
     }
 
-    public static List<Vector> connectPoints(List<Vector> points, double particleDensity) {
-        List<Vector> connectedPoints = new ArrayList<>();
+    public static Set<Vector> connectPoints(List<Vector> points, double particleDensity) {
+        Set<Vector> connectedPoints = new HashSet<>();
         for (int i = 0; i < points.size() - 1; i++) {
             connectedPoints.addAll(calculateLine(points.get(i), points.get(i + 1), particleDensity));
         }
         return connectedPoints;
     }
 
-    public static Set<Vector> calculateEllipse(double r1, double r2, double particleDensity, double cutoffAngle) {
-        Set<Vector> points = new HashSet<>();
-        double theta = 0.0;
-        double twoPi = Math.PI*2.0;
-        double deltaTheta = 0.0001;
-        double numIntegrals = Math.round(twoPi/deltaTheta);
-        double circ = 0.0;
-        double dpt;
+    private static double ellipseCircumference(double r1, double r2) {
+        double a = Math.max(r1, r2);
+        double b = Math.min(r1, r2);
+        double h = Math.pow(a - b, 2) / Math.pow(a + b, 2);
+        return Math.PI * (a + b) * (1 + 3 * h / (10 + Math.sqrt(4 - 3 * h)));
+    }
 
-        /* integrate over the elipse to get the circumference */
-        for( int i=0; i < numIntegrals; i++ ) {
-            theta += i*deltaTheta;
-            dpt = computeDpt( r1, r2, theta);
-            circ += dpt;
-        }
+    public static List<Vector> calculateEllipse(double r1, double r2, double particleDensity, double cutoffAngle) {
+        List<Vector> points = new ArrayList<>();
+        double circumference = ellipseCircumference(r1, r2);
 
-        int n = (int) Math.round(circ/particleDensity/10000);
-        int nextPoint = 0;
-        double run = 0, x, z, subIntegral;
-        theta = 0.0;
-
-        for( int i=0; i < numIntegrals; i++ ) {
-            theta += deltaTheta;
-            if (theta > cutoffAngle) break;
-            subIntegral = n*run/circ;
-            if( (int) subIntegral >= nextPoint ) {
-                x = r1 * Math.cos(theta);
-                z = r2 * Math.sin(theta);
-                points.add(new Vector(x, 0, z));
-                nextPoint++;
+        int steps = (int) Math.round(circumference / particleDensity);
+        double theta = 0;
+        double angleStep = 0;
+        for (int i = 0; i < steps; i++) {
+            if (theta > cutoffAngle) {
+                break;
             }
-            run += computeDpt(r1, r2, theta);
+            points.add(new Vector(r1 * Math.cos(theta), 0, r2 * Math.sin(theta)));
+            double dx = r1 * Math.sin(theta + 0.5 * angleStep);
+            double dy = r2 * Math.cos(theta + 0.5 * angleStep);
+            angleStep = particleDensity / Math.sqrt(dx * dx + dy * dy);
+            theta += angleStep;
         }
         return points;
     }
 
     public static Set<Vector> calculateEllipticalDisc(double r1, double r2, double particleDensity, double cutoffAngle){
         Set<Vector> points = new HashSet<>();
-        int steps = (int) Math.round(r1 / particleDensity);
+        int steps = (int) Math.round(Math.max(r1,r2) / particleDensity);
         double r;
-        for (double i = 1; i <= steps; i += 1){
+        for (double i = 1; i <= steps; i += 1) {
             r = i / steps;
             points.addAll(calculateEllipse(r1 * r, r2 * r, particleDensity, cutoffAngle));
         }
@@ -215,15 +206,9 @@ public class MathUtil {
         Set<Vector> points = calculateEllipticalDisc(r1, r2, particleDensity, cutoffAngle);
         points.addAll(points.stream().map(v -> v.clone().setY(height)).collect(Collectors.toSet()));
         // wall
-        Set<Vector> wall = calculateEllipse(r1, r2, particleDensity, cutoffAngle);
+        Set<Vector> wall = new HashSet<>(calculateEllipse(r1, r2, particleDensity, cutoffAngle));
         points.addAll(fillVertically(wall, height, particleDensity));
         return points;
-    }
-
-    public static double computeDpt( double r1, double r2, double theta ) {
-        double dpt_sin = Math.pow(r1*Math.sin(theta), 2.0);
-        double dpt_cos = Math.pow( r2*Math.cos(theta), 2.0);
-        return Math.sqrt(dpt_sin + dpt_cos);
     }
 
     public static Set<Vector> fillVertically(Set<Vector> vectors, double height, double particleDensity) {

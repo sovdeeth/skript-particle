@@ -49,7 +49,7 @@ public class ExprHelix extends SimpleExpression<Helix> {
         if (exprs.length > 2)
             windingRate = (Expression<Number>) exprs[2];
         isClockwise = parseResult.mark == 0;
-        style = parseResult.mark == 1 ? Style.SURFACE : Style.OUTLINE;
+        style = parseResult.hasTag("solid") ? Style.SURFACE : Style.OUTLINE;
 
         if (radius instanceof Literal<Number> literal && literal.getSingle().doubleValue() <= 0) {
             Skript.error("The radius of a helix must be greater than 0. (radius: " +

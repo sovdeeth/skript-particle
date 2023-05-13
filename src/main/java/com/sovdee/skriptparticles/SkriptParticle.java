@@ -2,6 +2,7 @@ package com.sovdee.skriptparticles;
 
 import ch.njol.skript.Skript;
 import ch.njol.skript.SkriptAddon;
+import ch.njol.skript.bstats.bukkit.Metrics;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
@@ -15,12 +16,20 @@ public class SkriptParticle extends JavaPlugin {
 
 
     // todo before beta
-    // Irregular Polygons
-    // Regular Polyhedra
-    // Fix Ellipse/Ellipsoid performance?
-    // bstats
     // TEST EVERYTHING
-
+    // document everything
+    // todo before release
+    // custom shapes
+    // motion
+    // icosphere
+    // heart
+    // stars
+    // todo, later versions
+    // beziers
+    // better triangle filling (basically allow any 3d model)
+    // gradients
+    // text rendering
+    // animation?
 
 
     @Override
@@ -33,6 +42,8 @@ public class SkriptParticle extends JavaPlugin {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        int pluginId = 18457;
+        Metrics metrics = new Metrics(this, pluginId);
         SkriptParticle.info("Skript-Particle has been enabled.");
 
     }

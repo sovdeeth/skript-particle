@@ -24,6 +24,7 @@ repositories {
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.17.1-R0.1-SNAPSHOT")
     compileOnly("com.github.SkriptLang:Skript:2.7.0-beta2")
+    shadow "org.bstats:bstats-bukkit:3.0.2"
     implementation "org.joml:joml:${jomlVersion}"
 }
 

@@ -18,9 +18,10 @@ import org.jetbrains.annotations.Nullable;
 
 @Name("Shape Particle Density / Particle Count")
 @Description({
-        "The density at which particles are spawned in a shape. This is in \"particles per meter\", and defaults to 4." +
+        "The density at which particles are spawned in a shape. This is in \"particles per meter\" (ppm), and defaults to 4." +
         "Be careful with this property, as it can cause lag if set to a high number. It's recommended to not go above 20 or so for this reason. 1000 ppm is the maximum value.",
         "Keep in mind that this value scales with dimensions. A 1 meter line with a density of 20 will spawn 20 particles, but a 1 meter cube with a density of 20 will spawn 8,000 particles (2,400 if hollow).",
+        "Also, be aware that this may not be exact. Some shapes, like cuboids, will tweak the density a bit to ensure particles land exactly on the borders of the shape.",
         "",
         "This syntax also supports setting the particle count directly, which is the amount of particles spawned in a shape.",
         "Note that this is NOT exact. The actual amount of particles spawned will be the closest multiple of the particle count to the amount of particles needed to draw the shape.",

@@ -34,7 +34,7 @@ public class ExprCircle extends SimpleExpression<Circle>{
     static {
         Skript.registerExpression(ExprCircle.class, Circle.class, ExpressionType.COMBINED,
                 "[a] (circle|:disc) (with|of) radius %number%",
-                "[a] ([hollow|2:solid] cylinder|1:tube) (with|of) radius %number% and height %number%");
+                "[a] [hollow|2:solid] (cylinder|1:tube) (with|of) radius %number% and height %number%");
     }
 
     private Expression<Number> radius;

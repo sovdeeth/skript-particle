@@ -3,6 +3,7 @@ package com.sovdee.skriptparticles.shapes;
 import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.util.Vector;
 
+import java.util.HashSet;
 import java.util.Set;
 
 public class Ellipse extends AbstractShape implements LWHShape {
@@ -26,7 +27,7 @@ public class Ellipse extends AbstractShape implements LWHShape {
 
     @Override
     public Set<Vector> generateOutline() {
-        Set<Vector> ellipse = MathUtil.calculateEllipse(xRadius, zRadius, particleDensity, cutoffAngle);
+        Set<Vector> ellipse = new HashSet<>(MathUtil.calculateEllipse(xRadius, zRadius, particleDensity, cutoffAngle));
         if (height != 0)
             return MathUtil.fillVertically(ellipse, height, particleDensity);
         return ellipse;

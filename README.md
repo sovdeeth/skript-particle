@@ -40,7 +40,6 @@
    - "Common but difficult to code" shapes like hearts, stars, and more
  - Drawing:
    - Combining shapes into a custom shape to be drawn as a single shape.
-   - Custom particle motion (inwards, outwards, clockwise, etc) 
    - Gradient colour fields, with custom colour nodes.
  - Animation:
    - Ability to stretch out drawing a shape over a timespan
