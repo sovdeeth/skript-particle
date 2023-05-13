@@ -21,7 +21,7 @@ import org.jetbrains.annotations.Nullable;
 @Name("Particle Cuboid")
 @Description({
         "Creates a cuboid from a length, a width, and a height, or from two corners.",
-        "The specified length, width, and height must be greater than 0. Length is the x-axis, width is the z-axis, and height is the y-axis",
+        "The specified length, width, and height must be greater than 0. Length is the x-axis, width is the z-axis, and height is the y-axis.",
         "When defining a cuboid from two corners, the corners can either be vectors or locations/entities. " +
         "You cannot use both vectors and locations/entities, but you can mix and match locations and entities." +
         "When using locations, this is a shape that can be drawn without a specific location. It will be drawn between the two given locations.",

@@ -18,7 +18,6 @@ import ch.njol.skript.util.Getter;
 import ch.njol.skript.util.Timespan;
 import ch.njol.skript.variables.Variables;
 import ch.njol.util.Kleenean;
-import com.sovdee.skriptparticles.SkriptParticle;
 import com.sovdee.skriptparticles.shapes.Shape;
 import com.sovdee.skriptparticles.util.DynamicLocation;
 import org.bukkit.Bukkit;
@@ -41,8 +40,10 @@ import java.util.concurrent.atomic.AtomicLong;
 @Name("Draw Shape")
 @Description({
         "Draws the given shapes at the given locations. The shapes will be drawn in the order they are given.",
-        "The code inside the draw shape section will be executed before drawing begins, and will not affect the original shapes.",
-        "This means you can set particle data, or change the shape's location, rotation, or scale, without affecting the shape the next time it's drawn.",
+        "The code inside the draw shape section will be executed before drawing begins. You can use `event-shape` or `drawn shape` to get the shape being drawn. " +
+        "Modifying this shape affects the end result, but it does not modify the original shape! This means you can set particle data, " +
+        "or change the shape's location, rotation, or scale, without affecting the shape the next time it's drawn.",
+        "**Note that this means the section is run once for each shape!** This is the same way the spawn section works in Skript. This is subject to change if people find it cumbersome.",
         "",
         "By default, this effect will run asynchronously, meaning it will do all the calculation and drawing on a separate thread, instead of blocking your server's main thread. " +
         "This is much better if you want to draw a lot of shapes at once, or if you want to draw large and complex shapes.",
@@ -87,7 +88,7 @@ public class EffSecDrawShape extends EffectSection {
     static {
         Skript.registerSection(EffSecDrawShape.class,
                 "[sync:sync[hronously]] draw [shape[s]] %shapes% [%-directions% %-locations/entities%] [to %-players%]",
-                "draw [shape[s]] %shapes% [[%-directions%] %-locations/entities%] [to %-players%] (duration:for) [duration] %timespan% [with (delay|refresh [rate]) [of] %-timespan%]"
+                "draw [shape[s]] %shapes% [%-directions% %-locations/entities%] [to %-players%] (duration:for) [duration] %timespan% [with (delay|refresh [rate]) [of] %-timespan%]"
         );
         EventValues.registerEventValue(EffSecDrawShape.DrawEvent.class, Shape.class, new Getter<>() {
             @Override
@@ -108,7 +109,7 @@ public class EffSecDrawShape extends EffectSection {
 
     @Nullable
     private Trigger trigger;
-    private boolean async;
+    private boolean sync;
     private boolean useShapeLocation;
 
     @Override
@@ -139,7 +140,7 @@ public class EffSecDrawShape extends EffectSection {
             delay = (Expression<Timespan>) expressions[5];
         }
 
-        async = !parseResult.hasTag("sync");
+        sync = parseResult.hasTag("sync");
 
         return true;
     }
@@ -190,11 +191,8 @@ public class EffSecDrawShape extends EffectSection {
             locations.add(new DynamicLocation());
         }
 
-        if (!async) {
-            long now = System.nanoTime();
-            SkriptParticle.info("Drawing shape synchronously: " + (now / 1000000) + "ms");
+        if (sync) {
             executeSync(event, locations, consumer, recipients);
-            SkriptParticle.info("Finished drawing shape synchronously: " + (System.nanoTime() - now) / 1000000.0 + "ms");
         } else {
             // Clone shapes and run Consumer before going async
             // We can't guarantee that the consumer will be thread-safe, so we need do this before going async

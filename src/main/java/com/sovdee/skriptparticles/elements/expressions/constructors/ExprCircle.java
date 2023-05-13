@@ -21,7 +21,7 @@ import org.jetbrains.annotations.Nullable;
 
 @Name("Particle Circle or Cylinder")
 @Description({
-        "Creates a circle, disc, or cylinder shape with the given radius. The radius must be greater than 0."
+        "Creates a circle, disc, or cylinder shape with the given radius. The radius must be greater than 0 and the height cannot be negative."
 })
 @Examples({
         "set {_shape} to circle with radius 10",

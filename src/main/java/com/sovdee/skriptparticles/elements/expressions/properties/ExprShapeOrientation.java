@@ -18,7 +18,7 @@ import org.jetbrains.annotations.Nullable;
 @Description({
         "The orientation of a shape. This is the rotation that is applied to the shape before drawing.",
         "Changing this will rotate the shape accordingly. Resetting or deleting it will set it back to the default orientation of (0, 0, 0, 1).",
-        "The expression returns a quaternion. You can use the quaternion function or the axis angle function to create an orientation."
+        "The expression returns a quaternion. You can use the quaternion and axis angle functions or the rotation expression to create an orientation."
 })
 @Examples({
         "set {_shape}'s orientation to quaternion(0, 0, 0, 1)",

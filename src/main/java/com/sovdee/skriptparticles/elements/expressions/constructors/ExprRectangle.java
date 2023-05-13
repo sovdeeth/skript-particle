@@ -22,7 +22,7 @@ import org.jetbrains.annotations.Nullable;
 @Description({
         "Creates a rectangle from a length and a width, or from two corners. The length and width must be greater than 0.",
         "When defining a rectangle from two corners, the corners can either be vectors or locations/entities. " +
-        "You cannot use both vectors and locations/entities, but you can mix and match locations and entities." +
+        "You cannot use both vectors and locations/entities, but you can mix and match locations and entities. " +
         "When using locations, this is a shape that can be drawn without a specific location. It will be drawn between the two given locations.",
         "Note that the rectangle defaults to the xz plane, or parallel to the ground, with x being width and z being length. " +
         "You can change this to the xy or yz plane by using the 'xy' or 'yz'. In all cases, the first axis is length and the second is width."

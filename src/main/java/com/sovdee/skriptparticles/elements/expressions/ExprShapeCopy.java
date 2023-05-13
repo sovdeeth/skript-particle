@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Name("Shape Copy")
-@Description("Returns a copy of the given shape. This is useful if you want to modify the shape without modifying the original.")
+@Description("Returns a copy of the given shape. This is useful if you want a modified version of a shape without changing the original.")
 @Examples({
         "set {_shape-2} to a copy of {_shape}",
         "set {_shape} to a copy of a sphere with radius 1"
@@ -28,7 +28,7 @@ import java.util.List;
 public class ExprShapeCopy extends SimpleExpression<Shape> {
 
     static {
-        Skript.registerExpression(ExprShapeCopy.class, Shape.class, ExpressionType.SIMPLE, "[a] copy of %shapes%");
+        Skript.registerExpression(ExprShapeCopy.class, Shape.class, ExpressionType.SIMPLE, "[a] cop(y|ies) of %shapes%");
     }
 
     Expression<Shape> shapeExpr;

@@ -23,7 +23,7 @@ import org.jetbrains.annotations.Nullable;
         "The first radius is the x radius, and the second is the y radius, and the last is the z radius. " +
         "These are relative to the shape's rotation, so they only correspond exactly to the world axes if the shape is not rotated.",
         "Note that this shape is modified using the Length/Width/Height modifiers, not the Radius modifier. This means the length/width/height " +
-        "of the shape will be twice the radius in each direction. Length is the x radius, width is the z radius, and height is the y radius.",
+        "of the shape will be twice the radius in each direction. Length is the x axis, width is the z axis, and height is the y axis.",
         "NOTE: Very eccentric solid ellipsoids (those with a large difference between the radii) may have many more particles than expected. Be careful."
 })
 @Examples({

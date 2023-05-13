@@ -14,7 +14,7 @@ import org.bukkit.util.Vector;
 
 import org.jetbrains.annotations.Nullable;
 
-@Name("Shape Relative Plane")
+@Name("Shape Relative Axis")
 @Description({
         "Returns the relative axis of a shape. These are the x, y, z axis of the shape AFTER rotation.",
         "These are meant to be used to work within the rotated frame of reference of the shape."
@@ -23,9 +23,9 @@ import org.jetbrains.annotations.Nullable;
         "set {_vX} to {_shape}'s relative x axis",
         "set {_vY} to {_shape}'s relative y axis",
         "set {_vZ} to {_shape}'s relative z axis",
-        "rotate {_shape} around {_vy} by 90 degrees",
+        "rotate shape {_shape} around {_vy} by 90 degrees",
         "set {_vY-offset} to {_shape}'s relative y axis ++ {_shape}'s relative z axis",
-        "rotate {_shape} around {_vY-offset} by 60 degrees"
+        "rotate shape {_shape} around {_vY-offset} by 60 degrees"
 })
 @Since("1.0.0")
 public class ExprShapeRelativeAxis extends SimplePropertyExpression<Shape, Vector> {

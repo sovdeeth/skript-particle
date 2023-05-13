@@ -6,7 +6,7 @@ import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.expressions.base.PropertyExpression;
 import ch.njol.skript.lang.Expression;
-import ch.njol.skript.lang.SkriptParser;
+import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.util.Kleenean;
 import com.sovdee.skriptparticles.shapes.Shape;
 import org.bukkit.event.Event;
@@ -25,7 +25,7 @@ import java.util.List;
         "set {_vectors::*} to points of (circle of radius 10)",
         "teleport player to (player ~ random element of {_vectors::*})",
         "",
-        "set {_randomVectorInEllipsoid} to random element of points of (ellipsoid of radius 10, 5, 2)"
+        "set {_randomVectorInEllipsoid} to random element of points of (solid ellipsoid of radius 10, 5, 2)"
 })
 @Since("1.0.0")
 public class ExprShapePoints extends PropertyExpression<Shape, Vector> {
@@ -35,7 +35,7 @@ public class ExprShapePoints extends PropertyExpression<Shape, Vector> {
     }
 
     @Override
-    public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, SkriptParser.ParseResult parseResult) {
+    public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, ParseResult parseResult) {
         setExpr((Expression<Shape>) exprs[0]);
         return true;
     }

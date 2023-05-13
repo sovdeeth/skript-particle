@@ -29,7 +29,7 @@ public class SecParticle extends Section {
     //- - if particle is dust, allow "color: color" and "size: double"
     //- force: boolean
     static {
-        Skript.registerSection(SecParticle.class, "create [a] [new] custom %particle% [particle]:");
+        Skript.registerSection(SecParticle.class, "create [a] [new] custom %particle% [particle]");
     }
 
     public static Particle lastCreatedParticle;

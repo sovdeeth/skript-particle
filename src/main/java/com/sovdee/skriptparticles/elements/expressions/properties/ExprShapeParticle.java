@@ -14,7 +14,7 @@ import org.bukkit.event.Event;
 
 import org.jetbrains.annotations.Nullable;
 
-@Name("Particle of Shape")
+@Name("Shape Particle")
 @Description({
         "The particle of a shape. This is the particle that the shape uses to draw itself.",
         "Changing this will change the particle of the shape. Resetting or deleting it will set it back to the default particle (flame).",

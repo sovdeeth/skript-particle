@@ -15,7 +15,7 @@ import org.jetbrains.annotations.Nullable;
         "Returns the number of sides of a polygonal or polyhedral shape. This determines how many sides the shape has.",
         "Changing this will change the number of sides of the shape accordingly, with a minimum of 3.",
         "Note that custom polygons will return their side count, but will not be affected by this expression. ",
-        "Polyhedrons will return their face count, and can only be set to 4, 6, 8, 12, or 20."
+        "Polyhedrons will return their face count, and can only be set to 4, 8, 12, or 20."
 })
 @Examples({
         "set sides of {_shape} to 5",

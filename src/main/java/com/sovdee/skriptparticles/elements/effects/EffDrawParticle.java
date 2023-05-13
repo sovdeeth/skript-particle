@@ -18,7 +18,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-@Name("Draw Particle - Skript-Particles")
+@Name("Draw Particle - Skript-Particle")
 @Description({
         "Draws a particle at a location. Syntax inspired by SkBee, so bee careful not to get the two confused.",
         "If you run into conflicts with SkBee, which you shouldn't, please report it immediately."
