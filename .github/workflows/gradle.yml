@@ -34,10 +34,10 @@ jobs:
     - name: Build with Gradle
       uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
       with:
-        arguments: build
+        arguments: shadowJar
     - name: Upload Nightly Build
       uses: actions/upload-artifact@v3
       if: success()
       with:
-          name: skript-particle
+          name: skript-particle-nightly
           path: build/libs/*

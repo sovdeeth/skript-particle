@@ -30,7 +30,7 @@ dependencies {
     implementation "org.joml:joml:${jomlVersion}"
 }
 
-task jar(overwrite: true, type: ShadowJar) {
+task shadowJar(overwrite: true, type: ShadowJar) {
     archiveFileName = 'skript-particle.jar'
 }
 
@@ -39,7 +39,7 @@ java {
 }
 
 task copyJar(type: Copy) {
-    dependsOn jar
+    dependsOn shadowJar
     from "build/libs/skript-particle.jar"
     into "e:/PaperServer/plugins"
 }
