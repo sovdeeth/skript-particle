@@ -39,5 +39,5 @@ jobs:
       uses: actions/upload-artifact@v3
       if: success()
       with:
-          name: skript-particles-1.0-SNAPSHOT
+          name: skript-particle
           path: build/libs/*
