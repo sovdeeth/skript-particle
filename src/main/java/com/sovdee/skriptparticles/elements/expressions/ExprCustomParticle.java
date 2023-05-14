@@ -24,8 +24,8 @@ import org.jetbrains.annotations.Nullable;
         "be any conflicts, but there's always a risk."
 })
 @Examples({
-        "set {_particle} to electric spark with extra 0",
-        "set particle of {_shape} to dust using dustOption(red, 1) with force"
+        "set {_particle} to electric spark particle with extra 0",
+        "set particle of {_shape} to dust particle using dustOption(red, 1) with force"
 })
 public class ExprCustomParticle extends SimpleExpression<Particle> {
 
