@@ -1,8 +1,9 @@
 name: skript-particle
 author: Sovde
+website: https://github.com/sovdeeth/skript-particle
 description: Create complex effects with particles
-version: 1.0
-api-version: 1.13
+version: 1.0.0-beta
+api-version: 1.17
 main: com.sovdee.skriptparticles.SkriptParticle
 depend: [Skript]
 softdepend: [SkBee]
