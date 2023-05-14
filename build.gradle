@@ -1,3 +1,5 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 plugins {
     id 'com.github.johnrengelman.shadow' version '8.1.1'
     id 'java'
@@ -28,12 +30,16 @@ dependencies {
     implementation "org.joml:joml:${jomlVersion}"
 }
 
+task jar(overwrite: true, type: ShadowJar) {
+    archiveFileName = 'skript-particle.jar'
+}
+
 java {
     toolchain.languageVersion.set(JavaLanguageVersion.of(17))
 }
 
 task copyJar(type: Copy) {
-    dependsOn shadowJar
-    from "build/libs/skript-particles-1.0-SNAPSHOT-all.jar"
+    dependsOn jar
+    from "build/libs/skript-particle.jar"
     into "e:/PaperServer/plugins"
 }
