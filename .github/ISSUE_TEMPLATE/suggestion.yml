@@ -1,0 +1,22 @@
+name: Suggestion
+description: Suggest a change with Skript-Particle.
+body:
+  - type: textarea
+    attributes:
+      label: Suggestion Description
+      description: Describe what you want changed or added. Include your reasoning.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Screenshots
+      description: |
+        Include any relevant screenshots or other media showing what you'd like added/changed.
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: Other
+      description: Anything that doesn't fit in the other boxes.
+    validations:
+      required: false

@@ -1,0 +1,42 @@
+name: Bug Report
+description: Report a bug with Skript-Particle.
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Guidelines
+        Please make sure you are running Skript 2.7+ on Minecraft 1.17.1 or later. Ensure you're running Java 17, as well.
+        Try to make sure there are no issues of this same problem currently open either.
+  - type: textarea
+    attributes:
+      label: Environment Information
+      description: Run '/sk info' and paste result here.
+      render: markdown
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Bug Description
+      description: Describe the bug. Include as much information as possible.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Steps to Reproduce
+      description: |
+        What did you do to cause the bug? If you can, include a short bit of code that can trigger the bug.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Errors or Screenshots
+      description: |
+        Include any relevant screenshots or logs here. Please use a paste service like https://gist.github.com/ for the logs.
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: Other
+      description: Anything that doesn't fit in the other boxes.
+    validations:
+      required: false

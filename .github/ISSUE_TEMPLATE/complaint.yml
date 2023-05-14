@@ -1,0 +1,24 @@
+name: Feedback
+description: Anything in Skript-Particle you like or don't like, anything you enjoy or have a problem with.
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Guidelines
+        This is not a place to submit full bug reports or complex suggestions. It's simply a way for
+        me to see what users like, what you find clunky or bad, and what I should work on changing. 
+        
+        You don't need to be super thorough in your feedback, but as always the more information the better!
+
+  - type: textarea
+    attributes:
+      label: Positive Feedback
+      description: Things you like. Things that work well.
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: Negative Feedback
+      description: Things you don't like. Things that confuse you.
+    validations:
+      required: false
