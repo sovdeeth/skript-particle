@@ -1,6 +1,8 @@
 # skript-particle
  Skript addon for creating complex particle effects with minimal hassle.
  
+ Download at the [releases page.](https://github.com/sovdeeth/skript-particle/releases)
+ 
  Skript-Particle is intended to provide syntax for creating complex shapes with particles. Competent and powerful particle syntaxes exist in addons like SkBee, but creating shapes requires a lot more effort and know-how. 
  They're also inherently slower and less performant than Java, even without considering the usual need to re-calculate the shape each time it's drawn.
  
