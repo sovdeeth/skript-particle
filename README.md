@@ -1,7 +1,7 @@
 # skript-particle
  Skript addon for creating complex particle effects with minimal hassle.
  
- **Requires Skript 2.7+, Java 17, Minecraft 1.17.1+**
+ **Requires Skript 2.7+, Java 17, Paper 1.17.1+**
  
  Download at the [releases page.](https://github.com/sovdeeth/skript-particle/releases) 
 
