@@ -3,7 +3,9 @@
  
  **Requires Skript 2.7+, Java 17, Minecraft 1.17.1+**
  
- Download at the [releases page.](https://github.com/sovdeeth/skript-particle/releases)
+ Download at the [releases page.](https://github.com/sovdeeth/skript-particle/releases) 
+
+You can find help, give suggestions, or voice complaints in the [Issues tab here](https://github.com/sovdeeth/skript-particle/issues/new/choose), or on the [skript-chat discord here](https://discord.gg/v9dXfENDnk).
  
  Skript-Particle is intended to provide syntax for creating complex shapes with particles. Competent and powerful particle syntaxes exist in addons like SkBee, but creating shapes requires a lot more effort and know-how. 
  They're also inherently slower and less performant than Java, even without considering the usual need to re-calculate the shape each time it's drawn.
