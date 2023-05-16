@@ -221,4 +221,15 @@ public class MathUtil {
         }
         return points;
     }
+
+    public static Set<Vector> calculateHeart(double height, double width, double eccentricity, double particleDensity) {
+        Set<Vector> points = new HashSet<>();
+        double angleStep = 4 / 3.0 * particleDensity / (width + height);
+        for (double theta = 0; theta < Math.PI * 2; theta += angleStep) {
+            double x = width * Math.pow(Math.sin(theta), 3);
+            double y = height * (Math.cos(theta) - 1/eccentricity * Math.cos(2*theta) - 1.0/6 * Math.cos(3*theta) - 1.0/16 * Math.cos(4*theta));
+            points.add(new Vector(x, 0, y));
+        }
+        return points;
+    }
 }
