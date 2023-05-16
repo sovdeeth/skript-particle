@@ -16,10 +16,10 @@ public class DynamicLocation {
 
     @Nullable
     public static DynamicLocation fromLocationEntity(Object locationEntity) {
-        if (locationEntity instanceof Location) {
-            return new DynamicLocation((Location) locationEntity);
-        } else if (locationEntity instanceof Entity) {
-            return new DynamicLocation((Entity) locationEntity);
+        if (locationEntity instanceof Location location) {
+            return new DynamicLocation(location);
+        } else if (locationEntity instanceof Entity entity) {
+            return new DynamicLocation(entity);
         }
         return null;
     }
@@ -37,7 +37,7 @@ public class DynamicLocation {
     }
 
     public DynamicLocation(@NotNull Location location, @Nullable Direction direction) {
-        this.location = location;
+        this.location = location.clone();
         this.direction = direction;
     }
 
@@ -47,9 +47,9 @@ public class DynamicLocation {
     }
 
     public DynamicLocation(@NotNull DynamicLocation dynamicLocation) {
-        this.entity = dynamicLocation.entity;
-        this.direction = dynamicLocation.direction;
-        this.location = dynamicLocation.location;
+        this.entity = dynamicLocation.getEntity();
+        this.direction = dynamicLocation.getDirection();
+        this.location = dynamicLocation.getLocation();
     }
 
     /**
