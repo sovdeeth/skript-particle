@@ -232,4 +232,16 @@ public class MathUtil {
         }
         return points;
     }
+
+    public static Set<Vector> calculateStar(double innerRadius, double outerRadius, double angle, double particleDensity) {
+        Set<Vector> points = new HashSet<>();
+        Vector outerVertex = new Vector(outerRadius, 0, 0);
+        Vector innerVertex = new Vector(innerRadius, 0, 0);
+        for (double theta = 0; theta < 2*Math.PI; theta += angle) {
+            Vector currentVertex = outerVertex.clone().rotateAroundY(theta);
+            points.addAll(calculateLine(currentVertex, innerVertex.clone().rotateAroundY(theta + angle/2), particleDensity));
+            points.addAll(calculateLine(currentVertex, innerVertex.clone().rotateAroundY(theta - angle/2), particleDensity));
+        }
+        return points;
+    }
 }

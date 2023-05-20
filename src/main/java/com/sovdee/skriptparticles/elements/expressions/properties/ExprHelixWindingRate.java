@@ -4,6 +4,7 @@ import ch.njol.skript.classes.Changer.ChangeMode;
 import ch.njol.skript.doc.Description;
 import ch.njol.skript.doc.Examples;
 import ch.njol.skript.doc.Name;
+import ch.njol.skript.doc.Since;
 import ch.njol.skript.expressions.base.SimplePropertyExpression;
 import com.sovdee.skriptparticles.shapes.Helix;
 import com.sovdee.skriptparticles.shapes.Shape;
@@ -21,7 +22,8 @@ import org.jetbrains.annotations.Nullable;
         "set winding rate of {_helix} to 1/10",
         "set winding rate of {_helix} to 10.4"
 })
-public class ExprHelixWindingRate extends SimplePropertyExpression<Helix, Number> {
+@Since("1.0.0")
+public class ExprHelixWindingRate extends SimplePropertyExpression<Shape, Number> {
 
     static {
         register(ExprHelixWindingRate.class, Number.class, "winding rate", "shapes");
@@ -29,8 +31,10 @@ public class ExprHelixWindingRate extends SimplePropertyExpression<Helix, Number
 
     @Override
     @Nullable
-    public Number convert(Helix helix) {
-        return  1 / (2 * Math.PI * helix.getSlope());
+    public Number convert(Shape shape) {
+        if (shape instanceof Helix helix)
+            return  1 / (2 * Math.PI * helix.getSlope());
+        return null;
     }
 
     @Override

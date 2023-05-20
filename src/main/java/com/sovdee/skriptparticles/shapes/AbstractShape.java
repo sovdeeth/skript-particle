@@ -1,5 +1,6 @@
 package com.sovdee.skriptparticles.shapes;
 
+import ch.njol.skript.Skript;
 import com.sovdee.skriptparticles.SkriptParticle;
 import com.sovdee.skriptparticles.particles.Particle;
 import com.sovdee.skriptparticles.util.DynamicLocation;
@@ -156,12 +157,14 @@ public abstract class AbstractShape implements Shape {
             }
         }
 
-//        SkriptParticle.info("Drawing shape " + this.getClass().getSimpleName() + " at " + location + " with orientation " + lastOrientation + " and particle " + particle);
-//        SkriptParticle.info("Shape has " + getPoints(lastOrientation).size() + " points:");
-
         particle.receivers(recipients);
         for (Vector point : getPoints(lastOrientation)) {
-            particle.spawn(point);
+            try {
+                particle.spawn(point);
+            } catch (IllegalArgumentException e) {
+                Skript.error("Failed to spawn particle! Error: " + e.getMessage());
+                return;
+            }
         }
 
         if (drawLocalAxes) {

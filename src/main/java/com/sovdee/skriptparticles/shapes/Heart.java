@@ -8,27 +8,25 @@ import java.util.Set;
 
 public class Heart extends AbstractShape implements LWHShape {
 
-    private double height;
+    private double length;
     private double width;
     private double eccentricity;
 
     public Heart(double height, double width, double eccentricity) {
-        this.height = height;
+        this.length = height;
         this.width = width;
         this.eccentricity = eccentricity;
     }
 
     @Override
     public Set<Vector> generateOutline() {
-        return MathUtil.calculateHeart(height/2, width/2, eccentricity, particleDensity);
+        return MathUtil.calculateHeart(length /2, width/2, eccentricity, particleDensity);
     }
 
     @Override
     public Set<Vector> generateSurface() {
         Set<Vector> points = new HashSet<>();
-        double widthStep = width / particleDensity;
-        double heightStep = height / particleDensity;
-        for (double w = width, h = height; w > 0; w -= widthStep, h -= heightStep){
+        for (double w = width, h = length; w > 0 && h > 0; w -= particleDensity * 1.5, h -= particleDensity * 1.5){
             points.addAll(MathUtil.calculateHeart(h/2, w/2, eccentricity, particleDensity));
         }
         return points;
@@ -38,7 +36,7 @@ public class Heart extends AbstractShape implements LWHShape {
     public void setParticleCount(int particleCount) {}
 
     @Override
-    public double getLength() {
+    public double getHeight() {
         return 0;
     }
 
@@ -48,12 +46,12 @@ public class Heart extends AbstractShape implements LWHShape {
     }
 
     @Override
-    public double getHeight() {
-        return height;
+    public double getLength() {
+        return length;
     }
 
     @Override
-    public void setLength(double length) {}
+    public void setHeight(double length) {}
 
     @Override
     public void setWidth(double width) {
@@ -62,8 +60,8 @@ public class Heart extends AbstractShape implements LWHShape {
     }
 
     @Override
-    public void setHeight(double height) {
-        this.height = height;
+    public void setLength(double length) {
+        this.length = length;
         needsUpdate = true;
     }
 
@@ -78,6 +76,6 @@ public class Heart extends AbstractShape implements LWHShape {
 
     @Override
     public Shape clone() {
-        return this.copyTo(new Heart(height, width, eccentricity));
+        return this.copyTo(new Heart(length, width, eccentricity));
     }
 }
