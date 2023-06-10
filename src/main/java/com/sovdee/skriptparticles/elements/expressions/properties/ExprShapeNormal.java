@@ -11,13 +11,12 @@ import com.sovdee.skriptparticles.shapes.Shape;
 import com.sovdee.skriptparticles.util.Quaternion;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
-
 import org.jetbrains.annotations.Nullable;
 
 @Name("Normal Vector of Shape")
 @Description({
         "Returns the normal vector of a shape. This, by default, is the vector (0, 1, 0) which points directly up." +
-        "If the shape is rotated, this will be the vector that is pointing up after the rotation. Treat it as what the shape thinks is \"up\".",
+                "If the shape is rotated, this will be the vector that is pointing up after the rotation. Treat it as what the shape thinks is \"up\".",
         "Changing this will rotate the shape accordingly. Resetting or deleting it will set it back to the default orientation.",
 })
 @Examples({

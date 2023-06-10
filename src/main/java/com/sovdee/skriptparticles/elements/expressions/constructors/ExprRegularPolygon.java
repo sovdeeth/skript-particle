@@ -20,7 +20,7 @@ import org.jetbrains.annotations.Nullable;
 @Name("Particle Regular Polygon")
 @Description({
         "Creates a regular polygon with the given number of sides and radius. The number of sides must be at least 3. " +
-        "The radius must be greater than 0."
+                "The radius must be greater than 0."
 })
 @Examples({
         "set {_shape} to a regular polygon with 5 sides and radius 10",
@@ -111,7 +111,7 @@ public class ExprRegularPolygon extends SimpleExpression<RegularPolygon> {
         radius = Math.max(radius.doubleValue(), MathUtil.EPSILON);
         RegularPolygon polygon = new RegularPolygon(sides.intValue(), radius.doubleValue());
         polygon.setStyle(style);
-        return new RegularPolygon[] {polygon};
+        return new RegularPolygon[]{polygon};
     }
 
     @Override
@@ -128,8 +128,10 @@ public class ExprRegularPolygon extends SimpleExpression<RegularPolygon> {
     public String toString(@Nullable Event event, boolean debug) {
         return (style == Style.SURFACE ? "filled" : "outlined") +
                 switch (matchedPattern) {
-                    case 0, 2 -> " regular polygon with " + sides.toString(event, debug) + " sides and radius " + radius.toString(event, debug);
-                    case 1, 3 -> " regular polygon with " + sides.toString(event, debug) + " sides and side length " + sideLength.toString(event, debug);
+                    case 0, 2 ->
+                            " regular polygon with " + sides.toString(event, debug) + " sides and radius " + radius.toString(event, debug);
+                    case 1, 3 ->
+                            " regular polygon with " + sides.toString(event, debug) + " sides and side length " + sideLength.toString(event, debug);
                     default -> "regular polygon";
                 };
     }

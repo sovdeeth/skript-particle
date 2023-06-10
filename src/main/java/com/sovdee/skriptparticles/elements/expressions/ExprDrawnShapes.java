@@ -15,8 +15,8 @@ import org.jetbrains.annotations.Nullable;
 @Description("Returns the shape that is being drawn by the draw section.")
 @Examples({
         "draw {_shapes::*} at player's head with radius 1:",
-            "\t# only affects the drawn version, the original shape is not changed",
-            "\tset radius of drawn shape to 2"
+        "\t# only affects the drawn version, the original shape is not changed",
+        "\tset radius of drawn shape to 2"
 })
 @Since("1.0.0")
 public class ExprDrawnShapes extends EventValueExpression<Shape> {
@@ -30,7 +30,7 @@ public class ExprDrawnShapes extends EventValueExpression<Shape> {
     }
 
     @Override
-    public String toString( @Nullable Event event, boolean debug) {
+    public String toString(@Nullable Event event, boolean debug) {
         return "the drawn shape";
     }
 

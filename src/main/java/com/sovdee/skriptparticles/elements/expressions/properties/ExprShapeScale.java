@@ -9,7 +9,6 @@ import ch.njol.skript.expressions.base.PropertyExpression;
 import ch.njol.skript.expressions.base.SimplePropertyExpression;
 import com.sovdee.skriptparticles.shapes.Shape;
 import org.bukkit.event.Event;
-
 import org.jetbrains.annotations.Nullable;
 
 @Name("Shape Scale")

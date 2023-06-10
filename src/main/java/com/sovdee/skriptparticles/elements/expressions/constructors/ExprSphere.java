@@ -16,7 +16,6 @@ import com.sovdee.skriptparticles.shapes.Sphere;
 import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
-
 import org.jetbrains.annotations.Nullable;
 
 @Name("Particle Sphere")
@@ -29,7 +28,7 @@ import org.jetbrains.annotations.Nullable;
         "set {_shape} to solid sphere with radius 10"
 })
 @Since("1.0.0")
-public class ExprSphere extends SimpleExpression<Sphere>{
+public class ExprSphere extends SimpleExpression<Sphere> {
 
     static {
         Skript.registerExpression(ExprSphere.class, Sphere.class, ExpressionType.COMBINED, "[a] [:solid] sphere (with|of) radius %number%");
@@ -41,7 +40,7 @@ public class ExprSphere extends SimpleExpression<Sphere>{
     @Override
     public boolean init(Expression<?>[] exprs, int matchedPattern, @NotNull Kleenean isDelayed, @NotNull ParseResult parseResult) {
         radius = (Expression<Number>) exprs[0];
-        if (radius instanceof Literal<Number> literal && literal.getSingle().doubleValue() <= 0){
+        if (radius instanceof Literal<Number> literal && literal.getSingle().doubleValue() <= 0) {
             Skript.error("The radius of the sphere must be greater than 0. (radius: " + literal.getSingle().doubleValue() + ")");
             return false;
         }

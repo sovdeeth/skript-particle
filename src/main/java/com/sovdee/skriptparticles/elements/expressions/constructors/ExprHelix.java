@@ -84,7 +84,7 @@ public class ExprHelix extends SimpleExpression<Helix> {
         height = Math.max(height.doubleValue(), MathUtil.EPSILON);
         double slope = 1.0 / Math.max(windingRate.doubleValue(), MathUtil.EPSILON);
         int direction = isClockwise ? 1 : -1;
-        Helix helix = new Helix(radius.doubleValue(), height.doubleValue(), slope/(2*Math.PI), direction);
+        Helix helix = new Helix(radius.doubleValue(), height.doubleValue(), slope / (2 * Math.PI), direction);
         helix.setStyle(style);
         return new Helix[]{helix};
     }

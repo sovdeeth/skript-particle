@@ -20,24 +20,29 @@ public class Heart extends AbstractShape implements LWHShape {
 
     @Override
     public Set<Vector> generateOutline() {
-        return MathUtil.calculateHeart(length /2, width/2, eccentricity, particleDensity);
+        return MathUtil.calculateHeart(length / 2, width / 2, eccentricity, particleDensity);
     }
 
     @Override
     public Set<Vector> generateSurface() {
         Set<Vector> points = new HashSet<>();
-        for (double w = width, h = length; w > 0 && h > 0; w -= particleDensity * 1.5, h -= particleDensity * 1.5){
-            points.addAll(MathUtil.calculateHeart(h/2, w/2, eccentricity, particleDensity));
+        for (double w = width, h = length; w > 0 && h > 0; w -= particleDensity * 1.5, h -= particleDensity * 1.5) {
+            points.addAll(MathUtil.calculateHeart(h / 2, w / 2, eccentricity, particleDensity));
         }
         return points;
     }
 
     @Override
-    public void setParticleCount(int particleCount) {}
+    public void setParticleCount(int particleCount) {
+    }
 
     @Override
     public double getHeight() {
         return 0;
+    }
+
+    @Override
+    public void setHeight(double length) {
     }
 
     @Override
@@ -46,17 +51,14 @@ public class Heart extends AbstractShape implements LWHShape {
     }
 
     @Override
-    public double getLength() {
-        return length;
-    }
-
-    @Override
-    public void setHeight(double length) {}
-
-    @Override
     public void setWidth(double width) {
         this.width = width;
         needsUpdate = true;
+    }
+
+    @Override
+    public double getLength() {
+        return length;
     }
 
     @Override

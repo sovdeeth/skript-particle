@@ -15,11 +15,7 @@ import java.util.Set;
  */
 public class Rectangle extends AbstractShape implements LWHShape {
 
-    public enum Plane {
-        XZ, XY, YZ
-    }
     private Plane plane;
-
     private double halfLength;
     private double halfWidth;
     private double lengthStep = 1.0;
@@ -28,8 +24,7 @@ public class Rectangle extends AbstractShape implements LWHShape {
     private DynamicLocation negativeCorner;
     private DynamicLocation positiveCorner;
     private boolean isDynamic = false;
-
-    public Rectangle(double length, double width, Plane plane){
+    public Rectangle(double length, double width, Plane plane) {
         super();
         this.plane = plane;
         this.halfWidth = width / 2;
@@ -37,7 +32,7 @@ public class Rectangle extends AbstractShape implements LWHShape {
         calculateSteps();
     }
 
-    public Rectangle(Vector negativeCorner, Vector positiveCorner, Plane plane){
+    public Rectangle(Vector negativeCorner, Vector positiveCorner, Plane plane) {
         super();
         this.plane = plane;
         setLengthWidth(negativeCorner, positiveCorner);
@@ -50,7 +45,7 @@ public class Rectangle extends AbstractShape implements LWHShape {
         calculateSteps();
     }
 
-    public Rectangle(DynamicLocation negativeCorner, DynamicLocation positiveCorner, Plane plane){
+    public Rectangle(DynamicLocation negativeCorner, DynamicLocation positiveCorner, Plane plane) {
         super();
         this.plane = plane;
         Location negative = negativeCorner.getLocation();
@@ -68,7 +63,7 @@ public class Rectangle extends AbstractShape implements LWHShape {
             case XZ -> offset.setY(0);
             case XY -> offset.setZ(0);
             case YZ -> offset.setX(0);
-        };
+        }
         location = new DynamicLocation(negative.clone().add(offset));
         calculateSteps();
     }
@@ -76,6 +71,7 @@ public class Rectangle extends AbstractShape implements LWHShape {
     private void setLengthWidth(Location a, Location b) {
         setLengthWidth(a.toVector(), b.toVector());
     }
+
     private void setLengthWidth(Vector a, Vector b) {
         double length = switch (plane) {
             case XZ, XY -> Math.abs(a.getX() - b.getX());
@@ -143,7 +139,7 @@ public class Rectangle extends AbstractShape implements LWHShape {
                 case XZ -> offset.setY(0);
                 case XY -> offset.setZ(0);
                 case YZ -> offset.setX(0);
-            };
+            }
             location = new DynamicLocation(neg.clone().add(offset));
         }
         calculateSteps();
@@ -163,27 +159,16 @@ public class Rectangle extends AbstractShape implements LWHShape {
 
     @Override
     public void setParticleCount(int count) {
-        switch (style){
+        switch (style) {
             case FILL, SURFACE -> particleDensity = Math.sqrt(4 * halfWidth * halfLength / count);
             case OUTLINE -> particleDensity = 4 * (halfWidth + halfLength) / count;
-        };
+        }
         this.needsUpdate = true;
     }
-
 
     @Override
     public double getLength() {
         return halfLength * 2;
-    }
-
-    @Override
-    public double getWidth() {
-        return halfWidth * 2;
-    }
-
-    @Override
-    public double getHeight() {
-        return 0;
     }
 
     @Override
@@ -193,9 +178,19 @@ public class Rectangle extends AbstractShape implements LWHShape {
     }
 
     @Override
+    public double getWidth() {
+        return halfWidth * 2;
+    }
+
+    @Override
     public void setWidth(double width) {
         this.halfWidth = Math.abs(width) / 2;
         this.needsUpdate = true;
+    }
+
+    @Override
+    public double getHeight() {
+        return 0;
     }
 
     @Override
@@ -213,7 +208,7 @@ public class Rectangle extends AbstractShape implements LWHShape {
 
     @Override
     public Shape clone() {
-        Rectangle rectangle = (isDynamic ? new Rectangle(negativeCorner, positiveCorner, plane): new Rectangle(this.getLength(), this.getWidth(), plane));
+        Rectangle rectangle = (isDynamic ? new Rectangle(negativeCorner, positiveCorner, plane) : new Rectangle(this.getLength(), this.getWidth(), plane));
         rectangle.isDynamic = this.isDynamic;
         return this.copyTo(rectangle);
     }
@@ -224,5 +219,9 @@ public class Rectangle extends AbstractShape implements LWHShape {
         if (isDynamic)
             return axis + " rectangle from " + negativeCorner.toString() + " to " + positiveCorner.toString();
         return axis + " rectangle with length " + this.getLength() + " and width " + this.getWidth();
+    }
+
+    public enum Plane {
+        XZ, XY, YZ
     }
 }

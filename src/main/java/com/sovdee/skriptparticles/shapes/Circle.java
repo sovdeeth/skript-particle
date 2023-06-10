@@ -11,16 +11,16 @@ public class Circle extends AbstractShape implements RadialShape, LWHShape {
     protected double cutoffAngle;
     protected double height;
 
-    public Circle (double radius){
+    public Circle(double radius) {
         this(radius, 0);
     }
 
 
-    public Circle (double radius, double height){
+    public Circle(double radius, double height) {
         super();
         this.radius = radius;
         this.height = height;
-        this.cutoffAngle = 2*Math.PI;
+        this.cutoffAngle = 2 * Math.PI;
     }
 
     @Override
@@ -68,12 +68,17 @@ public class Circle extends AbstractShape implements RadialShape, LWHShape {
 
     @Override
     public void setRadius(double radius) {
-        this.radius = Math.max(radius,0);
+        this.radius = Math.max(radius, 0);
         needsUpdate = true;
     }
+
     @Override
     public double getLength() {
         return 0;
+    }
+
+    @Override
+    public void setLength(double length) {
     }
 
     @Override
@@ -82,19 +87,17 @@ public class Circle extends AbstractShape implements RadialShape, LWHShape {
     }
 
     @Override
+    public void setWidth(double width) {
+    }
+
+    @Override
     public double getHeight() {
         return height;
     }
 
     @Override
-    public void setLength(double length) {}
-
-    @Override
-    public void setWidth(double width) {}
-
-    @Override
     public void setHeight(double height) {
-        this.height = Math.max(height,0);
+        this.height = Math.max(height, 0);
         needsUpdate = true;
     }
 
@@ -103,7 +106,7 @@ public class Circle extends AbstractShape implements RadialShape, LWHShape {
         return this.copyTo(new Circle(radius, height));
     }
 
-    public String toString(){
+    public String toString() {
         return style.toString() + " circle with radius " + this.radius + " and density " + this.particleDensity;
     }
 }

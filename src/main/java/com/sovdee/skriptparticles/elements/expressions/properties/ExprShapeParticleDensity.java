@@ -13,13 +13,12 @@ import ch.njol.util.Kleenean;
 import com.sovdee.skriptparticles.shapes.Shape;
 import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
-
 import org.jetbrains.annotations.Nullable;
 
 @Name("Shape Particle Density / Particle Count")
 @Description({
         "The density at which particles are spawned in a shape. This is in \"particles per meter\" (ppm), and defaults to 4." +
-        "Be careful with this property, as it can cause lag if set to a high number. It's recommended to not go above 20 or so for this reason. 1000 ppm is the maximum value.",
+                "Be careful with this property, as it can cause lag if set to a high number. It's recommended to not go above 20 or so for this reason. 1000 ppm is the maximum value.",
         "Keep in mind that this value scales with dimensions. A 1 meter line with a density of 20 will spawn 20 particles, but a 1 meter cube with a density of 20 will spawn 8,000 particles (2,400 if hollow).",
         "Also, be aware that this may not be exact. Some shapes, like cuboids, will tweak the density a bit to ensure particles land exactly on the borders of the shape.",
         "",
@@ -85,7 +84,7 @@ public class ExprShapeParticleDensity extends SimplePropertyExpression<Shape, Nu
                 for (Shape shape : shapes) {
                     if (flag) {
                         // clamp to 0.001 and 1000, enough to kill the client but not enough to cause an actual error
-                        shape.setParticleDensity(MathUtil.clamp(1/(1/shape.getParticleDensity() + change), 0.001, 1000));
+                        shape.setParticleDensity(MathUtil.clamp(1 / (1 / shape.getParticleDensity() + change), 0.001, 1000));
                     } else
                         // clamp to 1, the minimum amount of particles
                         shape.setParticleCount(Math.max(1, shape.getParticleCount() + (int) change));

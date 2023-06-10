@@ -20,7 +20,7 @@ public class ParticleGradient {
         }
 
         double weightTotal = 0;
-        double[] rgb = new double[]{0,0,0};
+        double[] rgb = new double[]{0, 0, 0};
         double weight;
         Color colour;
         for (Point point : points) {
@@ -46,13 +46,13 @@ public class ParticleGradient {
         return points;
     }
 
-    public void addPoint(Vector position, Color color) {
-        points.add(new Point(position, color));
-    }
-
     public void setPoints(List<Point> points) {
         this.points.clear();
         this.points.addAll(points);
+    }
+
+    public void addPoint(Vector position, Color color) {
+        points.add(new Point(position, color));
     }
 
     public boolean isLocal() {
@@ -91,12 +91,12 @@ public class ParticleGradient {
             return position;
         }
 
-        public Color getColor() {
-            return color;
-        }
-
         public void setPosition(Vector position) {
             this.position = position;
+        }
+
+        public Color getColor() {
+            return color;
         }
 
         public void setColor(Color color) {

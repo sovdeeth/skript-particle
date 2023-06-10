@@ -16,7 +16,6 @@ import com.sovdee.skriptparticles.shapes.Shape;
 import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
-
 import org.jetbrains.annotations.Nullable;
 
 @Name("Particle Circle or Cylinder")
@@ -29,7 +28,7 @@ import org.jetbrains.annotations.Nullable;
         "set {_shape} to a solid cylinder with radius 3 and height 5"
 })
 @Since("1.0.0")
-public class ExprCircle extends SimpleExpression<Circle>{
+public class ExprCircle extends SimpleExpression<Circle> {
 
     static {
         Skript.registerExpression(ExprCircle.class, Circle.class, ExpressionType.COMBINED,
@@ -47,15 +46,15 @@ public class ExprCircle extends SimpleExpression<Circle>{
         isCylinder = matchedPattern == 1;
 
         radius = (Expression<Number>) exprs[0];
-        if (radius instanceof Literal<Number> literal && literal.getSingle().doubleValue() <= 0){
-            Skript.error("The radius of the "+ (isCylinder ? "cylinder" : "circle") + " must be greater than 0. (radius: " +
+        if (radius instanceof Literal<Number> literal && literal.getSingle().doubleValue() <= 0) {
+            Skript.error("The radius of the " + (isCylinder ? "cylinder" : "circle") + " must be greater than 0. (radius: " +
                     ((Literal<Number>) radius).getSingle().doubleValue() + ")");
             return false;
         }
 
         if (isCylinder) {
             height = (Expression<Number>) exprs[1];
-            if (height instanceof Literal<Number> literal && literal.getSingle().doubleValue() < 0){
+            if (height instanceof Literal<Number> literal && literal.getSingle().doubleValue() < 0) {
                 Skript.error("The height of the cylinder must be greater than or equal to 0. (height: " +
                         ((Literal<Number>) height).getSingle().doubleValue() + ")");
                 return false;

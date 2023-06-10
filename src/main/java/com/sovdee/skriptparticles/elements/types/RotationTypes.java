@@ -11,9 +11,11 @@ import ch.njol.skript.lang.function.SimpleJavaFunction;
 import ch.njol.skript.lang.util.SimpleLiteral;
 import ch.njol.skript.registrations.Classes;
 import ch.njol.skript.registrations.DefaultClasses;
+import com.sovdee.skriptparticles.util.Quaternion;
 import org.jetbrains.annotations.Nullable;
 import org.joml.AxisAngle4f;
 import org.joml.Quaternionf;
+import org.skriptlang.skript.lang.converter.Converters;
 
 public class RotationTypes {
     static {
@@ -50,6 +52,9 @@ public class RotationTypes {
                         }
                     }));
         }
+
+        Converters.registerConverter(Quaternionf.class, Quaternion.class, Quaternion::new);
+
         if (Functions.getGlobalSignature("quaternion") == null) {
             Functions.registerFunction(new SimpleJavaFunction<>("quaternion", new Parameter[]{
                     new Parameter<>("x", DefaultClasses.NUMBER, true, new SimpleLiteral<Number>(0, true)),

@@ -21,15 +21,15 @@ public class Cuboid extends AbstractShape implements LWHShape {
     private DynamicLocation positiveCorner;
     private boolean isDynamic = false;
 
-    public Cuboid(double length, double width, double height){
+    public Cuboid(double length, double width, double height) {
         super();
         this.halfWidth = width / 2;
         this.halfLength = length / 2;
         this.halfHeight = height / 2;
         calculateSteps();
     }
-    
-    public Cuboid(Vector negativeCorner, Vector positiveCorner){
+
+    public Cuboid(Vector negativeCorner, Vector positiveCorner) {
         super();
         this.halfLength = Math.abs(positiveCorner.getX() - negativeCorner.getX()) / 2;
         this.halfWidth = Math.abs(positiveCorner.getZ() - negativeCorner.getZ()) / 2;
@@ -37,8 +37,8 @@ public class Cuboid extends AbstractShape implements LWHShape {
         centerOffset = positiveCorner.clone().add(negativeCorner).multiply(0.5);
         calculateSteps();
     }
-    
-    public Cuboid(DynamicLocation negativeCorner, DynamicLocation positiveCorner){
+
+    public Cuboid(DynamicLocation negativeCorner, DynamicLocation positiveCorner) {
         super();
         Location negative = negativeCorner.getLocation();
         Location positive = positiveCorner.getLocation();
@@ -151,7 +151,8 @@ public class Cuboid extends AbstractShape implements LWHShape {
     public void setParticleCount(int particleCount) {
         particleDensity = switch (style) {
             case OUTLINE -> 8 * (halfLength + halfHeight + halfWidth) / particleCount;
-            case SURFACE -> Math.sqrt(8 * (halfLength * halfHeight + halfLength * halfWidth + halfHeight * halfWidth) / particleCount);
+            case SURFACE ->
+                    Math.sqrt(8 * (halfLength * halfHeight + halfLength * halfWidth + halfHeight * halfWidth) / particleCount);
             case FILL -> Math.cbrt(8 * halfLength * halfHeight * halfWidth / particleCount);
         };
         calculateSteps();
@@ -164,25 +165,25 @@ public class Cuboid extends AbstractShape implements LWHShape {
     }
 
     @Override
-    public double getWidth() {
-        return halfWidth * 2;
-    }
-
-    @Override
-    public double getHeight() {
-        return halfHeight * 2;
-    }
-
-    @Override
     public void setLength(double length) {
         this.halfLength = length / 2;
         this.needsUpdate = true;
     }
 
     @Override
+    public double getWidth() {
+        return halfWidth * 2;
+    }
+
+    @Override
     public void setWidth(double width) {
         this.halfWidth = width / 2;
         this.needsUpdate = true;
+    }
+
+    @Override
+    public double getHeight() {
+        return halfHeight * 2;
     }
 
     @Override
@@ -193,7 +194,7 @@ public class Cuboid extends AbstractShape implements LWHShape {
 
     @Override
     public Shape clone() {
-        Cuboid cuboid = (isDynamic ? new Cuboid(negativeCorner, positiveCorner): new Cuboid(getLength(), getWidth(), getHeight()));
+        Cuboid cuboid = (isDynamic ? new Cuboid(negativeCorner, positiveCorner) : new Cuboid(getLength(), getWidth(), getHeight()));
         cuboid.isDynamic = isDynamic;
         return this.copyTo(cuboid);
     }

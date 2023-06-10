@@ -35,6 +35,11 @@ public class Quaternion extends Quaternionf implements Cloneable {
         this.setAngleAxis(angle, (float) axis.getX(), (float) axis.getY(), (float) axis.getZ());
     }
 
+    public Quaternion(Quaternionf quaternion) {
+        super();
+        this.set(quaternion);
+    }
+
     public Quaternion(Quaternion quaternion) {
         super();
         this.set(quaternion);
@@ -61,7 +66,7 @@ public class Quaternion extends Quaternionf implements Cloneable {
 
     public Quaternion rotationTo(Vector to) {
         Vector3f vector3f = new Vector3f((float) to.getX(), (float) to.getY(), (float) to.getZ());
-        return (Quaternion) this.rotationTo(new Vector3f(0,1,0), vector3f);
+        return (Quaternion) this.rotationTo(new Vector3f(0, 1, 0), vector3f);
     }
 
     public Quaternion rotationTo(Vector from, Vector to) {

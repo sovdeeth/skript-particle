@@ -14,7 +14,7 @@ import org.jetbrains.annotations.Nullable;
 @Description({
         "Returns the side length of a polygonal/polyhedral shape. This determines how long each side of the shape is.",
         "Changing this will change the side length of the shape accordingly. Likewise, this changes the radius of the shape. " +
-        "Resetting this will set the side length to the default value of 1 and non-positive values will be set to 0.001.",
+                "Resetting this will set the side length to the default value of 1 and non-positive values will be set to 0.001.",
         "Note that changing this property will not affect custom polygons, only regular polygons and polyhedrons."
 })
 @Examples({

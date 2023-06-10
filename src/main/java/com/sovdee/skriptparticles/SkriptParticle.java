@@ -17,33 +17,14 @@ public class SkriptParticle extends JavaPlugin {
 
     // todo before release
     // custom shapes
-    // motion
+    // particle motion
     // icosphere
-    // heart
-    // stars
     // todo, later versions
     // beziers
     // better triangle filling (basically allow any 3d model)
     // gradients
     // text rendering
     // animation?
-
-
-    @Override
-    public void onEnable() {
-        instance = this;
-        addon = Skript.registerAddon(this);
-        logger = this.getLogger();
-        try {
-            addon.loadClasses("com.sovdee.skriptparticles");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        int pluginId = 18457;
-        Metrics metrics = new Metrics(this, pluginId);
-        SkriptParticle.info("Skript-Particle has been enabled.");
-
-    }
 
     public static SkriptParticle getInstance() {
         return instance;
@@ -69,5 +50,21 @@ public class SkriptParticle extends JavaPlugin {
         if (Skript.debug()) {
             logger.info(message);
         }
+    }
+
+    @Override
+    public void onEnable() {
+        instance = this;
+        addon = Skript.registerAddon(this);
+        logger = this.getLogger();
+        try {
+            addon.loadClasses("com.sovdee.skriptparticles");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        int pluginId = 18457;
+        Metrics metrics = new Metrics(this, pluginId);
+        SkriptParticle.info("Skript-Particle has been enabled.");
+
     }
 }

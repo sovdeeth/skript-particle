@@ -14,7 +14,7 @@ import org.jetbrains.annotations.Nullable;
 @Name("Shape Radius")
 @Description({
         "The radius of a shape. For circular or spherical shapes, this is the distance from the center to the edge. " +
-        "For shapes like regular polygons, this is the distance from the center to a corner.",
+                "For shapes like regular polygons, this is the distance from the center to a corner.",
         "Changing this will change the size of the shape. Resetting or deleting it will set it back to the default radius of 1."
 })
 @Examples({

@@ -14,8 +14,8 @@ import com.sovdee.skriptparticles.shapes.Shape;
 import org.bukkit.Location;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
-
 import org.jetbrains.annotations.Nullable;
+
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 

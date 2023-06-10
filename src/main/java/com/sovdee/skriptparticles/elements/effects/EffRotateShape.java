@@ -18,7 +18,7 @@ import org.joml.Quaternionf;
 @Name("Rotate Shape")
 @Description({
         "Rotates shapes around a given axis by a given angle. The axis can be specified as a vector or as a single axis (x, y, or z). " +
-        "By default, the rotation is done in degrees.",
+                "By default, the rotation is done in degrees.",
         "The axis can also be specified as a local or relative axis, which rotate relative to the shape's current rotation.",
         "For example, you can rotate a shape around the global y axis, or around the shape's local y axis."
 })
@@ -34,7 +34,7 @@ public class EffRotateShape extends Effect {
         Skript.registerEffect(EffRotateShape.class,
                 "rotate shape[s] %shapes% around [relative:(relative|local)] (v:%-vector%|((:x|:y|:z)(-| )axis)) by %number% [degrees|:radians]",
                 "rotate shape[s] %shapes% (by|with) [rotation] %quaternion%"
-                );
+        );
     }
 
     private Expression<Shape> shapes;
@@ -109,7 +109,8 @@ public class EffRotateShape extends Effect {
 
     @Override
     public String toString(@Nullable Event event, boolean debug) {
-        if (rotation != null) return "rotate shape " + shapes.toString(event, debug) + " by " + rotation.toString(event, debug);
+        if (rotation != null)
+            return "rotate shape " + shapes.toString(event, debug) + " by " + rotation.toString(event, debug);
         return "rotate shape " + shapes.toString(event, debug) + " around " + (relative ? "relative " : "") +
                 (vectorAxis != null ? "vector " + vectorAxis.toString(event, debug) : axis + " axis") + " by " +
                 angle.toString(event, debug) + (isRadians ? " radians" : " degrees");

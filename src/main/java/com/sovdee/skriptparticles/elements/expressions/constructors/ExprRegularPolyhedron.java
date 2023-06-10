@@ -44,7 +44,7 @@ public class ExprRegularPolyhedron extends SimpleExpression<RegularPolyhedron> {
         faces = parseResult.hasTag("tetra") ? 4 : parseResult.hasTag("octa") ? 8 : parseResult.hasTag("dodeca") ? 12 : 20;
         style = parseResult.hasTag("hollow") ? Shape.Style.SURFACE : parseResult.hasTag("solid") ? Shape.Style.FILL : Shape.Style.OUTLINE;
 
-        if (radius instanceof Literal<Number> literal && literal.getSingle().doubleValue() <= 0){
+        if (radius instanceof Literal<Number> literal && literal.getSingle().doubleValue() <= 0) {
             Skript.error("The radius of the polyhedron must be greater than 0. (radius: " +
                     ((Literal<Number>) radius).getSingle().doubleValue() + ")");
             return false;

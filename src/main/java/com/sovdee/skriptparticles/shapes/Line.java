@@ -96,7 +96,7 @@ public class Line extends AbstractShape implements LWHShape {
         return this.copyTo(line);
     }
 
-    public String toString(){
+    public String toString() {
         return "Line from " + this.start + " to " + this.end;
     }
 
@@ -118,7 +118,6 @@ public class Line extends AbstractShape implements LWHShape {
 
     @Override
     public void setWidth(double width) {
-        return;
     }
 
     @Override
@@ -128,6 +127,5 @@ public class Line extends AbstractShape implements LWHShape {
 
     @Override
     public void setHeight(double height) {
-        return;
     }
 }

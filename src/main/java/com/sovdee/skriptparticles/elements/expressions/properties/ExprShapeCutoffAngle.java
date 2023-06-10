@@ -13,7 +13,7 @@ import org.jetbrains.annotations.Nullable;
 @Name("Shape Cutoff Angle")
 @Description({
         "The cutoff angle of a shape in degrees. This determines the portion of the whole shape that will be drawn in shapes like arcs and spherical caps. " +
-        "For example, a cutoff angle of 90 on an arc will create a quarter of a circle.",
+                "For example, a cutoff angle of 90 on an arc will create a quarter of a circle.",
         "Note that an arc can range from 0 to 360 degrees, while a spherical cap can range from 0 to 180 degrees."
 })
 @Examples({

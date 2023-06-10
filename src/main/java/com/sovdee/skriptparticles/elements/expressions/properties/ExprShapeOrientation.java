@@ -11,7 +11,6 @@ import com.sovdee.skriptparticles.shapes.Shape;
 import com.sovdee.skriptparticles.util.Quaternion;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
-
 import org.jetbrains.annotations.Nullable;
 
 @Name("Shape Orientation")
@@ -30,7 +29,7 @@ import org.jetbrains.annotations.Nullable;
 public class ExprShapeOrientation extends SimplePropertyExpression<Shape, Quaternion> {
 
     static {
-        PropertyExpression.register(ExprShapeOrientation.class, Quaternion.class, "orientation","shapes");
+        PropertyExpression.register(ExprShapeOrientation.class, Quaternion.class, "orientation", "shapes");
     }
 
     @Override

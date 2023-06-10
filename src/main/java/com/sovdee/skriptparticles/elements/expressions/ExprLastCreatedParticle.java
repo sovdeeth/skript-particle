@@ -9,7 +9,6 @@ import ch.njol.util.Kleenean;
 import com.sovdee.skriptparticles.elements.sections.SecParticle;
 import com.sovdee.skriptparticles.particles.Particle;
 import org.bukkit.event.Event;
-
 import org.jetbrains.annotations.Nullable;
 
 public class ExprLastCreatedParticle extends SimpleExpression<Particle> {

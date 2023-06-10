@@ -24,6 +24,11 @@ public interface Shape extends Cloneable {
     Set<Vector> getPoints();
 
     /*
+     * Sets the points for the shape.
+     */
+    void setPoints(Set<Vector> points);
+
+    /*
      * Gets the points for the shape.
      * Attempts to use cached points if possible, by checking if the shape has been modified.
      * Uses the given orientation to rotate the shape.
@@ -31,11 +36,6 @@ public interface Shape extends Cloneable {
      * @return A set of points that make up the shape.
      */
     Set<Vector> getPoints(Quaternion orientation);
-
-    /*
-     * Sets the points for the shape.
-     */
-    void setPoints(Set<Vector> points);
 
     /*
      * Generates the points for the shape. Depends on the set style.
@@ -161,14 +161,14 @@ public interface Shape extends Cloneable {
     void setOffset(Vector offset);
 
     /*
-     * Sets the location of the shape. This is used as a fallback if the shape is drawn without a location.
-     */
-    void setLocation(DynamicLocation location);
-
-    /*
      * @Returns the location of the shape.
      */
     DynamicLocation getLocation();
+
+    /*
+     * Sets the location of the shape. This is used as a fallback if the shape is drawn without a location.
+     */
+    void setLocation(DynamicLocation location);
 
     /*
      * @Returns the UUID of the shape. Used for uniqueness during serialization.
@@ -196,15 +196,15 @@ public interface Shape extends Cloneable {
     void setParticleDensity(double particleDensity);
 
     /*
+     * @Returns the number of points that the shape has.
+     */
+    int getParticleCount();
+
+    /*
      * Sets the number of points that the shape should have. Will not always be accurate, but should be close.
      * Marks the shape as needing an update.
      */
     void setParticleCount(int particleCount);
-
-    /*
-     * @Returns the number of points that the shape has.
-     */
-    int getParticleCount();
 
     /*
      * @Returns whether the shape needs an update.

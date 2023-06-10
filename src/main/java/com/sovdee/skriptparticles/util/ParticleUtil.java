@@ -27,11 +27,11 @@ import java.util.Set;
 
 public class ParticleUtil {
 
-    public static com.sovdee.skriptparticles.particles.Particle getDefaultParticle() {
-        return (com.sovdee.skriptparticles.particles.Particle) new com.sovdee.skriptparticles.particles.Particle(Particle.FLAME).count(1).extra(0);
-    }
     private static final Map<String, Particle> PARTICLES = new HashMap<>();
     private static final Map<Particle, String> PARTICLE_NAMES = new HashMap<>();
+    private static final ParticleBuilder Y_AXIS = new ParticleBuilder(Particle.REDSTONE).data(new DustOptions(DyeColor.LIME.getColor(), 0.5f));
+    private static final ParticleBuilder X_AXIS = new ParticleBuilder(Particle.REDSTONE).data(new DustOptions(DyeColor.RED.getColor(), 0.5f));
+    private static final ParticleBuilder Z_AXIS = new ParticleBuilder(Particle.REDSTONE).data(new DustOptions(DyeColor.BLUE.getColor(), 0.5f));
 
     // Load and map Minecraft particle names
     // Bukkit does not have any API for getting the Minecraft names of particles (how stupid)
@@ -57,6 +57,10 @@ public class ParticleUtil {
         } catch (NoSuchFieldException | IllegalAccessException e) {
             e.printStackTrace();
         }
+    }
+
+    public static com.sovdee.skriptparticles.particles.Particle getDefaultParticle() {
+        return (com.sovdee.skriptparticles.particles.Particle) new com.sovdee.skriptparticles.particles.Particle(Particle.FLAME).count(1).extra(0);
     }
 
     /**
@@ -172,9 +176,6 @@ public class ParticleUtil {
                 .source(builder.source());
     }
 
-    private static final ParticleBuilder Y_AXIS = new ParticleBuilder(Particle.REDSTONE).data(new DustOptions(DyeColor.LIME.getColor(), 0.5f));
-    private static final ParticleBuilder X_AXIS = new ParticleBuilder(Particle.REDSTONE).data(new DustOptions(DyeColor.RED.getColor(), 0.5f));
-    private static final ParticleBuilder Z_AXIS = new ParticleBuilder(Particle.REDSTONE).data(new DustOptions(DyeColor.BLUE.getColor(), 0.5f));
     public static void drawAxes(Location location, Quaternion orientation, Collection<Player> recipients) {
         Set<Vector> yAxis = MathUtil.calculateLine(new Vector(0, 0, 0), new Vector(0, 1, 0), 0.2);
         Set<Vector> xAxis = MathUtil.calculateLine(new Vector(0, 0, 0), new Vector(1, 0, 0), 0.2);

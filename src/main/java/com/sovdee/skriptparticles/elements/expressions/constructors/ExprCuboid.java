@@ -23,8 +23,8 @@ import org.jetbrains.annotations.Nullable;
         "Creates a cuboid from a length, a width, and a height, or from two corners.",
         "The specified length, width, and height must be greater than 0. Length is the x-axis, width is the z-axis, and height is the y-axis.",
         "When defining a cuboid from two corners, the corners can either be vectors or locations/entities. " +
-        "You cannot use both vectors and locations/entities, but you can mix and match locations and entities." +
-        "When using locations, this is a shape that can be drawn without a specific location. It will be drawn between the two given locations.",
+                "You cannot use both vectors and locations/entities, but you can mix and match locations and entities." +
+                "When using locations, this is a shape that can be drawn without a specific location. It will be drawn between the two given locations.",
 })
 @Examples({
         "set {_shape} to a solid cuboid with length 10, width 10, and height 10",
@@ -89,7 +89,7 @@ public class ExprCuboid extends SimpleExpression<Cuboid> {
             length = Math.max(length.doubleValue(), MathUtil.EPSILON);
             height = Math.max(height.doubleValue(), MathUtil.EPSILON);
             cuboid = new Cuboid(width.doubleValue(), length.doubleValue(), height.doubleValue());
-        // from location/entity/vector to location/entity/vector
+            // from location/entity/vector to location/entity/vector
         } else {
             if (corner1 == null || corner2 == null) return null;
             Object corner1 = this.corner1.getSingle(event);
@@ -129,12 +129,13 @@ public class ExprCuboid extends SimpleExpression<Cuboid> {
     @Override
     public String toString(@Nullable Event event, boolean debug) {
         return switch (style) {
-                    case FILL -> "filled ";
-                    case SURFACE -> "hollow ";
-                    case OUTLINE -> "outlined ";
-                } + "cuboid " +
+            case FILL -> "filled ";
+            case SURFACE -> "hollow ";
+            case OUTLINE -> "outlined ";
+        } + "cuboid " +
                 switch (matchedPattern) {
-                    case 0 -> "with width " + width.toString(event, debug) + ", length " + length.toString(event, debug) + ", and height " + height.toString(event, debug);
+                    case 0 ->
+                            "with width " + width.toString(event, debug) + ", length " + length.toString(event, debug) + ", and height " + height.toString(event, debug);
                     case 1 -> "from " + corner1.toString(event, debug) + " to " + corner2.toString(event, debug);
                     default -> "";
                 };

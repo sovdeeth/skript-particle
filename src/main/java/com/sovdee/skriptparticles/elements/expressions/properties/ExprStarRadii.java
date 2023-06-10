@@ -18,7 +18,7 @@ import org.jetbrains.annotations.Nullable;
 @Name("Star Radii")
 @Description({
         "Returns the inner or outer radius of a star. The inner radius is the distance from the center of the star to " +
-        "the innermost points, and likewise the outer radius is the distance to the tips of the star.",
+                "the innermost points, and likewise the outer radius is the distance to the tips of the star.",
         "Changing this will change the size of the star. Both radii must be greater than 0."
 })
 @Examples({

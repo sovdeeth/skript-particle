@@ -41,16 +41,16 @@ import java.util.concurrent.atomic.AtomicLong;
 @Description({
         "Draws the given shapes at the given locations. The shapes will be drawn in the order they are given.",
         "The code inside the draw shape section will be executed before drawing begins. You can use `event-shape` or `drawn shape` to get the shape being drawn. " +
-        "Modifying this shape affects the end result, but it does not modify the original shape! This means you can set particle data, " +
-        "or change the shape's location, rotation, or scale, without affecting the shape the next time it's drawn.",
+                "Modifying this shape affects the end result, but it does not modify the original shape! This means you can set particle data, " +
+                "or change the shape's location, rotation, or scale, without affecting the shape the next time it's drawn.",
         "**Note that this means the section is run once for each shape!** This is the same way the spawn section works in Skript. This is subject to change if people find it cumbersome.",
         "",
         "By default, this effect will run asynchronously, meaning it will do all the calculation and drawing on a separate thread, instead of blocking your server's main thread. " +
-        "This is much better if you want to draw a lot of shapes at once, or if you want to draw large and complex shapes.",
+                "This is much better if you want to draw a lot of shapes at once, or if you want to draw large and complex shapes.",
         "Be aware that this changes the behavior of the section slightly. All the section code will first be executed synchronously, " +
-        "and then the drawing will be done asynchronously. This means that the time the shape appears may be slightly delayed compared to the completion of the section code.",
+                "and then the drawing will be done asynchronously. This means that the time the shape appears may be slightly delayed compared to the completion of the section code.",
         "Additionally, the code immediately after the draw shape section will be executed immediately, often before the drawing is finished. If you stumble across issues with this, " +
-        "please report them on the Skript-Particles GitHub page and use the synchronous option instead.",
+                "please report them on the Skript-Particles GitHub page and use the synchronous option instead.",
         "",
         "Drawing a shape for a duration is async only."
 })
@@ -60,30 +60,14 @@ import java.util.concurrent.atomic.AtomicLong;
         "synchronously draw a sphere with radius 1 at player's location",
         "",
         "draw {_shape} at player's location:",
-            "\tset event-shape's particle to dust using dustOption(red, 1)",
+        "\tset event-shape's particle to dust using dustOption(red, 1)",
         "",
         "synchronously draw (a sphere with radius 1 and a cube with radius 1) at player's location:",
-            "\tset event-shape's radius to 2",
+        "\tset event-shape's radius to 2",
 })
 @Since("1.0.0")
 public class EffSecDrawShape extends EffectSection {
-    public static class DrawEvent extends Event {
-        private final Shape shape;
-        public DrawEvent(Shape shape) {
-            this.shape = shape;
-        }
-
-        public Shape getShape() {
-            return shape;
-        }
-
-        @Override
-        @NotNull
-        public HandlerList getHandlers() {
-            throw new IllegalStateException();
-        }
-    }
-
+    public static final Timespan ONE_TICK = Timespan.fromTicks_i(1);
 
     static {
         Skript.registerSection(EffSecDrawShape.class,
@@ -104,9 +88,6 @@ public class EffSecDrawShape extends EffectSection {
     private Expression<Player> players;
     private Expression<Timespan> duration;
     private Expression<Timespan> delay;
-
-    public static final Timespan ONE_TICK = Timespan.fromTicks_i(1);
-
     @Nullable
     private Trigger trigger;
     private boolean sync;
@@ -144,6 +125,7 @@ public class EffSecDrawShape extends EffectSection {
 
         return true;
     }
+
     @Override
     @Nullable
     protected TriggerItem walk(Event event) {
@@ -216,7 +198,7 @@ public class EffSecDrawShape extends EffectSection {
                 Timespan duration = this.duration.getSingle(event);
                 if (delay == null || duration == null) return getNext();
 
-                period = Math.max(delay.getTicks_i(),1);
+                period = Math.max(delay.getTicks_i(), 1);
                 iterations = Math.max(duration.getTicks_i() / period, 1);
             }
             AtomicLong currentIteration = new AtomicLong(0);
@@ -235,7 +217,7 @@ public class EffSecDrawShape extends EffectSection {
         return getNext();
     }
 
-    private void executeSync(Event event, Collection<DynamicLocation> locations, Consumer<Shape> consumer, Collection<Player> recipients){
+    private void executeSync(Event event, Collection<DynamicLocation> locations, Consumer<Shape> consumer, Collection<Player> recipients) {
         Shape shapeCopy;
         Location location;
         for (DynamicLocation dynamicLocation : locations) {
@@ -266,5 +248,23 @@ public class EffSecDrawShape extends EffectSection {
     @NotNull
     public String toString(@Nullable Event event, boolean b) {
         return "draw shape " + shapes.toString(event, b) + " at " + locations.toString(event, b) + " for " + (players == null ? "all players" : players.toString(event, b));
+    }
+
+    public static class DrawEvent extends Event {
+        private final Shape shape;
+
+        public DrawEvent(Shape shape) {
+            this.shape = shape;
+        }
+
+        public Shape getShape() {
+            return shape;
+        }
+
+        @Override
+        @NotNull
+        public HandlerList getHandlers() {
+            throw new IllegalStateException();
+        }
     }
 }

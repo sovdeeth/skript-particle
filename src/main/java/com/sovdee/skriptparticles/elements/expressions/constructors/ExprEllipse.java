@@ -22,7 +22,7 @@ import org.jetbrains.annotations.Nullable;
 @Description({
         "Creates a ellipse, elliptical disc, or elliptical cylinder shape with the given radii. The radii must be greater than 0.",
         "The first radius is the x radius, and the second radius is the z radius. These are relative to the shape's rotation, " +
-        "so they only correspond exactly to the x and z axes if the shape is not rotated.",
+                "so they only correspond exactly to the x and z axes if the shape is not rotated.",
         "NOTE: Very eccentric elliptical discs/sectors (those with a large difference between the x and z radii) may have many more particles than expected. Be careful."
 })
 @Examples({
@@ -112,7 +112,7 @@ public class ExprEllipse extends SimpleExpression<Ellipse> {
 
     @Override
     public String toString(@Nullable Event event, boolean debug) {
-        return (height == null ? "ellipse of x radius " + xRadius.toString(event, debug) + " and z radius " + zRadius.toString(event, debug)  :
+        return (height == null ? "ellipse of x radius " + xRadius.toString(event, debug) + " and z radius " + zRadius.toString(event, debug) :
                 "elliptical cylinder of x radius " + xRadius.toString(event, debug) + " and z radius " + zRadius.toString(event, debug) +
                         " and height " + (height != null ? height.toString(event, debug) : "0"));
     }

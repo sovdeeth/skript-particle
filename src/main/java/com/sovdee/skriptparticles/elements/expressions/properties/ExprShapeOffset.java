@@ -25,7 +25,7 @@ import org.jetbrains.annotations.Nullable;
 public class ExprShapeOffset extends SimplePropertyExpression<Shape, Vector> {
 
     static {
-        PropertyExpression.register(ExprShapeOffset.class, Vector.class, "offset [vector]","shapes");
+        PropertyExpression.register(ExprShapeOffset.class, Vector.class, "offset [vector]", "shapes");
     }
 
     @Override

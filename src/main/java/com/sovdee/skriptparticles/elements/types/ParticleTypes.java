@@ -17,9 +17,8 @@ import org.bukkit.Particle.DustOptions;
 import org.bukkit.Particle.DustTransition;
 import org.bukkit.Vibration;
 import org.jetbrains.annotations.NotNull;
-import org.skriptlang.skript.lang.converter.Converters;
-
 import org.jetbrains.annotations.Nullable;
+import org.skriptlang.skript.lang.converter.Converters;
 
 /*
  * Thanks to ShaneBee at SkBee for the original particle code.
@@ -32,7 +31,7 @@ public class ParticleTypes {
                     .user("particles?")
                     .name("Particle")
                     .description("A mirror of SkBee's Particle type. For use when SkBee is not installed.\n" +
-                            "Represents a particle which can be used as a shape's particle, or in the Draw Particle and Particle Spawn effects.",
+                                    "Represents a particle which can be used as a shape's particle, or in the Draw Particle and Particle Spawn effects.",
                             "Some particles require extra data, these are distinguished by their data type within the square brackets.",
                             "DustOption, DustTransition and Vibration each have their own functions to build the appropriate data for these particles.")
                     .usage(ParticleUtil.getNamesAsString())
@@ -115,7 +114,7 @@ public class ParticleTypes {
                     return new DustOptions[]{new DustOptions(color, size)};
                 }
             }.description("A mirror of SkBee's dustOption function. For use when SkBee is not installed.\n" +
-                            "Creates a new dust option to be used with 'dust' particle. Color can either be a regular color or an RGB color using",
+                                    "Creates a new dust option to be used with 'dust' particle. Color can either be a regular color or an RGB color using",
                             "Skript's rgb() function. Size is the size the particle will be.")
                     .examples("set {_c} to dustOption(red, 1.5)", "set {_c} to dustOption(rgb(1, 255, 1), 3)")
                     .since("1.0.0"));
@@ -143,7 +142,7 @@ public class ParticleTypes {
                     };
                 }
             }.description("A mirror of SkBee's dustTransition function. For use when SkBee is not installed.\n" +
-                            "Creates a new dust transition to be used with 'dust_color_transition' particle.",
+                                    "Creates a new dust transition to be used with 'dust_color_transition' particle.",
                             "Color can either be a regular color or an RGB color using Skript's rgb() function.",
                             "Size is the size the particle will be. Requires MC 1.17+")
                     .examples("set {_d} to dustTransition(red, green, 10)", "set {_d} to dustTransition(blue, rgb(1,1,1), 5)")
@@ -172,21 +171,12 @@ public class ParticleTypes {
                     return new Vibration[]{vibration};
                 }
             }.description("A mirror of SkBee's Vibration function. For use when SkBee is not installed.\n" +
-                            "Creates a new vibration to be used with 'vibration' particle.",
+                                    "Creates a new vibration to be used with 'vibration' particle.",
                             "TO = the destination location the particle will travel to.",
                             "ARRIVAL TIME = the time it will take to arrive at the destination location. Requires MC 1.17+")
                     .examples("set {_v} to vibration({loc1}, 10 seconds)")
                     .since("1.0.0"));
         }
-
-
-
-
-
-
-
-
-
 
 
     }

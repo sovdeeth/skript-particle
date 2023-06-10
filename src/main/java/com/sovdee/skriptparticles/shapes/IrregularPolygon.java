@@ -11,7 +11,7 @@ import java.util.Set;
 
 public class IrregularPolygon extends AbstractShape implements LWHShape {
 
-    private List<Vector> vertices;
+    private final List<Vector> vertices;
     private double height;
     private double lowerBound;
 
@@ -25,6 +25,7 @@ public class IrregularPolygon extends AbstractShape implements LWHShape {
         this(vertices);
         this.height = height;
     }
+
     private List<Vector> flattenVertices(Collection<Vector> vertices) {
         List<Vector> flattened = new ArrayList<>();
         for (Vector v : vertices) {
@@ -80,20 +81,22 @@ public class IrregularPolygon extends AbstractShape implements LWHShape {
     }
 
     @Override
+    public void setLength(double length) {
+    }
+
+    @Override
     public double getWidth() {
         return 0;
+    }
+
+    @Override
+    public void setWidth(double width) {
     }
 
     @Override
     public double getHeight() {
         return height;
     }
-
-    @Override
-    public void setLength(double length) {}
-
-    @Override
-    public void setWidth(double width) {}
 
     @Override
     public void setHeight(double height) {

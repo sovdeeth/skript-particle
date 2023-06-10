@@ -22,10 +22,10 @@ import org.jetbrains.annotations.Nullable;
 @Description({
         "Creates a rectangle from a length and a width, or from two corners. The length and width must be greater than 0.",
         "When defining a rectangle from two corners, the corners can either be vectors or locations/entities. " +
-        "You cannot use both vectors and locations/entities, but you can mix and match locations and entities. " +
-        "When using locations, this is a shape that can be drawn without a specific location. It will be drawn between the two given locations.",
+                "You cannot use both vectors and locations/entities, but you can mix and match locations and entities. " +
+                "When using locations, this is a shape that can be drawn without a specific location. It will be drawn between the two given locations.",
         "Note that the rectangle defaults to the xz plane, or parallel to the ground, with x being width and z being length. " +
-        "You can change this to the xy or yz plane by using the 'xy' or 'yz'. In all cases, the first axis is length and the second is width."
+                "You can change this to the xy or yz plane by using the 'xy' or 'yz'. In all cases, the first axis is length and the second is width."
 })
 @Examples({
         "set {_shape} to rectangle with length 10 and width 5",
@@ -127,8 +127,10 @@ public class ExprRectangle extends SimpleExpression<Rectangle> {
                     case YZ -> " yz ";
                 } +
                 switch (matchedPattern) {
-                    case 0 -> "rectangle with length " + lengthExpr.toString(event, debug) + " and width " + widthExpr.toString(event, debug);
-                    case 1 -> "rectangle from " + corner1Expr.toString(event, debug) + " to " + corner2Expr.toString(event, debug);
+                    case 0 ->
+                            "rectangle with length " + lengthExpr.toString(event, debug) + " and width " + widthExpr.toString(event, debug);
+                    case 1 ->
+                            "rectangle from " + corner1Expr.toString(event, debug) + " to " + corner2Expr.toString(event, debug);
                     default -> "";
                 };
     }

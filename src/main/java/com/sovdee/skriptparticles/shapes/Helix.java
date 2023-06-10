@@ -36,7 +36,7 @@ public class Helix extends AbstractShape implements RadialShape, LWHShape {
     @Override
     public Set<Vector> generateSurface() {
         Set<Vector> points = new HashSet<>();
-        for (double r = radius; r > 0; r -= particleDensity){
+        for (double r = radius; r > 0; r -= particleDensity) {
             points.addAll(MathUtil.calculateHelix(r, height, slope, direction, particleDensity));
         }
         return points;
@@ -74,23 +74,24 @@ public class Helix extends AbstractShape implements RadialShape, LWHShape {
     }
 
     @Override
-    public double getWidth() {
-        return 0;
-    }
-
-    @Override
-    public double getHeight() {
-        return height;
-    }
-
-    @Override
     public void setLength(double length) {
         height = Math.max(length, MathUtil.EPSILON);
         needsUpdate = true;
     }
 
     @Override
-    public void setWidth(double width) {}
+    public double getWidth() {
+        return 0;
+    }
+
+    @Override
+    public void setWidth(double width) {
+    }
+
+    @Override
+    public double getHeight() {
+        return height;
+    }
 
     @Override
     public void setHeight(double height) {

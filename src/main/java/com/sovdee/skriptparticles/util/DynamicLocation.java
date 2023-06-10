@@ -14,20 +14,9 @@ import org.jetbrains.annotations.Nullable;
  */
 public class DynamicLocation {
 
-    @Nullable
-    public static DynamicLocation fromLocationEntity(Object locationEntity) {
-        if (locationEntity instanceof Location location) {
-            return new DynamicLocation(location);
-        } else if (locationEntity instanceof Entity entity) {
-            return new DynamicLocation(entity);
-        }
-        return null;
-    }
-
     private Entity entity;
     private Location location;
     private Direction direction;
-
     public DynamicLocation(@NotNull Entity entity) {
         this(entity, null);
     }
@@ -62,6 +51,16 @@ public class DynamicLocation {
         this.direction = null;
     }
 
+    @Nullable
+    public static DynamicLocation fromLocationEntity(Object locationEntity) {
+        if (locationEntity instanceof Location location) {
+            return new DynamicLocation(location);
+        } else if (locationEntity instanceof Entity entity) {
+            return new DynamicLocation(entity);
+        }
+        return null;
+    }
+
     /*
      * Gets the current location of the dynamic location
      * If not dynamic, returns the location
@@ -84,8 +83,8 @@ public class DynamicLocation {
         return location;
     }
 
-    public void setEntity(Entity entity) {
-        this.entity = entity;
+    public void setLocation(Location location) {
+        this.location = location;
     }
 
     @Nullable
@@ -93,8 +92,8 @@ public class DynamicLocation {
         return entity;
     }
 
-    public void setDirection(Direction direction) {
-        this.direction = direction;
+    public void setEntity(Entity entity) {
+        this.entity = entity;
     }
 
     @Nullable
@@ -102,8 +101,8 @@ public class DynamicLocation {
         return direction;
     }
 
-    public void setLocation(Location location) {
-        this.location = location;
+    public void setDirection(Direction direction) {
+        this.direction = direction;
     }
 
     public boolean isDynamic() {

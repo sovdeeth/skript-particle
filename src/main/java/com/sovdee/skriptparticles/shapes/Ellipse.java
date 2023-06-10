@@ -69,25 +69,25 @@ public class Ellipse extends AbstractShape implements LWHShape {
     }
 
     @Override
-    public double getWidth() {
-        return zRadius * 2;
-    }
-
-    @Override
-    public double getHeight() {
-        return height;
-    }
-
-    @Override
     public void setLength(double length) {
         xRadius = Math.max(length / 2, MathUtil.EPSILON);
         needsUpdate = true;
     }
 
     @Override
+    public double getWidth() {
+        return zRadius * 2;
+    }
+
+    @Override
     public void setWidth(double width) {
         zRadius = Math.max(width / 2, MathUtil.EPSILON);
         needsUpdate = true;
+    }
+
+    @Override
+    public double getHeight() {
+        return height;
     }
 
     @Override

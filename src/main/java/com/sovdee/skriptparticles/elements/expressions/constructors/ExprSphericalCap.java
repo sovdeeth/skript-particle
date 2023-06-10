@@ -54,7 +54,7 @@ public class ExprSphericalCap extends SimpleExpression<SphericalCap> {
 
         if (angle instanceof Literal<Number> literal) {
             double c = literal.getSingle().doubleValue();
-            if (c <= 0 || c > 180){
+            if (c <= 0 || c > 180) {
                 Skript.error("The cutoff angle of the spherical cap must be between 0 and 180. (angle: " + c + ")");
                 return false;
             }
@@ -94,7 +94,7 @@ public class ExprSphericalCap extends SimpleExpression<SphericalCap> {
 
     @Override
     public String toString(@Nullable Event event, boolean debug) {
-        return "spherical " + (isSector ? "sector" : "cap") +  " with radius " + radius.toString(event, debug) + " and angle " + angle.toString(event, debug) + (isRadians ? " radians" : " degrees");
+        return "spherical " + (isSector ? "sector" : "cap") + " with radius " + radius.toString(event, debug) + " and angle " + angle.toString(event, debug) + (isRadians ? " radians" : " degrees");
     }
 
 }

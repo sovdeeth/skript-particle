@@ -78,7 +78,7 @@ public class ExprEllipticalArc extends SimpleExpression<EllipticalArc> {
 
         if (angle instanceof Literal<Number> literal) {
             double c = literal.getSingle().doubleValue();
-            if (c <= 0 || c > 360){
+            if (c <= 0 || c > 360) {
                 Skript.error("The cutoff angle of the arc must be between 0 and 360. (angle: " + c + ")");
                 return false;
             }
@@ -123,7 +123,7 @@ public class ExprEllipticalArc extends SimpleExpression<EllipticalArc> {
 
     @Override
     public String toString(@Nullable Event event, boolean debug) {
-        return  (this.style == Style.FILL ? "sector" : "arc") +
+        return (this.style == Style.FILL ? "sector" : "arc") +
                 " with radius " + xRadius.toString(event, debug) + " and " + zRadius.toString(event, debug) +
                 (height == null ? "" : " and height " + height.toString(event, debug)) +
                 " and angle " + angle.toString(event, debug) +

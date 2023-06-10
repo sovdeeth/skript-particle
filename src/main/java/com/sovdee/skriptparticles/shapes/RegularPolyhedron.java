@@ -69,7 +69,7 @@ public class RegularPolyhedron extends AbstractShape implements RadialShape, Pol
 
     @Override
     public Set<Vector> generateOutline() {
-        return switch(faces){
+        return switch (faces) {
             case 4 -> generatePolyhedron(TETRAHEDRON_FACES, radius);
             case 8 -> generatePolyhedron(OCTAHEDRON_FACES, radius);
             case 20 -> generatePolyhedron(ICOSAHEDRON_FACES, radius);
@@ -143,10 +143,10 @@ public class RegularPolyhedron extends AbstractShape implements RadialShape, Pol
         return new HashSet<>(MathUtil.calculateRegularPolygon(radius, 2 * Math.PI / sides, particleDensity, true));
     }
 
-    private Set<Vector> generateFaceSurface(int sides, double radius){
+    private Set<Vector> generateFaceSurface(int sides, double radius) {
         HashSet<Vector> facePoints = new HashSet<>();
-        double apothem = radius * Math.cos(Math.PI/sides);
-        double radiusStep = radius / Math.round(apothem/particleDensity);
+        double apothem = radius * Math.cos(Math.PI / sides);
+        double radiusStep = radius / Math.round(apothem / particleDensity);
         for (double subRadius = radius; subRadius > 0; subRadius -= radiusStep) {
             facePoints.addAll(MathUtil.calculateRegularPolygon(subRadius, 2 * Math.PI / sides, particleDensity, false));
         }
@@ -165,27 +165,17 @@ public class RegularPolyhedron extends AbstractShape implements RadialShape, Pol
     }
 
     @Override
-    public void setSides(int sides) {
-        switch (sides) {
-            case 4, 8, 12, 20 -> this.faces = sides;
-            default -> {return;}
-        }
-        needsUpdate = true;
-    }
-
-    @Override
     public int getSides() {
         return faces;
     }
 
     @Override
-    public void setSideLength(double sideLength) {
-        switch (faces) {
-            case 4 -> this.radius = sideLength * 0.6123724356957945;
-            case 8 -> this.radius = sideLength * 0.7071067811865;
-            case 12 -> this.radius = sideLength * 1.401258538;
-            case 20 -> this.radius = sideLength * 0.9510565162951535;
-            default -> {return;}
+    public void setSides(int sides) {
+        switch (sides) {
+            case 4, 8, 12, 20 -> this.faces = sides;
+            default -> {
+                return;
+            }
         }
         needsUpdate = true;
     }
@@ -199,6 +189,20 @@ public class RegularPolyhedron extends AbstractShape implements RadialShape, Pol
             case 20 -> radius / 0.9510565162951535;
             default -> 0.0;
         };
+    }
+
+    @Override
+    public void setSideLength(double sideLength) {
+        switch (faces) {
+            case 4 -> this.radius = sideLength * 0.6123724356957945;
+            case 8 -> this.radius = sideLength * 0.7071067811865;
+            case 12 -> this.radius = sideLength * 1.401258538;
+            case 20 -> this.radius = sideLength * 0.9510565162951535;
+            default -> {
+                return;
+            }
+        }
+        needsUpdate = true;
     }
 
     @Override

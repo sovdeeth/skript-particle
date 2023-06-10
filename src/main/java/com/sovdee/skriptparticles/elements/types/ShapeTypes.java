@@ -137,7 +137,7 @@ public class ShapeTypes {
                 .name("Polygonal/Polyhedral Shape")
                 .description(
                         "Represents an abstract particle shape that is a polygon or polyhedron, with a side length and side count.\n" +
-                        "Irregular shapes are included in this category, but do not support changing either side count or side length."
+                                "Irregular shapes are included in this category, but do not support changing either side count or side length."
                 )
                 .parser(new Parser<>() {
 

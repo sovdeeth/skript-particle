@@ -73,14 +73,19 @@ public class RegularPolygon extends AbstractShape implements PolyShape, RadialSh
     }
 
     @Override
+    public int getSides() {
+        return (int) (Math.PI * 2 / this.angle);
+    }
+
+    @Override
     public void setSides(int sides) {
         this.angle = (Math.PI * 2) / Math.max(sides, 3);
         needsUpdate = true;
     }
 
     @Override
-    public int getSides() {
-        return (int) (Math.PI * 2 / this.angle);
+    public double getSideLength() {
+        return this.radius * 2 * Math.sin(this.angle / 2);
     }
 
     @Override
@@ -88,11 +93,6 @@ public class RegularPolygon extends AbstractShape implements PolyShape, RadialSh
         this.radius = sideLength / (2 * Math.sin(this.angle / 2));
         this.radius = Math.max(radius, MathUtil.EPSILON);
         needsUpdate = true;
-    }
-
-    @Override
-    public double getSideLength() {
-        return this.radius * 2 * Math.sin(this.angle / 2);
     }
 
     @Override
@@ -112,20 +112,22 @@ public class RegularPolygon extends AbstractShape implements PolyShape, RadialSh
     }
 
     @Override
+    public void setLength(double length) {
+    }
+
+    @Override
     public double getWidth() {
         return 0;
+    }
+
+    @Override
+    public void setWidth(double width) {
     }
 
     @Override
     public double getHeight() {
         return height;
     }
-
-    @Override
-    public void setLength(double length) {}
-
-    @Override
-    public void setWidth(double width) {}
 
     @Override
     public void setHeight(double height) {

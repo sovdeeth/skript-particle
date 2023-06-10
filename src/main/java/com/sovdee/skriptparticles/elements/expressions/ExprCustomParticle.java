@@ -1,6 +1,7 @@
 package com.sovdee.skriptparticles.elements.expressions;
 
 import ch.njol.skript.Skript;
+import ch.njol.skript.aliases.ItemType;
 import ch.njol.skript.doc.Description;
 import ch.njol.skript.doc.Examples;
 import ch.njol.skript.doc.Name;
@@ -12,16 +13,15 @@ import ch.njol.util.Kleenean;
 import com.sovdee.skriptparticles.particles.Particle;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
-
 import org.jetbrains.annotations.Nullable;
 
 @Name("Particle With Data")
 @Description({
         "Creates a particle with data. This is useful for creating particles with data such as dust options, dust transitions, vibrations, etc.",
         "The particle can be created with a particle type, or a custom particle. If a custom particle is used, the particle will be cloned. " +
-        "If a count is not specified, it will default to 1.",
+                "If a count is not specified, it will default to 1.",
         "This syntax was based on SkBee's draw particle effect syntax, so please report any conflicts with SkBee immediately. There should not " +
-        "be any conflicts, but there's always a risk."
+                "be any conflicts, but there's always a risk."
 })
 @Examples({
         "set {_particle} to electric spark particle with extra 0",
@@ -32,7 +32,7 @@ public class ExprCustomParticle extends SimpleExpression<Particle> {
     static {
         Skript.registerExpression(ExprCustomParticle.class, Particle.class, ExpressionType.COMBINED,
                 "[%-number% [of]] %customparticle/particle% particle[s] [using %-itemtype/blockdata/dustoption/dusttransition/vibration/number%] " +
-                "[with offset %-vector%] [with extra %-number%] [force:with force]");
+                        "[with offset %-vector%] [with extra %-number%] [force:with force]");
     }
 
     private Expression<Number> count;
@@ -79,6 +79,9 @@ public class ExprCustomParticle extends SimpleExpression<Particle> {
 
         if (data != null) {
             Object data = this.data.getSingle(event);
+            if (data instanceof ItemType itemType) {
+                data = itemType.getRandom();
+            }
             if (data != null) particle.data(data);
         }
 

@@ -28,7 +28,7 @@ public class EllipticalArc extends Ellipse implements CutoffShape {
 
     @Override
     public void setCutoffAngle(double cutoffAngle) {
-        this.cutoffAngle = MathUtil.clamp(cutoffAngle, 0, 2*Math.PI);
+        this.cutoffAngle = MathUtil.clamp(cutoffAngle, 0, 2 * Math.PI);
         needsUpdate = true;
     }
 

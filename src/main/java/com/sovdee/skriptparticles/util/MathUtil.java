@@ -30,6 +30,7 @@ public class MathUtil {
     public static Set<Vector> calculateFibonacciSphere(int pointCount, double radius) {
         return calculateFibonacciSphere(pointCount, radius, Math.PI);
     }
+
     public static Set<Vector> calculateFibonacciSphere(int pointCount, double radius, double angleCutoff) {
         Set<Vector> points = new HashSet<>();
         double y = 1;
@@ -62,7 +63,7 @@ public class MathUtil {
         return points;
     }
 
-    public static Set<Vector> calculateCircle(double radius, double particleDensity, double cutoffAngle){
+    public static Set<Vector> calculateCircle(double radius, double particleDensity, double cutoffAngle) {
         Set<Vector> points = new HashSet<>();
         double stepSize = particleDensity / radius;
         for (double theta = 0; theta < cutoffAngle; theta += stepSize) {
@@ -71,7 +72,7 @@ public class MathUtil {
         return points;
     }
 
-    public static Set<Vector> calculateDisc(double radius, double particleDensity, double cutoffAngle){
+    public static Set<Vector> calculateDisc(double radius, double particleDensity, double cutoffAngle) {
         Set<Vector> points = new HashSet<>();
         for (double subRadius = particleDensity; subRadius < radius; subRadius += particleDensity) {
             points.addAll(calculateCircle(subRadius, particleDensity, cutoffAngle));
@@ -91,12 +92,12 @@ public class MathUtil {
         for (double t = 0; t < loops; t += stepSize) {
             double x = radius * Math.cos(direction * t);
             double z = radius * Math.sin(direction * t);
-            points.add(new Vector(x, t*slope, z));
+            points.add(new Vector(x, t * slope, z));
         }
         return points;
     }
 
-    public static Set<Vector> calculateLine(Vector start, Vector end, double particleDensity){
+    public static Set<Vector> calculateLine(Vector start, Vector end, double particleDensity) {
         Set<Vector> points = new HashSet<>();
         Vector direction = end.clone().subtract(start);
         double length = direction.length();
@@ -112,8 +113,8 @@ public class MathUtil {
     public static Set<Vector> calculateRegularPolygon(double radius, double angle, double particleDensity, boolean wireframe) {
         angle = Math.max(angle, MathUtil.EPSILON);
         Set<Vector> points = new HashSet<>();
-        double apothem = radius * Math.cos(angle/2);
-        double radiusStep = radius / Math.round(apothem/particleDensity);
+        double apothem = radius * Math.cos(angle / 2);
+        double radiusStep = radius / Math.round(apothem / particleDensity);
         if (wireframe) {
             radiusStep = 2 * radius;
         } else {
@@ -121,7 +122,7 @@ public class MathUtil {
         }
         for (double subRadius = radius; subRadius >= 0; subRadius -= radiusStep) {
             Vector vertex = new Vector(subRadius, 0, 0);
-            for (double i = 0; i < 2*Math.PI; i += angle) {
+            for (double i = 0; i < 2 * Math.PI; i += angle) {
                 points.addAll(calculateLine(vertex.clone().rotateAroundY(i), vertex.clone().rotateAroundY(i + angle), particleDensity));
             }
         }
@@ -131,7 +132,7 @@ public class MathUtil {
     public static Set<Vector> calculateRegularPrism(double radius, double angle, double height, double particleDensity, boolean wireframe) {
         Set<Vector> points = new HashSet<>();
         Vector vertex = new Vector(radius, 0, 0);
-        for (double i = 0; i < 2*Math.PI; i += angle) {
+        for (double i = 0; i < 2 * Math.PI; i += angle) {
             Vector currentVertex = vertex.clone().rotateAroundY(i);
             for (Vector vector : calculateLine(currentVertex, vertex.clone().rotateAroundY(i + angle), particleDensity)) {
                 points.add(vector);
@@ -182,9 +183,9 @@ public class MathUtil {
         return points;
     }
 
-    public static Set<Vector> calculateEllipticalDisc(double r1, double r2, double particleDensity, double cutoffAngle){
+    public static Set<Vector> calculateEllipticalDisc(double r1, double r2, double particleDensity, double cutoffAngle) {
         Set<Vector> points = new HashSet<>();
-        int steps = (int) Math.round(Math.max(r1,r2) / particleDensity);
+        int steps = (int) Math.round(Math.max(r1, r2) / particleDensity);
         double r;
         for (double i = 1; i <= steps; i += 1) {
             r = i / steps;
@@ -227,7 +228,7 @@ public class MathUtil {
         double angleStep = 4 / 3.0 * particleDensity / (width + height);
         for (double theta = 0; theta < Math.PI * 2; theta += angleStep) {
             double x = width * Math.pow(Math.sin(theta), 3);
-            double y = height * (Math.cos(theta) - 1/eccentricity * Math.cos(2*theta) - 1.0/6 * Math.cos(3*theta) - 1.0/16 * Math.cos(4*theta));
+            double y = height * (Math.cos(theta) - 1 / eccentricity * Math.cos(2 * theta) - 1.0 / 6 * Math.cos(3 * theta) - 1.0 / 16 * Math.cos(4 * theta));
             points.add(new Vector(x, 0, y));
         }
         return points;
@@ -237,10 +238,10 @@ public class MathUtil {
         Set<Vector> points = new HashSet<>();
         Vector outerVertex = new Vector(outerRadius, 0, 0);
         Vector innerVertex = new Vector(innerRadius, 0, 0);
-        for (double theta = 0; theta < 2*Math.PI; theta += angle) {
+        for (double theta = 0; theta < 2 * Math.PI; theta += angle) {
             Vector currentVertex = outerVertex.clone().rotateAroundY(theta);
-            points.addAll(calculateLine(currentVertex, innerVertex.clone().rotateAroundY(theta + angle/2), particleDensity));
-            points.addAll(calculateLine(currentVertex, innerVertex.clone().rotateAroundY(theta - angle/2), particleDensity));
+            points.addAll(calculateLine(currentVertex, innerVertex.clone().rotateAroundY(theta + angle / 2), particleDensity));
+            points.addAll(calculateLine(currentVertex, innerVertex.clone().rotateAroundY(theta - angle / 2), particleDensity));
         }
         return points;
     }

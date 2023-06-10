@@ -25,10 +25,10 @@ import java.util.List;
 @Description({
         "Creates a line shape between points, or in a direction for a given length. The length must be greater than 0.",
         "When defining a line from points, the points can either be vectors or locations/entities. Each point in the first set will connect to each point in the second set. " +
-        "You can use the third pattern to connect points in series, like a path along the points.",
+                "You can use the third pattern to connect points in series, like a path along the points.",
         "",
         "You cannot use both vectors and locations/entities, but you can mix and match locations and entities." +
-        "When using locations, this is a shape that can be drawn without a specific location. It will be drawn between the two given locations.",
+                "When using locations, this is a shape that can be drawn without a specific location. It will be drawn between the two given locations.",
         "If using vectors, or a direction and length, the shape does require a location to be drawn at."
 })
 @Examples({
@@ -104,7 +104,7 @@ public class ExprLine extends SimpleExpression<Line> {
                         }
                         // if neither are vectors, create a dynamic line
                         DynamicLocation startPoint = DynamicLocation.fromLocationEntity(startObject);
-                        DynamicLocation endPoint  = DynamicLocation.fromLocationEntity(endObject);
+                        DynamicLocation endPoint = DynamicLocation.fromLocationEntity(endObject);
                         if (endPoint == null || startPoint == null) {
                             continue;
                         }
@@ -169,7 +169,8 @@ public class ExprLine extends SimpleExpression<Line> {
     public String toString(@Nullable Event event, boolean debug) {
         return switch (matchedPattern) {
             case 0 -> "a line from " + start.toString(event, debug) + " to " + end.toString(event, debug);
-            case 1 -> "a line in direction " + direction.toString(event, debug) + " with length " + length.toString(event, debug);
+            case 1 ->
+                    "a line in direction " + direction.toString(event, debug) + " with length " + length.toString(event, debug);
             case 2 -> "a line connecting " + points.toString(event, debug);
             default -> "a line";
         };

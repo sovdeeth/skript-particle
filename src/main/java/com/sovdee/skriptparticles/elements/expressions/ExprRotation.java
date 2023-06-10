@@ -14,7 +14,6 @@ import ch.njol.util.Kleenean;
 import com.sovdee.skriptparticles.util.Quaternion;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
-
 import org.jetbrains.annotations.Nullable;
 
 @Name("Rotation")
@@ -31,7 +30,7 @@ public class ExprRotation extends SimpleExpression<Quaternion> {
     static {
         Skript.registerExpression(ExprRotation.class, Quaternion.class, ExpressionType.COMBINED,
                 "[the|a] rotation (from|around) [the] [vector] %vector% (with|by) [[the|an] angle [of]] %number% [degrees|:radians]",
-                        "[the|a] rotation (from|between) %vector% (to|and) %vector%");
+                "[the|a] rotation (from|between) %vector% (to|and) %vector%");
     }
 
     private Expression<Number> angle;

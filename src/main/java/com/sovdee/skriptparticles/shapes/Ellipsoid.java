@@ -10,14 +10,12 @@ import java.util.Set;
 
 public class Ellipsoid extends AbstractShape implements LWHShape {
 
+    private static final Quaternion XY_ROTATION = new Quaternion(new Vector(1, 0, 0), (float) (Math.PI / 2));
+    private static final Quaternion ZY_ROTATION = new Quaternion(new Vector(0, 0, 1), (float) (Math.PI / 2));
     protected double xRadius;
     protected double yRadius;
     protected double zRadius;
 
-
-    private static final Quaternion XY_ROTATION = new Quaternion(new Vector(1,0,0), (float) (Math.PI / 2));
-    private static final Quaternion ZY_ROTATION = new Quaternion(new Vector(0,0,1), (float) (Math.PI / 2));
-    
     public Ellipsoid(double xRadius, double yRadius, double zRadius) {
         super();
         this.xRadius = xRadius;
@@ -28,9 +26,9 @@ public class Ellipsoid extends AbstractShape implements LWHShape {
     @Override
     public Set<Vector> generateOutline() {
         HashSet<Vector> points = new HashSet<>();
-        points.addAll(MathUtil.calculateEllipse(xRadius, zRadius, particleDensity, 2*Math.PI));
-        points.addAll(XY_ROTATION.transform(MathUtil.calculateEllipse(xRadius, yRadius, particleDensity, 2*Math.PI)));
-        points.addAll(ZY_ROTATION.transform(MathUtil.calculateEllipse(yRadius, zRadius, particleDensity, 2*Math.PI)));
+        points.addAll(MathUtil.calculateEllipse(xRadius, zRadius, particleDensity, 2 * Math.PI));
+        points.addAll(XY_ROTATION.transform(MathUtil.calculateEllipse(xRadius, yRadius, particleDensity, 2 * Math.PI)));
+        points.addAll(ZY_ROTATION.transform(MathUtil.calculateEllipse(yRadius, zRadius, particleDensity, 2 * Math.PI)));
         return points;
     }
 
@@ -51,7 +49,7 @@ public class Ellipsoid extends AbstractShape implements LWHShape {
         List<Vector> ellipse;
         double radius = Math.max(xRadius, zRadius);
         int steps = (int) Math.round(radius / particleDensity);
-        for (int i = steps; i > 0; i--){
+        for (int i = steps; i > 0; i--) {
             double r = (i / (double) steps);
             if (xRadius > zRadius) {
                 ellipse = XY_ROTATION.transform(MathUtil.calculateEllipse(xRadius * r, yRadius * r, particleDensity, 2 * Math.PI));
@@ -68,12 +66,12 @@ public class Ellipsoid extends AbstractShape implements LWHShape {
         for (int i = 0; i < Math.ceil(ellipse.size() / 4.0); i++) {
             double y = ellipse.get(i).getY();
             double theta = Math.asin(y / (yRadius * r));
-            for (Vector v2 : MathUtil.calculateEllipse(r * xRadius * Math.cos(theta), r * zRadius * Math.cos(theta), particleDensity, 2*Math.PI)){
+            for (Vector v2 : MathUtil.calculateEllipse(r * xRadius * Math.cos(theta), r * zRadius * Math.cos(theta), particleDensity, 2 * Math.PI)) {
                 points.add(new Vector(v2.getX(), y, v2.getZ()));
                 points.add(new Vector(v2.getX(), -y, v2.getZ()));
             }
         }
-        points.addAll(MathUtil.calculateEllipse(r * xRadius, r * zRadius, particleDensity, 2*Math.PI));
+        points.addAll(MathUtil.calculateEllipse(r * xRadius, r * zRadius, particleDensity, 2 * Math.PI));
         return points;
     }
 
@@ -107,25 +105,25 @@ public class Ellipsoid extends AbstractShape implements LWHShape {
     }
 
     @Override
-    public double getWidth() {
-        return zRadius * 2;
-    }
-
-    @Override
-    public double getHeight() {
-        return yRadius * 2;
-    }
-
-    @Override
     public void setLength(double length) {
         xRadius = Math.max(length / 2, MathUtil.EPSILON);
         needsUpdate = true;
     }
 
     @Override
+    public double getWidth() {
+        return zRadius * 2;
+    }
+
+    @Override
     public void setWidth(double width) {
         zRadius = Math.max(width / 2, MathUtil.EPSILON);
         needsUpdate = true;
+    }
+
+    @Override
+    public double getHeight() {
+        return yRadius * 2;
     }
 
     @Override

@@ -9,28 +9,28 @@ public interface LWHShape extends Shape {
     double getLength();
 
     /*
-     * Gets the width of the shape
-     * @return The width of the shape
-     */
-    double getWidth();
-
-    /*
-     * Gets the height of the shape
-     * @return The height of the shape
-     */
-    double getHeight();
-
-    /*
      * Sets the length of the shape
      * @param length The length of the shape
      */
     void setLength(double length);
 
     /*
+     * Gets the width of the shape
+     * @return The width of the shape
+     */
+    double getWidth();
+
+    /*
      * Sets the width of the shape
      * @param width The width of the shape
      */
     void setWidth(double width);
+
+    /*
+     * Gets the height of the shape
+     * @return The height of the shape
+     */
+    double getHeight();
 
     /*
      * Sets the height of the shape

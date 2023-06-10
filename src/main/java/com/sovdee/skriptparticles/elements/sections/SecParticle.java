@@ -11,14 +11,24 @@ import com.sovdee.skriptparticles.particles.Particle;
 import com.sovdee.skriptparticles.particles.ParticleMotion;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.Nullable;
 import org.skriptlang.skript.lang.entry.EntryContainer;
 import org.skriptlang.skript.lang.entry.EntryValidator;
 import org.skriptlang.skript.lang.entry.util.ExpressionEntryData;
 
-import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public class SecParticle extends Section {
+    public static Particle lastCreatedParticle;
+    private static final EntryValidator validator = EntryValidator.builder()
+            .addEntryData(new ExpressionEntryData<>("count", null, false, Number.class))
+            .addEntryData(new ExpressionEntryData<>("offset", null, true, Vector.class))
+            .addEntryData(new ExpressionEntryData<>("velocity", null, true, ParticleMotion.class))
+            .addEntryData(new ExpressionEntryData<>("extra", null, true, Number.class))
+            .addEntryData(new ExpressionEntryData<>("data", null, true, Object.class))
+            .addEntryData(new ExpressionEntryData<>("force", null, true, Boolean.class))
+            .build();
+
     // Particle section
     // create a new %particle% [particle]:
     //- count: int
@@ -31,16 +41,6 @@ public class SecParticle extends Section {
     static {
         Skript.registerSection(SecParticle.class, "create [a] [new] custom %particle% [particle]");
     }
-
-    public static Particle lastCreatedParticle;
-    private static EntryValidator validator = EntryValidator.builder()
-            .addEntryData(new ExpressionEntryData<>("count", null, false, Number.class))
-            .addEntryData(new ExpressionEntryData<>("offset", null, true, Vector.class))
-            .addEntryData(new ExpressionEntryData<>("velocity", null, true, ParticleMotion.class))
-            .addEntryData(new ExpressionEntryData<>("extra", null, true, Number.class))
-            .addEntryData(new ExpressionEntryData<>("data", null, true, Object.class))
-            .addEntryData(new ExpressionEntryData<>("force", null, true, Boolean.class))
-            .build();
 
     private Expression<org.bukkit.Particle> particle;
     private Expression<Number> count;

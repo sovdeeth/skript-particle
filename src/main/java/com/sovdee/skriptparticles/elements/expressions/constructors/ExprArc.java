@@ -68,7 +68,7 @@ public class ExprArc extends SimpleExpression<Arc> {
 
         if (angle instanceof Literal<Number> literal) {
             double c = literal.getSingle().doubleValue();
-            if (c <= 0 || c > 360){
+            if (c <= 0 || c > 360) {
                 Skript.error("The cutoff angle of the arc must be between 0 and 360. (angle: " + c + ")");
                 return false;
             }
@@ -112,7 +112,7 @@ public class ExprArc extends SimpleExpression<Arc> {
 
     @Override
     public String toString(@Nullable Event event, boolean debug) {
-        return  (isSector ? "sector" : "arc") +
+        return (isSector ? "sector" : "arc") +
                 " with radius " + radius.toString(event, debug) +
                 " and angle " + angle.toString(event, debug) +
                 (isRadians ? " radians " : " degrees ");

@@ -11,7 +11,6 @@ import com.sovdee.skriptparticles.particles.Particle;
 import com.sovdee.skriptparticles.shapes.Shape;
 import com.sovdee.skriptparticles.util.ParticleUtil;
 import org.bukkit.event.Event;
-
 import org.jetbrains.annotations.Nullable;
 
 @Name("Shape Particle")

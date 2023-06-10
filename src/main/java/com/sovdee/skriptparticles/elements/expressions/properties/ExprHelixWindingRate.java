@@ -33,7 +33,7 @@ public class ExprHelixWindingRate extends SimplePropertyExpression<Shape, Number
     @Nullable
     public Number convert(Shape shape) {
         if (shape instanceof Helix helix)
-            return  1 / (2 * Math.PI * helix.getSlope());
+            return 1 / (2 * Math.PI * helix.getSlope());
         return null;
     }
 

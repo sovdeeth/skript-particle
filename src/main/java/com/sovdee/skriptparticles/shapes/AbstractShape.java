@@ -20,6 +20,7 @@ import java.util.UUID;
 
 public abstract class AbstractShape implements Shape {
 
+    private final UUID uuid;
     protected Set<Vector> points;
     protected Style style;
     protected Quaternion orientation;
@@ -27,7 +28,6 @@ public abstract class AbstractShape implements Shape {
     protected double scale;
     protected Vector offset;
     protected DynamicLocation location;
-    private final UUID uuid;
     protected Particle particle;
     protected double particleDensity = 0.25;
 
@@ -62,6 +62,14 @@ public abstract class AbstractShape implements Shape {
         return getPoints(this.orientation);
     }
 
+    /*
+     * Sets the points for the shape.
+     */
+    @Override
+    public void setPoints(Set<Vector> points) {
+        this.points = points;
+    }
+
     @Override
     public Set<Vector> getPoints(Quaternion orientation) {
         State state = getState(orientation);
@@ -77,14 +85,6 @@ public abstract class AbstractShape implements Shape {
             needsUpdate = false;
         }
         return points;
-    }
-
-    /*
-     * Sets the points for the shape.
-     */
-    @Override
-    public void setPoints(Set<Vector> points) {
-        this.points = points;
     }
 
     /*
@@ -106,7 +106,7 @@ public abstract class AbstractShape implements Shape {
      * @return A set of points that make up the shape.
      */
     @Override
-    public Set<Vector> generateSurface(){
+    public Set<Vector> generateSurface() {
         return generateOutline();
     }
 
@@ -116,7 +116,7 @@ public abstract class AbstractShape implements Shape {
      * @return A set of points that make up the shape.
      */
     @Override
-    public Set<Vector> generateFilled(){
+    public Set<Vector> generateFilled() {
         return generateSurface();
     }
 
@@ -322,19 +322,19 @@ public abstract class AbstractShape implements Shape {
     }
 
     /*
-     * Sets the location of the shape. This is used as a fallback if the shape is drawn without a location.
-     */
-    @Override
-    public void setLocation(DynamicLocation location) {
-        this.location = location.clone();
-    }
-
-    /*
      * @Returns the location of the shape.
      */
     @Override
     public DynamicLocation getLocation() {
         return location.clone();
+    }
+
+    /*
+     * Sets the location of the shape. This is used as a fallback if the shape is drawn without a location.
+     */
+    @Override
+    public void setLocation(DynamicLocation location) {
+        this.location = location.clone();
     }
 
     /*
@@ -412,7 +412,7 @@ public abstract class AbstractShape implements Shape {
      * @Returns the updated new shape.
      */
     @Override
-    public Shape copyTo(Shape shape){
+    public Shape copyTo(Shape shape) {
         shape.setOrientation(this.orientation);
         shape.setScale(this.scale);
         shape.setOffset(this.offset);
@@ -429,7 +429,7 @@ public abstract class AbstractShape implements Shape {
         shape.setNeedsUpdate(this.needsUpdate);
         shape.setLastState(this.lastState);
         return shape;
-    };
+    }
 
     /*
      * Gets the physical state of a shape, represented by its style, orientation, scale, offset, and particle density.

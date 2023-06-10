@@ -27,7 +27,7 @@ public class Star extends AbstractShape {
     public Set<Vector> generateSurface() {
         Set<Vector> points = new HashSet<>();
         double minRadius = Math.min(innerRadius, outerRadius);
-        for (double r = 0; r < minRadius; r += particleDensity){
+        for (double r = 0; r < minRadius; r += particleDensity) {
             points.addAll(MathUtil.calculateStar(innerRadius - r, outerRadius - r, angle, particleDensity));
         }
         return points;
