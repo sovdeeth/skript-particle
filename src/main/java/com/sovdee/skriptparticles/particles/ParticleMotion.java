@@ -15,14 +15,14 @@ public enum ParticleMotion {
     public Vector getMotionVector(Vector axis, Vector point) {
         return switch (this) {
             case NONE -> DEFAULT_MOTION.clone();
-            case CLOCKWISE -> getClockwiseMotion(axis, point);
-            case COUNTERCLOCKWISE -> getClockwiseMotion(axis, point).multiply(-1);
+            case CLOCKWISE -> getAntiClockwiseMotion(axis, point).multiply(-1);
+            case COUNTERCLOCKWISE -> getAntiClockwiseMotion(axis, point);
             case INWARDS -> getOutwardsMotion(point).multiply(-1);
             case OUTWARDS -> getOutwardsMotion(point);
         };
     }
 
-    private Vector getClockwiseMotion(Vector axis, Vector point) {
+    private Vector getAntiClockwiseMotion(Vector axis, Vector point) {
         return axis.getCrossProduct(point);
     }
 
