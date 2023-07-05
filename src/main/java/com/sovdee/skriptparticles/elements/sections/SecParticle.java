@@ -6,6 +6,7 @@ import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.Section;
 import ch.njol.skript.lang.SkriptParser;
 import ch.njol.skript.lang.TriggerItem;
+import ch.njol.skript.util.LiteralUtils;
 import ch.njol.util.Kleenean;
 import com.sovdee.skriptparticles.particles.Particle;
 import com.sovdee.skriptparticles.particles.ParticleMotion;
@@ -23,7 +24,7 @@ public class SecParticle extends Section {
     private static final EntryValidator validator = EntryValidator.builder()
             .addEntryData(new ExpressionEntryData<>("count", null, false, Number.class))
             .addEntryData(new ExpressionEntryData<>("offset", null, true, Vector.class))
-            .addEntryData(new ExpressionEntryData<>("velocity", null, true, ParticleMotion.class))
+            .addEntryData(new ExpressionEntryData<>("velocity", null, true, Object.class))
             .addEntryData(new ExpressionEntryData<>("extra", null, true, Number.class))
             .addEntryData(new ExpressionEntryData<>("data", null, true, Object.class))
             .addEntryData(new ExpressionEntryData<>("force", null, true, Boolean.class))
@@ -55,17 +56,19 @@ public class SecParticle extends Section {
         EntryContainer entryContainer = validator.validate(sectionNode);
         if (entryContainer == null)
             return false;
-        particle = (Expression<org.bukkit.Particle>) exprs[0];
-        count = (Expression<Number>) entryContainer.get("count", false);
-        offset = (Expression<Vector>) entryContainer.getOptional("offset", true);
-        velocity = (Expression<?>) entryContainer.getOptional("velocity", true);
-        extra = (Expression<Number>) entryContainer.getOptional("extra", true);
-        data = (Expression<Object>) entryContainer.getOptional("data", true);
-        force = (Expression<Boolean>) entryContainer.getOptional("force", true);
+        particle = LiteralUtils.defendExpression((Expression<org.bukkit.Particle>) exprs[0]);
+        count = LiteralUtils.defendExpression((Expression<Number>) entryContainer.get("count", false));
+        offset = LiteralUtils.defendExpression((Expression<Vector>) entryContainer.getOptional("offset", true));
+        velocity = LiteralUtils.defendExpression((Expression<?>) entryContainer.getOptional("velocity", true));
+        extra = LiteralUtils.defendExpression((Expression<Number>) entryContainer.getOptional("extra", true));
+        data = LiteralUtils.defendExpression((Expression<Object>) entryContainer.getOptional("data", true));
+        force = LiteralUtils.defendExpression((Expression<Boolean>) entryContainer.getOptional("force", true));
         if (offset != null && velocity != null) {
             Skript.error("You cannot have both an offset and a velocity for a particle!");
             return false;
         }
+
+
         return true;
     }
 

@@ -10,6 +10,7 @@ import ch.njol.skript.registrations.Classes;
 import ch.njol.skript.registrations.DefaultClasses;
 import ch.njol.skript.util.Color;
 import ch.njol.skript.util.Timespan;
+import com.sovdee.skriptparticles.particles.ParticleMotion;
 import com.sovdee.skriptparticles.util.ParticleUtil;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -90,6 +91,44 @@ public class ParticleTypes {
                     @Override
                     public @NotNull String toVariableNameString(com.sovdee.skriptparticles.particles.Particle particle) {
                         return "particle:" + toString(particle, 0);
+                    }
+                })
+        );
+
+        // Particle motion class
+        Classes.registerClass(new ClassInfo<>(ParticleMotion.class, "particlemotion")
+                .user("particle ?motions?")
+                .name("Particle Motion")
+                .description("Represents the motion of a particle relative to a shape, ie: inwards, outwards, clockwise, etc.")
+                .parser(new Parser<>() {
+
+                    @SuppressWarnings("NullableProblems")
+                    @Nullable
+                    @Override
+                    public ParticleMotion parse(String s, ParseContext context) {
+                        return switch (s.toLowerCase()) {
+                            case "inwards motion" -> ParticleMotion.INWARDS;
+                            case "outwards motion" -> ParticleMotion.OUTWARDS;
+                            case "clockwise motion" -> ParticleMotion.CLOCKWISE;
+                            case "counterclockwise motion" -> ParticleMotion.COUNTERCLOCKWISE;
+                            case "no motion" -> ParticleMotion.NONE;
+                            default -> null;
+                        };
+                    }
+
+                    @Override
+                    public boolean canParse(ParseContext context) {
+                        return true;
+                    }
+
+                    @Override
+                    public @NotNull String toString(ParticleMotion particleMotion, int flags) {
+                        return particleMotion.toString();
+                    }
+
+                    @Override
+                    public @NotNull String toVariableNameString(ParticleMotion particle) {
+                        return "particle motion:" + toString(particle, 0);
                     }
                 })
         );
