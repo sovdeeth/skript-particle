@@ -56,7 +56,7 @@ public class SecParticle extends Section {
         EntryContainer entryContainer = validator.validate(sectionNode);
         if (entryContainer == null)
             return false;
-        particle = LiteralUtils.defendExpression((Expression<org.bukkit.Particle>) exprs[0]);
+        particle = LiteralUtils.defendExpression(exprs[0]);
         count = LiteralUtils.defendExpression((Expression<Number>) entryContainer.get("count", false));
         offset = LiteralUtils.defendExpression((Expression<Vector>) entryContainer.getOptional("offset", true));
         velocity = LiteralUtils.defendExpression((Expression<?>) entryContainer.getOptional("velocity", true));

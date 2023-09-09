@@ -6,7 +6,7 @@ plugins {
 }
 
 group 'com.sovdee'
-version '1.0.2-BETA'
+version '1.1.0'
 project.ext.jomlVersion = "1.10.5"
 
 configurations.all {
@@ -25,7 +25,7 @@ repositories {
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.17.1-R0.1-SNAPSHOT")
-    compileOnly("com.github.SkriptLang:Skript:2.7.0-beta2")
+    compileOnly("com.github.SkriptLang:Skript:2.7.0")
     shadow "org.bstats:bstats-bukkit:3.0.2"
     implementation "org.joml:joml:${jomlVersion}"
 }

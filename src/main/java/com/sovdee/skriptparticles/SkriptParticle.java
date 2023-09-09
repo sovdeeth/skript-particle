@@ -15,9 +15,8 @@ public class SkriptParticle extends JavaPlugin {
     private static Logger logger;
 
 
-    // todo before release
+    // todo, next release
     // custom shapes
-    // particle motion
     // icosphere
     // todo, later versions
     // beziers
