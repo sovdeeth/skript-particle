@@ -16,6 +16,8 @@ You can find help, give suggestions, or voice complaints in the [Issues tab here
  This allows the definition of a bunch of shapes that only need to be defined once and can then be drawn in many places and in many rotations. 
  Since shapes can be rotated as a group, it's also very simple to change the rotation and orientation of your shapes with a single line.
 
+ ### Syntax available on [skUnity](https://docs.skunity.com/syntax/search/addon:skript-particle)
+
 Here's some example code:
 ```
 command /magic:
@@ -84,12 +86,7 @@ command /magic:
  - Animation:
    - Ability to stretch out drawing a shape over a timespan
    - Set up a pre-made animation in a custom structure, play back with one draw call 
- - Better particle syntax:
-   - Particle motion tag, to allow motions based on the shape: inwards, outwards, clockwise, counter-clockwise
 
- # Syntax
-See the github wiki for syntax information.
- 
 ![2022-08-28_00 10 57](https://user-images.githubusercontent.com/10354869/187062233-5f51ba7b-60f4-44f8-bf6b-862a4e2381fd.png)
 
 
