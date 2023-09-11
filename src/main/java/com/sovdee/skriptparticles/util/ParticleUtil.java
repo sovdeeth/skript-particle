@@ -25,6 +25,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/*
+ * Thanks to ShaneBee at SkBee for the original code.
+ */
 public class ParticleUtil {
 
     private static final Map<String, Particle> PARTICLES = new HashMap<>();

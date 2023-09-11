@@ -31,17 +31,17 @@ public class ParticleTypes {
             Classes.registerClass(new ClassInfo<>(Particle.class, "particle")
                     .user("particles?")
                     .name("Particle")
-                    .description("A mirror of SkBee's Particle type. For use when SkBee is not installed.\n" +
-                                    "Represents a particle which can be used as a shape's particle, or in the Draw Particle and Particle Spawn effects.",
+                    .description("A mirror of SkBee's Particle type. For use when SkBee is not installed.",
+                            "Represents a particle which can be used as a shape's particle, or in the Draw Particle and Particle Spawn effects.",
                             "Some particles require extra data, these are distinguished by their data type within the square brackets.",
                             "DustOption, DustTransition and Vibration each have their own functions to build the appropriate data for these particles.")
                     .usage(ParticleUtil.getNamesAsString())
-                    .examples("play 1 of soul at location of player",
-                            "play 10 of dust using dustOption(green, 10) at location of player",
-                            "play 3 of item using player's tool at location of player",
-                            "play 1 of block using dirt at location of player",
-                            "play 1 of dust_color_transition using dustTransition(blue, green, 3) at location of player",
-                            "play 1 of vibration using vibration({loc1}, {loc2}, 1 second) at {loc1}")
+                    .examples("draw 1 of soul at location of player",
+                            "draw 10 of dust using dustOption(green, 10) at location of player",
+                            "draw 3 of item using player's tool at location of player",
+                            "draw 1 of block using dirt at location of player",
+                            "draw 1 of dust_color_transition using dustTransition(blue, green, 3) at location of player",
+                            "draw 1 of vibration using vibration({loc1}, {loc2}, 1 second) at {loc1}")
                     .since("1.0.0")
                     .parser(new Parser<>() {
 

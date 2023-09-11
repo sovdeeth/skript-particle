@@ -2,6 +2,10 @@ package com.sovdee.skriptparticles.elements.sections;
 
 import ch.njol.skript.Skript;
 import ch.njol.skript.config.SectionNode;
+import ch.njol.skript.doc.Description;
+import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Name;
+import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.Section;
 import ch.njol.skript.lang.SkriptParser;
@@ -19,6 +23,28 @@ import org.skriptlang.skript.lang.entry.util.ExpressionEntryData;
 
 import java.util.List;
 
+@Name("Custom Particle Section")
+@Description({
+        "This section can be used in conjunction with the `last created particle` expression to create custom particles.",
+        "The particle can be any custom particle from skript-particle or from skbee.",
+        "Fields include:",
+        "\tcount: integer - the number of particles to create (required)",
+        "\toffset: vector - the offset value of the particle. See the Minecraft wiki on /particle for more info. (default: 0, 0, 0)",
+        "\tvelocity: vector - the velocity of the particle. Can be a vector or a motion (inwards/clockwise/etc.). (default: 0, 0, 0)",
+        "\textra: number - the extra value of the particle. Forces `count` to be 0 and cannot be combined with `offset`. " +
+                "See the Minecraft wiki on /particle for more info. (default: 0)",
+        "\tdata: object - the data value of the particle. See the Minecraft wiki on /particle for more info. (default: null)",
+        "\tforce: boolean - whether or not to force the particle to be seen at long range. (default: false)"
+})
+@Examples({
+        "create a new custom electric spark particle with:",
+        "\tcount: 10",
+        "\toffset: vector(1, 1, 1)",
+        "\textra: 0.2",
+        "\tforce: true",
+        "set {_particle} to last created particle",
+})
+@Since("1.0.2")
 public class SecParticle extends Section {
     public static Particle lastCreatedParticle;
     private static final EntryValidator validator = EntryValidator.builder()

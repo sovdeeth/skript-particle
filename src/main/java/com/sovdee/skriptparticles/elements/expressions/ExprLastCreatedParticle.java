@@ -1,6 +1,10 @@
 package com.sovdee.skriptparticles.elements.expressions;
 
 import ch.njol.skript.Skript;
+import ch.njol.skript.doc.Description;
+import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Name;
+import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.ExpressionType;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
@@ -11,6 +15,10 @@ import com.sovdee.skriptparticles.particles.Particle;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
 
+@Name("Last Created Particle")
+@Description("Returns the last particle created with the custom particle section.")
+@Examples("set {_particle} to last created particle")
+@Since("1.0.2")
 public class ExprLastCreatedParticle extends SimpleExpression<Particle> {
 
     static {
@@ -24,7 +32,7 @@ public class ExprLastCreatedParticle extends SimpleExpression<Particle> {
 
     @Override
     @Nullable
-    protected Particle[] get(Event e) {
+    protected Particle[] get(Event evente) {
         return new Particle[]{SecParticle.lastCreatedParticle};
     }
 
