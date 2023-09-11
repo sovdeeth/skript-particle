@@ -16,7 +16,7 @@ You can find help, give suggestions, or voice complaints in the [Issues tab here
  This allows the definition of a bunch of shapes that only need to be defined once and can then be drawn in many places and in many rotations. 
  Since shapes can be rotated as a group, it's also very simple to change the rotation and orientation of your shapes with a single line.
 
- ### Syntax available on [skUnity](https://docs.skunity.com/syntax/search/addon:skript-particle)
+ ### Syntax available on [skUnity](https://docs.skunity.com/syntax/search/addon:skript-particle) and [SkriptHub](http://skripthub.net/docs/?addon=Skript-Particle)
 
 Here's some example code:
 ```
