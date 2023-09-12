@@ -55,6 +55,7 @@ public class SkriptParticle extends JavaPlugin {
     public void onEnable() {
         instance = this;
         addon = Skript.registerAddon(this);
+        addon.setLanguageFileDirectory("lang");
         logger = this.getLogger();
         try {
             addon.loadClasses("com.sovdee.skriptparticles");

@@ -100,7 +100,7 @@ public class ExprHeart extends SimpleExpression<Heart> {
     }
 
     @Override
-    public String toString(@Nullable Event event, boolean b) {
-        return "a heart shape with width " + width.toString(event, b) + ", height " + length.toString(event, b) + ", and eccentricity " + eccentricity.toString(event, b) + ".";
+    public String toString(@Nullable Event event, boolean debug) {
+        return "a heart shape with width " + width.toString(event, debug) + ", height " + length.toString(event, debug) + (eccentricity == null ? "" : ", and eccentricity " + eccentricity.toString(event, debug) + ".");
     }
 }

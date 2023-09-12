@@ -99,6 +99,6 @@ public class ExprIrregularPolygon extends SimpleExpression<IrregularPolygon> {
 
     @Override
     public String toString(@Nullable Event event, boolean debug) {
-        return "2d polygon from points " + points.toString(event, debug) + " and height " + height.toString(event, debug);
+        return "2d polygon from points " + points.toString(event, debug) + " and height " + (height == null ? 0 : height.toString(event, debug));
     }
 }

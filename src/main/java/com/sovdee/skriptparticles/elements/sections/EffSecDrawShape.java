@@ -71,8 +71,8 @@ public class EffSecDrawShape extends EffectSection {
 
     static {
         Skript.registerSection(EffSecDrawShape.class,
-                "[sync:sync[hronously]] draw [shape[s]] %shapes% [%-directions% %-locations/entities%] [to %-players%]",
-                "draw [shape[s]] %shapes% [%-directions% %-locations/entities%] [to %-players%] (duration:for) [duration] %timespan% [with (delay|refresh [rate]) [of] %-timespan%]"
+                "[sync:sync[hronously]] draw shape[s] %shapes% [%-directions% %-locations/entities%] [to %-players%]",
+                "draw shape[s] %shapes% [%-directions% %-locations/entities%] [to %-players%] (duration:for) [duration] %timespan% [with (delay|refresh [rate]) [of] %-timespan%]"
         );
         EventValues.registerEventValue(EffSecDrawShape.DrawEvent.class, Shape.class, new Getter<>() {
             @Override

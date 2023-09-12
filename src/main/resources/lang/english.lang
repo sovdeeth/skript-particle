@@ -1,0 +1,11 @@
+version: @version@
+
+types:
+    customparticle: custom particle¦s
+    particlemotion: particle motion¦s
+    shape: shape¦s
+    radialshape: radial shape¦s
+    lwhshape: length/width/height shape¦s
+    cutoffshape: cutoff shape¦s
+    polyshape: polygonal shape¦s
+    shapestyle: shape style¦s
