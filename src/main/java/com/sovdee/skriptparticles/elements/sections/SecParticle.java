@@ -10,10 +10,12 @@ import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.Section;
 import ch.njol.skript.lang.SkriptParser;
 import ch.njol.skript.lang.TriggerItem;
+import ch.njol.skript.lang.util.SimpleLiteral;
 import ch.njol.skript.util.LiteralUtils;
 import ch.njol.util.Kleenean;
 import com.sovdee.skriptparticles.particles.Particle;
 import com.sovdee.skriptparticles.particles.ParticleMotion;
+import com.sovdee.skriptparticles.util.ParticleUtil;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
@@ -28,27 +30,27 @@ import java.util.List;
         "This section can be used in conjunction with the `last created particle` expression to create custom particles.",
         "The particle can be any custom particle from skript-particle or from skbee.",
         "Fields include:",
-        "\tcount: integer - the number of particles to create (required)",
-        "\toffset: vector - the offset value of the particle. See the Minecraft wiki on /particle for more info. (default: 0, 0, 0)",
-        "\tvelocity: vector - the velocity of the particle. Can be a vector or a motion (inwards/clockwise/etc.). (default: 0, 0, 0)",
-        "\textra: number - the extra value of the particle. Forces `count` to be 0 and cannot be combined with `offset`. " +
-                "See the Minecraft wiki on /particle for more info. (default: 0)",
-        "\tdata: object - the data value of the particle. See the Minecraft wiki on /particle for more info. (default: null)",
-        "\tforce: boolean - whether or not to force the particle to be seen at long range. (default: false)"
+            "\tcount: integer - the number of particles to create (required)",
+            "\toffset: vector - the offset value of the particle. See the Minecraft wiki on /particle for more info. (default: 0, 0, 0)",
+            "\tvelocity: vector - the velocity of the particle. Can be a vector or a motion (inwards/clockwise/etc.). (default: 0, 0, 0)",
+            "\textra: number - the extra value of the particle. Forces `count` to be 0 and cannot be combined with `offset`. " +
+                    "See the Minecraft wiki on /particle for more info. (default: 0)",
+            "\tdata: object - the data value of the particle. See the Minecraft wiki on /particle for more info. (default: null)",
+            "\tforce: boolean - whether or not to force the particle to be seen at long range. (default: false)"
 })
 @Examples({
         "create a new custom electric spark particle with:",
-        "\tcount: 10",
-        "\toffset: vector(1, 1, 1)",
-        "\textra: 0.2",
-        "\tforce: true",
+            "\tcount: 10",
+            "\toffset: vector(1, 1, 1)",
+            "\textra: 0.2",
+            "\tforce: true",
         "set {_particle} to last created particle",
 })
 @Since("1.0.2")
 public class SecParticle extends Section {
     public static Particle lastCreatedParticle;
     private static final EntryValidator validator = EntryValidator.builder()
-            .addEntryData(new ExpressionEntryData<>("count", null, false, Number.class))
+            .addEntryData(new ExpressionEntryData<>("count", new SimpleLiteral<>(1, false), false, Number.class))
             .addEntryData(new ExpressionEntryData<>("offset", null, true, Vector.class))
             .addEntryData(new ExpressionEntryData<>("velocity", null, true, Object.class))
             .addEntryData(new ExpressionEntryData<>("extra", null, true, Number.class))
@@ -78,22 +80,39 @@ public class SecParticle extends Section {
     private Expression<Boolean> force;
 
     @Override
-    public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, SkriptParser.ParseResult parseResult, SectionNode sectionNode, List<TriggerItem> triggerItems) {
+    public boolean init(Expression<?>[] expressions, int matchedPattern, Kleenean isDelayed, SkriptParser.ParseResult parseResult, SectionNode sectionNode, List<TriggerItem> triggerItems) {
         EntryContainer entryContainer = validator.validate(sectionNode);
         if (entryContainer == null)
             return false;
-        particle = LiteralUtils.defendExpression(exprs[0]);
-        count = LiteralUtils.defendExpression((Expression<Number>) entryContainer.get("count", false));
-        offset = LiteralUtils.defendExpression((Expression<Vector>) entryContainer.getOptional("offset", true));
-        velocity = LiteralUtils.defendExpression((Expression<?>) entryContainer.getOptional("velocity", true));
-        extra = LiteralUtils.defendExpression((Expression<Number>) entryContainer.getOptional("extra", true));
-        data = LiteralUtils.defendExpression((Expression<Object>) entryContainer.getOptional("data", true));
-        force = LiteralUtils.defendExpression((Expression<Boolean>) entryContainer.getOptional("force", true));
+
+        particle = (Expression<org.bukkit.Particle>) expressions[0];
+        count = (Expression<Number>) entryContainer.getOptional("count", Expression.class, true);
+        offset = (Expression<Vector>) entryContainer.getOptional("offset", Expression.class, true);
+        extra = (Expression<Number>) entryContainer.getOptional("extra", Expression.class, true);
+        force = (Expression<Boolean>) entryContainer.getOptional("force", Expression.class, true);
+
+        velocity = entryContainer.getOptional("velocity", Expression.class, true);
+        if (velocity != null) {
+            velocity = LiteralUtils.defendExpression(velocity);
+            if (!LiteralUtils.canInitSafely(velocity)){
+                Skript.error("Invalid expression for velocity! Must be a vector or a particle motion.");
+                return false;
+            }
+        }
+
+        data = (Expression<Object>) entryContainer.getOptional("data", Expression.class, true);
+        if (data != null) {
+            data = LiteralUtils.defendExpression(data);
+            if (!LiteralUtils.canInitSafely(data)){
+                Skript.error("Invalid value for data! Must be a dust options, item, or other particle data!");
+                return false;
+            }
+        }
+
         if (offset != null && velocity != null) {
             Skript.error("You cannot have both an offset and a velocity for a particle!");
             return false;
         }
-
 
         return true;
     }
@@ -134,8 +153,11 @@ public class SecParticle extends Section {
         if (extra != null)
             particle.extra(extra.doubleValue());
 
-        if (data != null)
-            particle.data(data);
+        if (data != null) {
+            data = ParticleUtil.getData(particle.particle(), data);
+            if (data != null)
+                particle.data(data);
+        }
 
         if (force != null)
             particle.force(force);

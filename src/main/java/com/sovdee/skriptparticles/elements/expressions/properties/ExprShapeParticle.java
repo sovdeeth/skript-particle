@@ -25,10 +25,10 @@ import org.jetbrains.annotations.Nullable;
         "reset {_shape}'s particle",
         "",
         "create a new custom particle:",
-        "\tparticle: soul fire flame",
-        "\tvelocity: inwards",
-        "\textra: 0.5",
-        "\tforce: true",
+            "\tparticle: soul fire flame",
+            "\tvelocity: inwards",
+            "\textra: 0.5",
+            "\tforce: true",
         "set {_shape}'s particle to the last created particle"
 })
 @Since("1.0.0")

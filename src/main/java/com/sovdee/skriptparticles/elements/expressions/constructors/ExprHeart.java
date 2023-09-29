@@ -27,7 +27,7 @@ import org.jetbrains.annotations.Nullable;
 @Examples({
         "set {_heart} to heart with width 5 and length 4",
         "set {_heart} to heart shape with width 5, length 7, and eccentricity 2",
-        "draw a heart of width 2 and length 2 at player"
+        "draw the shape of a heart of width 2 and length 2 at player"
 })
 @Since("1.0.1")
 public class ExprHeart extends SimpleExpression<Heart> {

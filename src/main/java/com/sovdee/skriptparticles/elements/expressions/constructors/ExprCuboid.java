@@ -29,7 +29,7 @@ import org.jetbrains.annotations.Nullable;
 @Examples({
         "set {_shape} to a solid cuboid with length 10, width 10, and height 10",
         "set {_shape} to a hollow cuboid from vector(-5, -5, -5) to vector(5, 5, 5)",
-        "draw a cuboid from player to player's target"
+        "draw the shape of a cuboid from player to player's target"
 })
 @Since("1.0.0")
 public class ExprCuboid extends SimpleExpression<Cuboid> {

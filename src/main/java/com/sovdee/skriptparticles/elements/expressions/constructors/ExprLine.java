@@ -34,12 +34,12 @@ import java.util.List;
 @Examples({
         "set {_shape} to line from vector(0, 0, 0) to vector(10, 10, 10)",
         "set {_shape} to a line in direction vector(1, 1, 1) and length 10",
-        "draw a line from vector(0, 0, 0) to vector(10, 10, 10) at player",
+        "draw the shape of a line from vector(0, 0, 0) to vector(10, 10, 10) at player",
         "",
         "# note that the following does not require a location to be drawn at",
-        "draw a line from player to player's target",
-        "draw a line from player to (all players in radius 10 of player)",
-        "draw a line connecting {_locations::*}"
+        "draw the shape of a line from player to player's target",
+        "draw the shape of a line from player to (all players in radius 10 of player)",
+        "draw the shape of a line connecting {_locations::*}"
 })
 @Since("1.0.0")
 public class ExprLine extends SimpleExpression<Line> {

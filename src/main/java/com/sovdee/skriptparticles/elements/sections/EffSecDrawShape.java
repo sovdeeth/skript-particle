@@ -55,15 +55,15 @@ import java.util.concurrent.atomic.AtomicLong;
         "Drawing a shape for a duration is async only."
 })
 @Examples({
-        "draw a sphere with radius 1 at player's location",
-        "draw (a sphere with radius 1 and a cube with radius 1) at player's location for (all players in radius 10 of player)",
-        "synchronously draw a sphere with radius 1 at player's location",
+        "draw the shape (sphere with radius 1) at player's location",
+        "draw the shapes of (a sphere with radius 1 and a cube with radius 1) at player's location for (all players in radius 10 of player)",
+        "synchronously draw the shape of a sphere with radius 1 at player's location",
         "",
-        "draw {_shape} at player's location:",
-        "\tset event-shape's particle to dust using dustOption(red, 1)",
+        "draw the shape {_shape} at player's location:",
+            "\tset event-shape's particle to dust using dustOption(red, 1)",
         "",
-        "synchronously draw (a sphere with radius 1 and a cube with radius 1) at player's location:",
-        "\tset event-shape's radius to 2",
+        "synchronously draw shape (a sphere with radius 1 and a cube with radius 1) at player's location:",
+            "\tset event-shape's radius to 2",
 })
 @Since("1.0.0")
 public class EffSecDrawShape extends EffectSection {
@@ -71,8 +71,8 @@ public class EffSecDrawShape extends EffectSection {
 
     static {
         Skript.registerSection(EffSecDrawShape.class,
-                "[sync:sync[hronously]] draw shape[s] %shapes% [%-directions% %-locations/entities%] [to %-players%]",
-                "draw shape[s] %shapes% [%-directions% %-locations/entities%] [to %-players%] (duration:for) [duration] %timespan% [with (delay|refresh [rate]) [of] %-timespan%]"
+                "[sync:sync[hronously]] draw [the] shape[s] [of] %shapes% [%-directions% %-locations/entities%] [to %-players%]",
+                "draw [the] shape[s] [of] %shapes% [%-directions% %-locations/entities%] [to %-players%] (duration:for) [duration] %timespan% [with (delay|refresh [rate]) [of] %-timespan%]"
         );
         EventValues.registerEventValue(EffSecDrawShape.DrawEvent.class, Shape.class, new Getter<>() {
             @Override

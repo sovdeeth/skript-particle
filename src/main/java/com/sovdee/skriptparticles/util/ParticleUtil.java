@@ -139,7 +139,7 @@ public class ParticleUtil {
         return "UNKNOWN";
     }
 
-    private static Object getData(Particle particle, Object data) {
+    public static Object getData(Particle particle, Object data) {
         Class<?> dataType = particle.getDataType();
         if (dataType == Void.class) {
             return null;

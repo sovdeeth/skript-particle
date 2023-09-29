@@ -26,7 +26,7 @@ import org.jetbrains.annotations.Nullable;
 @Examples({
         "set {_shape} to a tetrahedron with radius 1",
         "set {_shape} to a solid icosahedron with radius 2",
-        "draw a tetrahedron with radius 5 at player"
+        "draw the shape of a tetrahedron with radius 5 at player"
 })
 public class ExprRegularPolyhedron extends SimpleExpression<RegularPolyhedron> {
 

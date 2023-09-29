@@ -30,10 +30,10 @@ import org.jetbrains.annotations.Nullable;
 @Examples({
         "set {_shape} to rectangle with length 10 and width 5",
         "set {_shape} to a yz rectangle from vector(0, 0, 0) to vector(10, 10, 10)",
-        "draw a rectangle with length 10 and width 5 at player",
+        "draw the shape of a rectangle with length 10 and width 5 at player",
         "",
         "# note that the following does not require a location to be drawn at",
-        "draw a rectangle from player to player's target"
+        "draw the shape of a rectangle from player to player's target"
 })
 @Since("1.0.0")
 public class ExprRectangle extends SimpleExpression<Rectangle> {

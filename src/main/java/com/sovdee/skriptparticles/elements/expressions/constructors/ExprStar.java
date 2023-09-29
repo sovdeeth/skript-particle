@@ -23,7 +23,7 @@ import org.jetbrains.annotations.Nullable;
 })
 @Examples({
         "set {_shape} to star with 5 points, inner radius 1, and outer radius 2",
-        "draw a star with 4 points, inner radius 2, and outer radius 4 at player"
+        "draw the shape of a star with 4 points, inner radius 2, and outer radius 4 at player"
 })
 public class ExprStar extends SimpleExpression<Star> {
 

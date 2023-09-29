@@ -25,7 +25,7 @@ import org.jetbrains.annotations.Nullable;
 @Examples({
         "set {_shape} to a regular polygon with 5 sides and radius 10",
         "set {_shape} to a solid regular polygon with 6 sides and side length 3",
-        "draw a triangle with side length 5 at player"
+        "draw the shape of a triangle with side length 5 at player"
 })
 public class ExprRegularPolygon extends SimpleExpression<RegularPolygon> {
 
