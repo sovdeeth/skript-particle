@@ -7,8 +7,9 @@ import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Effect;
 import ch.njol.skript.lang.Expression;
-import ch.njol.skript.lang.SkriptParser;
+import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.util.Kleenean;
+import com.sovdee.skriptparticles.elements.sections.EffSecDrawShape.DrawEvent;
 import com.sovdee.skriptparticles.shapes.Shape;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
@@ -33,11 +34,14 @@ public class EffRotateShape extends Effect {
     static {
         Skript.registerEffect(EffRotateShape.class,
                 "rotate shape[s] %shapes% around [relative:(relative|local)] (v:%-vector%|((:x|:y|:z)(-| )axis)) by %number% [degrees|:radians]",
-                "rotate shape[s] %shapes% (by|with) [rotation] %quaternion%"
+                "rotate shape[s] %shapes% (by|with) [rotation] %quaternion%",
+                "rotate [drawn] shape[s] around [relative:(relative|local)] (v:%-vector%|((:x|:y|:z)(-| )axis)) by %number% [degrees|:radians]",
+                "rotate [drawn] shape[s] (by|with) [rotation] %quaternion%"
         );
     }
 
     private Expression<Shape> shapes;
+    private boolean useDrawnShapes = false;
     private Expression<Vector> vectorAxis;
     private Expression<Number> angle;
     private Expression<Quaternionf> rotation;
@@ -47,20 +51,30 @@ public class EffRotateShape extends Effect {
     private boolean isAxisAngle = false;
 
     @Override
-    public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, SkriptParser.ParseResult parseResult) {
-        shapes = (Expression<Shape>) exprs[0];
-        if (matchedPattern == 1) {
-            rotation = (Expression<Quaternionf>) exprs[1];
+    public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, ParseResult parseResult) {
+        int offset = 0;
+        if (matchedPattern >= 2) {
+            if (!getParser().isCurrentEvent(DrawEvent.class)) {
+                Skript.error("You must supply a shape to rotate when using this effect outside of the draw shape section.");
+                return false;
+            }
+            useDrawnShapes = true;
+            offset = 1;
+        } else {
+            shapes = (Expression<Shape>) exprs[0];
+        }
+        if (matchedPattern % 2 == 1) {
+            rotation = (Expression<Quaternionf>) exprs[1 - offset];
             return true;
         }
         isAxisAngle = true;
         if (parseResult.hasTag("v")) {
-            vectorAxis = (Expression<Vector>) exprs[1];
+            vectorAxis = (Expression<Vector>) exprs[1 - offset];
         } else {
             relative = parseResult.hasTag("relative");
             axis = parseResult.hasTag("x") ? "x" : parseResult.hasTag("y") ? "y" : "z";
         }
-        angle = (Expression<Number>) exprs[2];
+        angle = (Expression<Number>) exprs[2 - offset];
         isRadians = parseResult.hasTag("radians");
         return true;
     }
@@ -97,7 +111,14 @@ public class EffRotateShape extends Effect {
             if (rotation == null) return;
         }
 
-        for (Shape shape : shapes.getAll(event)) {
+        Shape[] shapes;
+        if (useDrawnShapes && event instanceof DrawEvent) {
+            shapes = new Shape[]{((DrawEvent) event).getShape()};
+        } else {
+            shapes = this.shapes.getAll(event);
+        }
+
+        for (Shape shape : shapes) {
             Quaternionf orientation = shape.getOrientation();
             if (relative) {
                 shape.setOrientation(orientation.mul(rotation));
