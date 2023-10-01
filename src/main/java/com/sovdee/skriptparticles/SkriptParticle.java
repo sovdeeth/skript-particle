@@ -74,7 +74,7 @@ public class SkriptParticle extends JavaPlugin {
             SkriptParticle.severe("Could not find Skript! Make sure you have it installed and that it properly loaded. Disabling...");
             manager.disablePlugin(this);
             return;
-        } else if (!Skript.getVersion().isLargerThan(new Version(2, 7, 0))) {
+        } else if (Skript.getVersion().compareTo(new Version(2, 7, 0)) < 0) {
             SkriptParticle.severe("You are running an unsupported version of Skript. Please update to at least Skript 2.7.0. Disabling...");
             manager.disablePlugin(this);
             return;
