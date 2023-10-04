@@ -39,6 +39,12 @@ processResources {
     }
 }
 
+javadoc {
+    source = sourceSets.main.allJava
+    classpath = configurations.compileClasspath
+    options.encoding = 'UTF-8'
+}
+
 task shadowJar(overwrite: true, type: ShadowJar) {
     archiveFileName = 'skript-particle.jar'
 }

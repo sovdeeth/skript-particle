@@ -12,7 +12,7 @@ import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
 import com.sovdee.skriptparticles.shapes.Shape;
 import org.bukkit.event.Event;
-import org.jetbrains.annotations.NotNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -40,7 +40,7 @@ public class ExprShapeCopy extends SimpleExpression<Shape> {
     }
 
     @Override
-    protected Shape[] get(@NotNull Event event) {
+    protected Shape[] get(@NonNull Event event) {
         Shape[] shape = shapeExpr.getArray(event);
 
         if (shape.length == 0)

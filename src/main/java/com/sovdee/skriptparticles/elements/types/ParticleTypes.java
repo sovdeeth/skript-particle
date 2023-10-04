@@ -17,7 +17,7 @@ import org.bukkit.Particle;
 import org.bukkit.Particle.DustOptions;
 import org.bukkit.Particle.DustTransition;
 import org.bukkit.Vibration;
-import org.jetbrains.annotations.NotNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jetbrains.annotations.Nullable;
 import org.skriptlang.skript.lang.converter.Converters;
 
@@ -53,12 +53,12 @@ public class ParticleTypes {
                         }
 
                         @Override
-                        public @NotNull String toString(Particle particle, int flags) {
+                        public @NonNull String toString(Particle particle, int flags) {
                             return "" + ParticleUtil.getName(particle);
                         }
 
                         @Override
-                        public @NotNull String toVariableNameString(Particle particle) {
+                        public @NonNull String toVariableNameString(Particle particle) {
                             return "particle:" + toString(particle, 0);
                         }
                     }));
@@ -84,12 +84,12 @@ public class ParticleTypes {
                     }
 
                     @Override
-                    public @NotNull String toString(com.sovdee.skriptparticles.particles.Particle particle, int flags) {
+                    public @NonNull String toString(com.sovdee.skriptparticles.particles.Particle particle, int flags) {
                         return "" + ParticleUtil.getName(particle.particle());
                     }
 
                     @Override
-                    public @NotNull String toVariableNameString(com.sovdee.skriptparticles.particles.Particle particle) {
+                    public @NonNull String toVariableNameString(com.sovdee.skriptparticles.particles.Particle particle) {
                         return "particle:" + toString(particle, 0);
                     }
                 })
@@ -122,12 +122,12 @@ public class ParticleTypes {
                     }
 
                     @Override
-                    public @NotNull String toString(ParticleMotion particleMotion, int flags) {
+                    public @NonNull String toString(ParticleMotion particleMotion, int flags) {
                         return particleMotion.toString();
                     }
 
                     @Override
-                    public @NotNull String toVariableNameString(ParticleMotion particle) {
+                    public @NonNull String toVariableNameString(ParticleMotion particle) {
                         return "particle motion:" + toString(particle, 0);
                     }
                 })

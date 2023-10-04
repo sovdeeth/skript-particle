@@ -1,17 +1,20 @@
 package com.sovdee.skriptparticles.shapes;
 
 import com.sovdee.skriptparticles.util.DynamicLocation;
+import com.sovdee.skriptparticles.util.MathUtil;
 import com.sovdee.skriptparticles.util.Quaternion;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jetbrains.annotations.Contract;
 
 import java.util.HashSet;
 import java.util.Set;
 
 
-/*
- * Please don't judge me based off this class
- * I know it's a mess, but i just wanted to get it working
+/**
+ * A rectangle shape, defined by a plane and a length and width.
+ * Can be defined by two corners, which can be relative ({@link Vector}) or absolute ({@link DynamicLocation}).
  */
 public class Rectangle extends AbstractShape implements LWHShape {
 
@@ -21,22 +24,39 @@ public class Rectangle extends AbstractShape implements LWHShape {
     private double lengthStep = 1.0;
     private double widthStep = 1.0;
     private Vector centerOffset = new Vector(0, 0, 0);
-    private DynamicLocation negativeCorner;
-    private DynamicLocation positiveCorner;
+    private @Nullable DynamicLocation negativeCorner;
+    private @Nullable DynamicLocation positiveCorner;
     private boolean isDynamic = false;
+
+    /**
+     * Creates a new rectangle shape with the given plane and length and width.
+     * @param length the length of the rectangle. Must be greater than 0.
+     * @param width the width of the rectangle. Must be greater than 0.
+     * @param plane the plane of the rectangle.
+     */
     public Rectangle(double length, double width, Plane plane) {
         super();
         this.plane = plane;
-        this.halfWidth = width / 2;
-        this.halfLength = length / 2;
+        this.halfLength = Math.max(length / 2, MathUtil.EPSILON);
+        this.halfWidth = Math.max(width / 2, MathUtil.EPSILON);
         calculateSteps();
     }
 
-    public Rectangle(Vector negativeCorner, Vector positiveCorner, Plane plane) {
+    /**
+     * Creates a new rectangle shape from the given corners and plane.
+     * The corners may not be the same.
+     * @param cornerA the first corner of the rectangle.
+     * @param cornerB the second corner of the rectangle.
+     * @param plane the plane of the rectangle.
+     * @throws IllegalArgumentException if the corners are the same
+     */
+    public Rectangle(Vector cornerA, Vector cornerB, Plane plane) {
         super();
+        if (cornerA.equals(cornerB))
+            throw new IllegalArgumentException("Corners cannot be the same.");
         this.plane = plane;
-        setLengthWidth(negativeCorner, positiveCorner);
-        centerOffset = positiveCorner.clone().add(negativeCorner).multiply(0.5);
+        setLengthWidth(cornerA, cornerB);
+        centerOffset = cornerB.clone().add(cornerA).multiply(0.5);
         switch (plane) {
             case XZ -> centerOffset.setY(0);
             case XY -> centerOffset.setZ(0);
@@ -45,46 +65,77 @@ public class Rectangle extends AbstractShape implements LWHShape {
         calculateSteps();
     }
 
-    public Rectangle(DynamicLocation negativeCorner, DynamicLocation positiveCorner, Plane plane) {
+    /**
+     * Creates a new rectangle shape from the given corners and plane.
+     * The corners may not be the same.
+     * @param cornerA the first corner of the rectangle.
+     * @param cornerB the second corner of the rectangle.
+     * @param plane the plane of the rectangle.
+     * @throws IllegalArgumentException if the corners are the same
+     */
+    public Rectangle(DynamicLocation cornerA, DynamicLocation cornerB, Plane plane) {
         super();
+        if (cornerA.equals(cornerB))
+            throw new IllegalArgumentException("Corners cannot be the same.");
+
         this.plane = plane;
-        Location negative = negativeCorner.getLocation();
-        Location positive = positiveCorner.getLocation();
-        if (negativeCorner.isDynamic() || positiveCorner.isDynamic()) {
-            this.negativeCorner = negativeCorner.clone();
-            this.positiveCorner = positiveCorner.clone();
+        Location cornerALocation = cornerA.getLocation();
+        Location cornerBLocation = cornerB.getLocation();
+        if (cornerA.equals(cornerB))
+            throw new IllegalArgumentException("Corners cannot be the same.");
+
+        if (cornerA.isDynamic() || cornerB.isDynamic()) {
+            this.negativeCorner = cornerA.clone();
+            this.positiveCorner = cornerB.clone();
             isDynamic = true;
         } else {
-            setLengthWidth(negative, positive);
+            setLengthWidth(cornerALocation, cornerBLocation);
         }
         // get center of rectangle
-        Vector offset = positive.toVector().subtract(negative.toVector()).multiply(0.5);
+        Vector offset = cornerBLocation.toVector().subtract(cornerALocation.toVector()).multiply(0.5);
         switch (plane) {
             case XZ -> offset.setY(0);
             case XY -> offset.setZ(0);
             case YZ -> offset.setX(0);
         }
-        location = new DynamicLocation(negative.clone().add(offset));
+        this.setLocation(new DynamicLocation(cornerALocation.clone().add(offset)));
         calculateSteps();
     }
 
-    private void setLengthWidth(Location a, Location b) {
-        setLengthWidth(a.toVector(), b.toVector());
+    /**
+     * Sets the length and width of the rectangle based on the given corners.
+     * @param cornerA the first corner
+     * @param cornerB the second corner
+     */
+    private void setLengthWidth(Location cornerA, Location cornerB) {
+        setLengthWidth(cornerA.toVector(), cornerB.toVector());
     }
 
-    private void setLengthWidth(Vector a, Vector b) {
+    /**
+     * Sets the length and width of the rectangle based on the given corners.
+     * @param cornerA the first corner
+     * @param cornerB the second corner
+     */
+    private void setLengthWidth(Vector cornerA, Vector cornerB) {
         double length = switch (plane) {
-            case XZ, XY -> Math.abs(a.getX() - b.getX());
-            case YZ -> Math.abs(a.getY() - b.getY());
+            case XZ, XY -> Math.abs(cornerA.getX() - cornerB.getX());
+            case YZ -> Math.abs(cornerA.getY() - cornerB.getY());
         };
         double width = switch (plane) {
-            case XZ, YZ -> Math.abs(a.getZ() - b.getZ());
-            case XY -> Math.abs(a.getY() - b.getY());
+            case XZ, YZ -> Math.abs(cornerA.getZ() - cornerB.getZ());
+            case XY -> Math.abs(cornerA.getY() - cornerB.getY());
         };
         this.halfWidth = Math.abs(width) / 2;
         this.halfLength = Math.abs(length) / 2;
     }
 
+    /**
+     * Creates a {@link Vector} in the plane of the rectangle from the given length and width.
+     * @param length X or Y coordinate, depending on the plane.
+     * @param width Z or Y coordinate, depending on the plane.
+     * @return a vector in the plane of the rectangle.
+     */
+    @Contract(pure = true, value = "_, _ -> new")
     private Vector vectorFromLengthWidth(double length, double width) {
         return switch (plane) {
             case XZ -> new Vector(length, 0, width);
@@ -94,15 +145,17 @@ public class Rectangle extends AbstractShape implements LWHShape {
     }
 
     /**
-     * Calculates the nearest factor to particleDensity as step size for the x and z plane
-     * Used to ensure the shape has a uniform density of particles
+     * Calculates the nearest factor to particleDensity as step size for the x and z plane.
+     * Used to ensure the shape has a uniform density of particles.
      */
     private void calculateSteps() {
+        double particleDensity = this.getParticleDensity();
         lengthStep = 2 * halfWidth / Math.round(2 * halfWidth / particleDensity);
         widthStep = 2 * halfLength / Math.round(2 * halfLength / particleDensity);
     }
 
     @Override
+    @Contract(pure = true)
     public Set<Vector> generateOutline() {
         Set<Vector> points = new HashSet<>();
         for (double l = -halfLength + widthStep; l < halfLength; l += widthStep) {
@@ -117,6 +170,7 @@ public class Rectangle extends AbstractShape implements LWHShape {
     }
 
     @Override
+    @Contract(pure = true)
     public Set<Vector> generateSurface() {
         Set<Vector> points = new HashSet<>();
         for (double w = -halfWidth; w <= halfWidth; w += lengthStep) {
@@ -128,8 +182,11 @@ public class Rectangle extends AbstractShape implements LWHShape {
     }
 
     @Override
+    @Contract(pure = true)
     public Set<Vector> generatePoints() {
         if (isDynamic) {
+            assert positiveCorner != null;
+            assert negativeCorner != null;
             Location pos = positiveCorner.getLocation();
             Location neg = negativeCorner.getLocation();
             setLengthWidth(neg, pos);
@@ -140,7 +197,7 @@ public class Rectangle extends AbstractShape implements LWHShape {
                 case XY -> offset.setZ(0);
                 case YZ -> offset.setX(0);
             }
-            location = new DynamicLocation(neg.clone().add(offset));
+            this.setLocation(new DynamicLocation(neg.clone().add(offset)));
         }
         calculateSteps();
         Set<Vector> points = super.generatePoints();
@@ -148,22 +205,23 @@ public class Rectangle extends AbstractShape implements LWHShape {
         return points;
     }
 
-    // Ensure that the points are always needing to be updated if the start or end location is dynamic
     @Override
     public Set<Vector> getPoints(Quaternion orientation) {
         Set<Vector> points = super.getPoints(orientation);
         if (isDynamic)
-            this.needsUpdate = true;
+            // Ensure that the points are always needing to be updated if the start or end location is dynamic
+            this.setNeedsUpdate(true);
         return points;
     }
 
     @Override
-    public void setParticleCount(int count) {
-        switch (style) {
-            case FILL, SURFACE -> particleDensity = Math.sqrt(4 * halfWidth * halfLength / count);
-            case OUTLINE -> particleDensity = 4 * (halfWidth + halfLength) / count;
+    public void setParticleCount(int particleCount) {
+        particleCount = Math.max(particleCount, 1);
+        switch (this.getStyle()) {
+            case FILL, SURFACE -> this.setParticleDensity(Math.sqrt(4 * halfWidth * halfLength / particleCount));
+            case OUTLINE -> this.setParticleDensity(4 * (halfWidth + halfLength) / particleCount);
         }
-        this.needsUpdate = true;
+        this.setNeedsUpdate(true);
     }
 
     @Override
@@ -173,8 +231,8 @@ public class Rectangle extends AbstractShape implements LWHShape {
 
     @Override
     public void setLength(double length) {
-        this.halfLength = Math.abs(length) / 2;
-        this.needsUpdate = true;
+        this.halfLength = Math.max(length / 2, MathUtil.EPSILON);
+        this.setNeedsUpdate(true);
     }
 
     @Override
@@ -184,8 +242,8 @@ public class Rectangle extends AbstractShape implements LWHShape {
 
     @Override
     public void setWidth(double width) {
-        this.halfWidth = Math.abs(width) / 2;
-        this.needsUpdate = true;
+        this.halfWidth = Math.max(width / 2, MathUtil.EPSILON);
+        this.setNeedsUpdate(true);
     }
 
     @Override
@@ -195,20 +253,37 @@ public class Rectangle extends AbstractShape implements LWHShape {
 
     @Override
     public void setHeight(double height) {
+        // intentionally left blank
     }
 
+    /**
+     * Gets the plane of the rectangle.
+     * @return the plane of the rectangle.
+     */
     public Plane getPlane() {
         return plane;
     }
 
+    /**
+     * Sets the plane of the rectangle. Ensures the shape will be updated on the next call to {@link #generatePoints()}.
+     * @param plane the plane of the rectangle.
+     */
     public void setPlane(Plane plane) {
         this.plane = plane;
-        this.needsUpdate = true;
+        this.setNeedsUpdate(true);
     }
 
     @Override
+    @Contract("-> new")
     public Shape clone() {
-        Rectangle rectangle = (isDynamic ? new Rectangle(negativeCorner, positiveCorner, plane) : new Rectangle(this.getLength(), this.getWidth(), plane));
+        Rectangle rectangle;
+        if (isDynamic) {
+            assert negativeCorner != null;
+            assert positiveCorner != null;
+            rectangle = (new Rectangle(negativeCorner, positiveCorner, plane));
+        } else {
+            rectangle = (new Rectangle(this.getLength(), this.getWidth(), plane));
+        }
         rectangle.isDynamic = this.isDynamic;
         return this.copyTo(rectangle);
     }
@@ -217,10 +292,13 @@ public class Rectangle extends AbstractShape implements LWHShape {
     public String toString() {
         String axis = this.plane.toString().toLowerCase();
         if (isDynamic)
-            return axis + " rectangle from " + negativeCorner.toString() + " to " + positiveCorner.toString();
+            return axis + " rectangle from " + negativeCorner + " to " + positiveCorner;
         return axis + " rectangle with length " + this.getLength() + " and width " + this.getWidth();
     }
 
+    /**
+     * Represents the plane of a rectangle.
+     */
     public enum Plane {
         XZ, XY, YZ
     }

@@ -14,7 +14,7 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
-import org.jetbrains.annotations.Nullable;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -42,7 +42,6 @@ public class ParticleUtil {
     static {
         Class<?> cbParticle = ReflectionUtils.getOBCClass("CraftParticle");
         try {
-            assert cbParticle != null;
             Field bukkitParticleField = cbParticle.getDeclaredField("bukkit");
             bukkitParticleField.setAccessible(true);
             Field mcKeyField = cbParticle.getDeclaredField("minecraftKey");
@@ -139,6 +138,7 @@ public class ParticleUtil {
         return "UNKNOWN";
     }
 
+    @Nullable
     public static Object getData(Particle particle, Object data) {
         Class<?> dataType = particle.getDataType();
         if (dataType == Void.class) {

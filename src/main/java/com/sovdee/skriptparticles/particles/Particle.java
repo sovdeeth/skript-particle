@@ -2,37 +2,38 @@ package com.sovdee.skriptparticles.particles;
 
 import com.destroystokyo.paper.ParticleBuilder;
 import com.sovdee.skriptparticles.shapes.Shape;
+import org.bukkit.Location;
 import org.bukkit.util.Vector;
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
 public class Particle extends ParticleBuilder {
 
-    private ParticleMotion motion;
-    private ParticleGradient gradient;
-    private Shape parent;
+    private @Nullable ParticleMotion motion;
+    private @Nullable ParticleGradient gradient;
+    private @Nullable Shape parent;
     private boolean override = false;
 
-    public Particle(org.bukkit.@NotNull Particle particle) {
+    public Particle(org.bukkit.Particle particle) {
         super(particle);
     }
 
-    public Particle(org.bukkit.@NotNull Particle particle, ParticleMotion motion) {
+    public Particle(org.bukkit.Particle particle, ParticleMotion motion) {
         super(particle);
         this.motion = motion;
     }
 
-    public void spawn(@NotNull Vector delta) {
+    public void spawn(Vector delta) {
         if (parent == null || parent.getLastLocation() == null) return;
-        if (this.motion != null) {
-            Vector motionVector = this.motion.getMotionVector(parent.getRelativeYAxis(true), delta);
+        if (motion != null) {
+            Vector motionVector = motion.getMotionVector(parent.getRelativeYAxis(true), delta);
             this.offset(motionVector.getX(), motionVector.getY(), motionVector.getZ());
             this.count(0);
         }
-        if (this.gradient() != null) {
-            this.color(gradient.calculateColour(delta));
+        if (gradient != null) {
+            color(gradient.calculateColour(delta));
         }
-        this.location(parent.getLastLocation().clone().add(delta));
+        location(parent.getLastLocation().clone().add(delta));
         // note that the values we change here do persist, so we may need to reset them after spawning if it causes issues
         super.spawn();
     }
@@ -42,7 +43,7 @@ public class Particle extends ParticleBuilder {
         return motion;
     }
 
-    public Particle motion(ParticleMotion motion) {
+    public Particle motion(@Nullable ParticleMotion motion) {
         this.motion = motion;
         return this;
     }
@@ -52,7 +53,7 @@ public class Particle extends ParticleBuilder {
         return parent;
     }
 
-    public Particle parent(Shape parent) {
+    public Particle parent(@Nullable Shape parent) {
         this.parent = parent;
         return this;
     }
@@ -62,7 +63,7 @@ public class Particle extends ParticleBuilder {
         return gradient;
     }
 
-    public Particle gradient(ParticleGradient gradient) {
+    public Particle gradient(@Nullable ParticleGradient gradient) {
         this.gradient = gradient;
         return this;
     }
@@ -76,6 +77,7 @@ public class Particle extends ParticleBuilder {
         return this;
     }
 
+    @Contract("-> new")
     public Particle clone() {
         Particle particle = (Particle) new Particle(this.particle())
                 .count(this.count())
@@ -85,15 +87,14 @@ public class Particle extends ParticleBuilder {
                 .force(this.force())
                 .receivers(this.receivers())
                 .source(this.source());
+        @Nullable Location location = this.location();
+        if (location != null)
+            particle.location(location);
 
-        if (this.location() != null)
-            particle.location(this.location());
-
-        particle.motion(this.motion());
-        particle.parent(this.parent());
-        particle.gradient(this.gradient());
-        particle.override(this.override());
-        return particle;
+        return particle.motion(this.motion())
+                .parent(this.parent())
+                .gradient(this.gradient())
+                .override(this.override());
     }
 
     @Override

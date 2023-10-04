@@ -28,7 +28,7 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Consumer;
-import org.jetbrains.annotations.NotNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -228,7 +228,7 @@ public class EffSecDrawShape extends EffectSection {
                     shapeCopy = shape.clone();
                     shapeCopy.draw(location, consumer, recipients);
                 } else {
-                    shape.draw(location, null, null, recipients);
+                    shape.draw(location, recipients);
                 }
             }
         }
@@ -239,13 +239,13 @@ public class EffSecDrawShape extends EffectSection {
         for (DynamicLocation dynamicLocation : locations) {
             location = dynamicLocation.getLocation();
             for (Shape shape : shapes) {
-                shape.draw(location, null, null, recipients);
+                shape.draw(location, recipients);
             }
         }
     }
 
     @Override
-    @NotNull
+    @NonNull
     public String toString(@Nullable Event event, boolean b) {
         return "draw shape " + shapes.toString(event, b) + " at " + locations.toString(event, b) + " for " + (players == null ? "all players" : players.toString(event, b));
     }
@@ -262,7 +262,7 @@ public class EffSecDrawShape extends EffectSection {
         }
 
         @Override
-        @NotNull
+        @NonNull
         public HandlerList getHandlers() {
             throw new IllegalStateException();
         }

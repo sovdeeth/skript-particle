@@ -8,7 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-/*
+/**
  * Helper class for JOML's Quaternionf class
  * Adds methods to deal with Bukkit's Vector class instead of JOML's Vector3f class
  * Adds a method to transform a collection of vectors

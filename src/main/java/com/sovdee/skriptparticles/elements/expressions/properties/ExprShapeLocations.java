@@ -13,7 +13,7 @@ import ch.njol.util.Kleenean;
 import com.sovdee.skriptparticles.shapes.Shape;
 import org.bukkit.Location;
 import org.bukkit.event.Event;
-import org.jetbrains.annotations.NotNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -50,7 +50,7 @@ public class ExprShapeLocations extends SimpleExpression<Location> {
 
     @Override
     @Nullable
-    protected Location[] get(@NotNull Event event) {
+    protected Location[] get(@NonNull Event event) {
         Shape[] shapes = shapeExpr.getAll(event);
         if (shapes.length == 0) return null;
 
@@ -71,12 +71,12 @@ public class ExprShapeLocations extends SimpleExpression<Location> {
     }
 
     @Override
-    public @NotNull Class<? extends Location> getReturnType() {
+    public @NonNull Class<? extends Location> getReturnType() {
         return Location.class;
     }
 
     @Override
-    public @NotNull String toString(@Nullable Event event, boolean debug) {
+    public @NonNull String toString(@Nullable Event event, boolean debug) {
         return "Locations of shapes";
     }
 

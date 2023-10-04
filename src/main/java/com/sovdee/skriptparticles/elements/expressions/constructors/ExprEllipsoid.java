@@ -57,7 +57,7 @@ public class ExprEllipsoid extends SimpleExpression<Ellipsoid> {
         }
 
         if (yRadius instanceof Literal<Number> literal && literal.getSingle().doubleValue() <= 0) {
-            Skript.error("The y radius of the ellipsoid must be greater than  0. (y radius: " +
+            Skript.error("The y radius of the ellipsoid must be greater than 0. (y radius: " +
                     literal.getSingle().doubleValue() + ")");
             return false;
         }

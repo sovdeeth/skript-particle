@@ -44,17 +44,17 @@ public class ExprShapeParticleDensity extends SimplePropertyExpression<Shape, Nu
         PropertyExpression.register(ExprShapeParticleDensity.class, Number.class, "particle (:density|:count)", "shapes");
     }
 
-    private boolean flag;
+    private boolean isDensity;
 
     @Override
     public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, SkriptParser.ParseResult parseResult) {
-        flag = parseResult.hasTag("density");
+        isDensity = parseResult.hasTag("density");
         return super.init(exprs, matchedPattern, isDelayed, parseResult);
     }
 
     @Override
     public @Nullable Number convert(Shape shape) {
-        if (flag)
+        if (isDensity)
             return 1 / shape.getParticleDensity();
         else
             return shape.getParticleCount();
@@ -82,7 +82,7 @@ public class ExprShapeParticleDensity extends SimplePropertyExpression<Shape, Nu
                 change = -change;
             case ADD:
                 for (Shape shape : shapes) {
-                    if (flag) {
+                    if (isDensity) {
                         // clamp to 0.001 and 1000, enough to kill the client but not enough to cause an actual error
                         shape.setParticleDensity(MathUtil.clamp(1 / (1 / shape.getParticleDensity() + change), 0.001, 1000));
                     } else
@@ -93,9 +93,9 @@ public class ExprShapeParticleDensity extends SimplePropertyExpression<Shape, Nu
             case DELETE:
             case RESET:
             case SET:
-                change = flag ? MathUtil.clamp(change, 0.001, 1000) : Math.max(1, (int) change);
+                change = isDensity ? MathUtil.clamp(change, 0.001, 1000) : Math.max(1, (int) change);
                 for (Shape shape : shapes) {
-                    if (flag) {
+                    if (isDensity) {
                         shape.setParticleDensity(change);
                     } else {
                         shape.setParticleCount((int) change);
@@ -115,7 +115,7 @@ public class ExprShapeParticleDensity extends SimplePropertyExpression<Shape, Nu
 
     @Override
     protected String getPropertyName() {
-        return "particle " + (flag ? "density" : "count");
+        return "particle " + (isDensity ? "density" : "count");
     }
 
 }

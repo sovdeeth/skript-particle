@@ -3,7 +3,7 @@ package com.sovdee.skriptparticles.util;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -32,7 +32,7 @@ public class MathUtil {
     }
 
     public static Set<Vector> calculateFibonacciSphere(int pointCount, double radius, double angleCutoff) {
-        Set<Vector> points = new HashSet<>();
+        Set<Vector> points = new LinkedHashSet<>();
         double y = 1;
         if (angleCutoff > Math.PI) angleCutoff = Math.PI;
         double yLimit = Math.cos(angleCutoff);
@@ -64,7 +64,7 @@ public class MathUtil {
     }
 
     public static Set<Vector> calculateCircle(double radius, double particleDensity, double cutoffAngle) {
-        Set<Vector> points = new HashSet<>();
+        Set<Vector> points = new LinkedHashSet<>();
         double stepSize = particleDensity / radius;
         for (double theta = 0; theta < cutoffAngle; theta += stepSize) {
             points.add(new Vector(Math.cos(theta) * radius, 0, Math.sin(theta) * radius));
@@ -73,7 +73,7 @@ public class MathUtil {
     }
 
     public static Set<Vector> calculateDisc(double radius, double particleDensity, double cutoffAngle) {
-        Set<Vector> points = new HashSet<>();
+        Set<Vector> points = new LinkedHashSet<>();
         for (double subRadius = particleDensity; subRadius < radius; subRadius += particleDensity) {
             points.addAll(calculateCircle(subRadius, particleDensity, cutoffAngle));
         }
@@ -82,7 +82,7 @@ public class MathUtil {
     }
 
     public static Set<Vector> calculateHelix(double radius, double height, double slope, int direction, double particleDensity) {
-        Set<Vector> points = new HashSet<>();
+        Set<Vector> points = new LinkedHashSet<>();
         if (radius <= 0 || height <= 0) {
             return points;
         }
@@ -98,7 +98,7 @@ public class MathUtil {
     }
 
     public static Set<Vector> calculateLine(Vector start, Vector end, double particleDensity) {
-        Set<Vector> points = new HashSet<>();
+        Set<Vector> points = new LinkedHashSet<>();
         Vector direction = end.clone().subtract(start);
         double length = direction.length();
         double step = length / Math.round(length / particleDensity);
@@ -112,7 +112,7 @@ public class MathUtil {
 
     public static Set<Vector> calculateRegularPolygon(double radius, double angle, double particleDensity, boolean wireframe) {
         angle = Math.max(angle, MathUtil.EPSILON);
-        Set<Vector> points = new HashSet<>();
+        Set<Vector> points = new LinkedHashSet<>();
         double apothem = radius * Math.cos(angle / 2);
         double radiusStep = radius / Math.round(apothem / particleDensity);
         if (wireframe) {
@@ -130,7 +130,7 @@ public class MathUtil {
     }
 
     public static Set<Vector> calculateRegularPrism(double radius, double angle, double height, double particleDensity, boolean wireframe) {
-        Set<Vector> points = new HashSet<>();
+        Set<Vector> points = new LinkedHashSet<>();
         Vector vertex = new Vector(radius, 0, 0);
         for (double i = 0; i < 2 * Math.PI; i += angle) {
             Vector currentVertex = vertex.clone().rotateAroundY(i);
@@ -149,7 +149,7 @@ public class MathUtil {
     }
 
     public static Set<Vector> connectPoints(List<Vector> points, double particleDensity) {
-        Set<Vector> connectedPoints = new HashSet<>();
+        Set<Vector> connectedPoints = new LinkedHashSet<>();
         for (int i = 0; i < points.size() - 1; i++) {
             connectedPoints.addAll(calculateLine(points.get(i), points.get(i + 1), particleDensity));
         }
@@ -184,7 +184,7 @@ public class MathUtil {
     }
 
     public static Set<Vector> calculateEllipticalDisc(double r1, double r2, double particleDensity, double cutoffAngle) {
-        Set<Vector> points = new HashSet<>();
+        Set<Vector> points = new LinkedHashSet<>();
         int steps = (int) Math.round(Math.max(r1, r2) / particleDensity);
         double r;
         for (double i = 1; i <= steps; i += 1) {
@@ -207,13 +207,13 @@ public class MathUtil {
         Set<Vector> points = calculateEllipticalDisc(r1, r2, particleDensity, cutoffAngle);
         points.addAll(points.stream().map(v -> v.clone().setY(height)).collect(Collectors.toSet()));
         // wall
-        Set<Vector> wall = new HashSet<>(calculateEllipse(r1, r2, particleDensity, cutoffAngle));
+        Set<Vector> wall = new LinkedHashSet<>(calculateEllipse(r1, r2, particleDensity, cutoffAngle));
         points.addAll(fillVertically(wall, height, particleDensity));
         return points;
     }
 
     public static Set<Vector> fillVertically(Set<Vector> vectors, double height, double particleDensity) {
-        Set<Vector> points = new HashSet<>(vectors);
+        Set<Vector> points = new LinkedHashSet<>(vectors);
         double heightStep = height / Math.round(height / particleDensity);
         for (double i = 0; i < height; i += heightStep) {
             for (Vector vector : vectors) {
@@ -223,19 +223,19 @@ public class MathUtil {
         return points;
     }
 
-    public static Set<Vector> calculateHeart(double height, double width, double eccentricity, double particleDensity) {
-        Set<Vector> points = new HashSet<>();
-        double angleStep = 4 / 3.0 * particleDensity / (width + height);
+    public static Set<Vector> calculateHeart(double length, double width, double eccentricity, double particleDensity) {
+        Set<Vector> points = new LinkedHashSet<>();
+        double angleStep = 4 / 3.0 * particleDensity / (width + length);
         for (double theta = 0; theta < Math.PI * 2; theta += angleStep) {
             double x = width * Math.pow(Math.sin(theta), 3);
-            double y = height * (Math.cos(theta) - 1 / eccentricity * Math.cos(2 * theta) - 1.0 / 6 * Math.cos(3 * theta) - 1.0 / 16 * Math.cos(4 * theta));
+            double y = length * (Math.cos(theta) - 1 / eccentricity * Math.cos(2 * theta) - 1.0 / 6 * Math.cos(3 * theta) - 1.0 / 16 * Math.cos(4 * theta));
             points.add(new Vector(x, 0, y));
         }
         return points;
     }
 
     public static Set<Vector> calculateStar(double innerRadius, double outerRadius, double angle, double particleDensity) {
-        Set<Vector> points = new HashSet<>();
+        Set<Vector> points = new LinkedHashSet<>();
         Vector outerVertex = new Vector(outerRadius, 0, 0);
         Vector innerVertex = new Vector(innerRadius, 0, 0);
         for (double theta = 0; theta < 2 * Math.PI; theta += angle) {
