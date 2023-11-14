@@ -3,9 +3,7 @@ package com.sovdee.skriptparticles.shapes;
 import com.sovdee.skriptparticles.particles.Particle;
 import com.sovdee.skriptparticles.util.DynamicLocation;
 import com.sovdee.skriptparticles.util.Quaternion;
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import org.bukkit.util.Consumer;
 import org.bukkit.util.Vector;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
@@ -15,6 +13,7 @@ import org.joml.Quaternionf;
 import java.util.Collection;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -102,7 +101,7 @@ public interface Shape extends Cloneable {
      * @param location The location to draw the shape at.
      * @param recipients The players to draw the shape for.
      */
-    void draw(Location location, Collection<Player> recipients);
+    void draw(DynamicLocation location, Collection<Player> recipients);
 
     /**
      * Draws a shape at a location, given a starting orientation and a particle to use.
@@ -113,7 +112,7 @@ public interface Shape extends Cloneable {
      * @param particle The particle to draw the shape with.
      * @param recipients The players to draw the shape for.
      */
-    void draw(Location location, Quaternion baseOrientation, Particle particle, Collection<Player> recipients);
+    void draw(DynamicLocation location, Quaternion baseOrientation, Particle particle, Collection<Player> recipients);
 
     /**
      * Draws a shape at a location, using the default orientation and particle.
@@ -124,7 +123,7 @@ public interface Shape extends Cloneable {
      * @param consumer A consumer that is run before the shape is drawn.
      * @param recipients The players to draw the shape for.
      */
-    void draw(Location location, Consumer<Shape> consumer, Collection<Player> recipients);
+    void draw(DynamicLocation location, Consumer<Shape> consumer, Collection<Player> recipients);
 
     /**
      * @return the relative X axis of the shape, either using its default orientation or the last orientation used to draw the shape.
@@ -169,7 +168,7 @@ public interface Shape extends Cloneable {
      * @return the last location the shape was drawn at.
      */
     @Nullable
-    Location getLastLocation();
+    DynamicLocation getLastLocation();
 
     /**
      * @return the style of the shape.
@@ -288,6 +287,19 @@ public interface Shape extends Cloneable {
     void setNeedsUpdate(boolean needsUpdate);
 
     /**
+     * @return the duration of time it takes to draw the whole shape, in milliseconds. Default is 0.
+     */
+    long getAnimationDuration();
+
+    /**
+     * Sets the duration of time it takes to draw the whole shape, in milliseconds.
+     * A value of 0 causes all points to be drawn at once.
+     *
+     * @param animationDuration how long it takes to draw the whole shape, in nanoseconds. Points will be drawn in 10ms intervals, so values below 10ms will be treated as 10ms.
+     */
+    void setAnimationDuration(long animationDuration);
+
+    /**
      * @return a deep copy of the shape.
      */
     @Contract("-> new")
@@ -325,6 +337,7 @@ public interface Shape extends Cloneable {
      * @param state The state to set.
      */
     void setLastState(State state);
+
 
     /**
      * The style of a shape, which determines how it is drawn.

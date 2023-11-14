@@ -35,7 +35,7 @@ import java.util.List;
             "\tvelocity: vector - the velocity of the particle. Can be a vector or a motion (inwards/clockwise/etc.). (default: 0, 0, 0)",
             "\textra: number - the extra value of the particle. Forces `count` to be 0 and cannot be combined with `offset`. " +
                     "See the Minecraft wiki on /particle for more info. (default: 0)",
-            "\tdata: object - the data value of the particle. See the Minecraft wiki on /particle for more info. (default: null)",
+            "\tdata: object - the data value of the particle. For example, `dustOptions()` for the dust particle. See the Minecraft wiki on /particle for more info. (default: null)",
             "\tforce: boolean - whether or not to force the particle to be seen at long range. (default: false)"
 })
 @Examples({
@@ -44,6 +44,14 @@ import java.util.List;
             "\toffset: vector(1, 1, 1)",
             "\textra: 0.2",
             "\tforce: true",
+        "set {_particle} to last created particle",
+        "",
+        "create a new custom dust particle with:",
+            "\tcount: 0",
+            "\tvelocity: inwards",
+            "\textra: 0.5",
+            "\tforce: true",
+            "\tdata: dustOptions(red, 5)",
         "set {_particle} to last created particle",
 })
 @Since("1.0.2")

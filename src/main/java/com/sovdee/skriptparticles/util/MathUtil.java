@@ -3,6 +3,8 @@ package com.sovdee.skriptparticles.util;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -112,6 +114,7 @@ public class MathUtil {
 
     public static Set<Vector> calculateRegularPolygon(double radius, double angle, double particleDensity, boolean wireframe) {
         angle = Math.max(angle, MathUtil.EPSILON);
+
         Set<Vector> points = new LinkedHashSet<>();
         double apothem = radius * Math.cos(angle / 2);
         double radiusStep = radius / Math.round(apothem / particleDensity);
@@ -244,5 +247,21 @@ public class MathUtil {
             points.addAll(calculateLine(currentVertex, innerVertex.clone().rotateAroundY(theta - angle / 2), particleDensity));
         }
         return points;
+    }
+
+    public static List<List<Vector>> batch(Collection<Vector> toDraw, double millisecondsPerPoint) {
+        List<List<Vector>> batches = new ArrayList<>();
+        double totalDuration = 0;
+        Iterator<Vector> pointsIterator = toDraw.iterator();
+        while (pointsIterator.hasNext()) {
+            List<Vector> batch = new ArrayList<>();
+            while (totalDuration < 50 && pointsIterator.hasNext()) {
+                totalDuration += millisecondsPerPoint;
+                batch.add(pointsIterator.next());
+            }
+            totalDuration -= 50;
+            batches.add(batch);
+        }
+        return batches;
     }
 }

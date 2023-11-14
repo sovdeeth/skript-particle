@@ -4,7 +4,7 @@ import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Contract;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -46,7 +46,7 @@ public class Ellipse extends AbstractShape implements LWHShape {
     @Override
     @Contract(pure = true)
     public Set<Vector> generateOutline() {
-        Set<Vector> ellipse = new HashSet<>(MathUtil.calculateEllipse(xRadius, zRadius, this.getParticleDensity(), cutoffAngle));
+        Set<Vector> ellipse = new LinkedHashSet<>(MathUtil.calculateEllipse(xRadius, zRadius, this.getParticleDensity(), cutoffAngle));
         if (height != 0)
             return MathUtil.fillVertically(ellipse, height, this.getParticleDensity());
         return ellipse;

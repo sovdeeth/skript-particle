@@ -39,7 +39,7 @@ public class DynamicLocation {
      * @param location the location to create the dynamic location from
      * @param direction the direction to create the dynamic location from
      */
-    public DynamicLocation(Location location, Direction direction) {
+    public DynamicLocation(Location location, @Nullable Direction direction) {
         this.location = location.clone();
         this.direction = direction;
     }
@@ -49,7 +49,7 @@ public class DynamicLocation {
      * @param entity the entity to create the dynamic location from
      * @param direction the direction to create the dynamic location from
      */
-    public DynamicLocation(Entity entity, Direction direction) {
+    public DynamicLocation(Entity entity, @Nullable Direction direction) {
         this.entity = entity;
         this.direction = direction;
     }
@@ -201,5 +201,13 @@ public class DynamicLocation {
             return location.toString();
         else
             return "DynamicLocation{null}";
+    }
+
+    public boolean isNull() {
+        if (entity == null && location == null)
+            return true;
+        else if (entity != null && entity.isDead())
+            return true;
+        else return location != null && location.getWorld() == null;
     }
 }

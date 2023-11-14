@@ -33,7 +33,7 @@ public class Particle extends ParticleBuilder {
         if (gradient != null) {
             color(gradient.calculateColour(delta));
         }
-        location(parent.getLastLocation().clone().add(delta));
+        location(parent.getLastLocation().getLocation().add(delta));
         // note that the values we change here do persist, so we may need to reset them after spawning if it causes issues
         super.spawn();
     }

@@ -4,7 +4,7 @@ import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Contract;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -61,7 +61,7 @@ public class Helix extends AbstractShape implements RadialShape, LWHShape {
     @Override
     @Contract(pure = true)
     public Set<Vector> generateSurface() {
-        Set<Vector> points = new HashSet<>();
+        Set<Vector> points = new LinkedHashSet<>();
         double particleDensity = this.getParticleDensity();
         for (double r = radius; r > 0; r -= particleDensity) {
             points.addAll(MathUtil.calculateHelix(r, height, slope, direction, particleDensity));

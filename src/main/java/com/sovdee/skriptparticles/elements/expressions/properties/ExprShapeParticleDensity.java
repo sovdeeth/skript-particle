@@ -93,7 +93,7 @@ public class ExprShapeParticleDensity extends SimplePropertyExpression<Shape, Nu
             case DELETE:
             case RESET:
             case SET:
-                change = isDensity ? MathUtil.clamp(change, 0.001, 1000) : Math.max(1, (int) change);
+                change = isDensity ? MathUtil.clamp(1 / change, 0.001, 1000) : Math.max(1, (int) change);
                 for (Shape shape : shapes) {
                     if (isDensity) {
                         shape.setParticleDensity(change);

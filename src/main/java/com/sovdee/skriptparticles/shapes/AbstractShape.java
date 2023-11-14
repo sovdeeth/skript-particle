@@ -7,18 +7,20 @@ import com.sovdee.skriptparticles.util.DynamicLocation;
 import com.sovdee.skriptparticles.util.MathUtil;
 import com.sovdee.skriptparticles.util.ParticleUtil;
 import com.sovdee.skriptparticles.util.Quaternion;
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import org.bukkit.util.Consumer;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.jetbrains.annotations.Contract;
 import org.joml.Quaternionf;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 public abstract class AbstractShape implements Shape {
 
@@ -33,9 +35,10 @@ public abstract class AbstractShape implements Shape {
     private @Nullable DynamicLocation location;
     private Particle particle;
     private double particleDensity = 0.25; // todo: make this configurable
+    private long animationDuration = 0;
 
     private State lastState;
-    private @Nullable Location lastLocation;
+    private @Nullable DynamicLocation lastLocation;
     private boolean needsUpdate = false;
 
     private boolean drawLocalAxes = false;
@@ -98,17 +101,23 @@ public abstract class AbstractShape implements Shape {
     @Override
     public void draw(Collection<Player> recipients) {
         assert location != null;
-        draw(location.getLocation(), Quaternion.IDENTITY, particle, recipients);
-    }
-
-    @Override
-    public void draw(Location location, Collection<Player> recipients) {
         draw(location, Quaternion.IDENTITY, particle, recipients);
     }
 
     @Override
-    public void draw(Location location, Quaternion baseOrientation, Particle particle, Collection<Player> recipients) {
+    public void draw(DynamicLocation location, Collection<Player> recipients) {
+        draw(location, Quaternion.IDENTITY, particle, recipients);
+    }
+
+    @Override
+    public void draw(DynamicLocation location, Quaternion baseOrientation, Particle particle, Collection<Player> recipients) {
         // cache the last location and orientation used to draw the shape
+        if (location.isNull()) {
+            if (this.location == null)
+                return;
+            location = this.location.clone();
+        }
+
         lastLocation = location.clone();
         lastOrientation.set(baseOrientation.clone().mul(orientation));
 
@@ -123,25 +132,52 @@ public abstract class AbstractShape implements Shape {
         }
 
         particle.receivers(recipients);
-        for (Vector point : getPoints(lastOrientation)) {
-            try {
-                particle.spawn(point);
-            } catch (IllegalArgumentException e) {
-                Skript.error("Failed to spawn particle! Error: " + e.getMessage());
-                return;
+        Collection<Vector> toDraw = getPoints(lastOrientation);
+        if (animationDuration > 0) {
+            int particleCount = toDraw.size();
+            double millisecondsPerPoint = animationDuration / (double) particleCount;
+            Iterator<List<Vector>> batchIterator = MathUtil.batch(toDraw, millisecondsPerPoint).iterator();
+            Particle finalParticle = particle;
+            BukkitRunnable runnable = new BukkitRunnable() {
+                @Override
+                public void run() {
+                    if (!batchIterator.hasNext()) {
+                        this.cancel();
+                        return;
+                    }
+                    List<Vector> batch = batchIterator.next();
+                    try {
+                        for (Vector point : batch) {
+                                finalParticle.spawn(point);
+                        }
+                    } catch (IllegalArgumentException e) {
+                        Skript.error("Failed to spawn particle! Error: " + e.getMessage());
+                    }
+                }
+            };
+            runnable.runTaskTimerAsynchronously(Skript.getInstance(), 0, 1);
+        } else {
+            // no animation needed, draw all particles at once
+            for (Vector point :toDraw) {
+                try {
+                    particle.spawn(point);
+                } catch (IllegalArgumentException e) {
+                    Skript.error("Failed to spawn particle! Error: " + e.getMessage());
+                    return;
+                }
             }
         }
 
         if (drawLocalAxes) {
-            ParticleUtil.drawAxes(location.clone().add(offset), lastOrientation, recipients);
+            ParticleUtil.drawAxes(location.getLocation().add(offset), lastOrientation, recipients);
         }
         if (drawGlobalAxes) {
-            ParticleUtil.drawAxes(location.clone().add(offset), Quaternion.IDENTITY, recipients);
+            ParticleUtil.drawAxes(location.getLocation().add(offset), Quaternion.IDENTITY, recipients);
         }
     }
 
     @Override
-    public void draw(Location location, Consumer<Shape> consumer, Collection<Player> recipients) {
+    public void draw(DynamicLocation location, Consumer<Shape> consumer, Collection<Player> recipients) {
         consumer.accept(this);
         draw(location, this.orientation, this.particle, recipients);
     }
@@ -183,7 +219,7 @@ public abstract class AbstractShape implements Shape {
 
     @Override
     @Nullable
-    public Location getLastLocation() {
+    public DynamicLocation getLastLocation() {
         return lastLocation;
     }
 
@@ -284,6 +320,16 @@ public abstract class AbstractShape implements Shape {
     @Override
     public void setNeedsUpdate(boolean needsUpdate) {
         this.needsUpdate = needsUpdate;
+    }
+
+    @Override
+    public long getAnimationDuration() {
+        return animationDuration;
+    }
+
+    @Override
+    public void setAnimationDuration(long animationDuration) {
+        this.animationDuration = animationDuration;
     }
 
     @Contract("-> new")

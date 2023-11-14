@@ -8,7 +8,7 @@ import org.bukkit.util.Vector;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.jetbrains.annotations.Contract;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 
@@ -157,7 +157,7 @@ public class Rectangle extends AbstractShape implements LWHShape {
     @Override
     @Contract(pure = true)
     public Set<Vector> generateOutline() {
-        Set<Vector> points = new HashSet<>();
+        Set<Vector> points = new LinkedHashSet<>();
         for (double l = -halfLength + widthStep; l < halfLength; l += widthStep) {
             points.add(vectorFromLengthWidth(l, -halfWidth));
             points.add(vectorFromLengthWidth(l, halfWidth));
@@ -172,7 +172,7 @@ public class Rectangle extends AbstractShape implements LWHShape {
     @Override
     @Contract(pure = true)
     public Set<Vector> generateSurface() {
-        Set<Vector> points = new HashSet<>();
+        Set<Vector> points = new LinkedHashSet<>();
         for (double w = -halfWidth; w <= halfWidth; w += lengthStep) {
             for (double l = -halfLength; l <= halfLength; l += widthStep) {
                 points.add(vectorFromLengthWidth(l, w));

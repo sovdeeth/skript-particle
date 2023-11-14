@@ -4,7 +4,7 @@ import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Contract;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -39,7 +39,7 @@ public class Star extends AbstractShape {
     @Override
     @Contract(pure = true)
     public Set<Vector> generateSurface() {
-        Set<Vector> points = new HashSet<>();
+        Set<Vector> points = new LinkedHashSet<>();
         double minRadius = Math.min(innerRadius, outerRadius);
         double particleDensity = this.getParticleDensity();
         for (double r = 0; r < minRadius; r += particleDensity) {

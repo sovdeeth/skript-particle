@@ -97,7 +97,7 @@ public class RegularPolyhedron extends AbstractShape implements RadialShape, Pol
 
     @Override
     public @NotNull Set<Vector> generateFilled() {
-        Set<Vector> points = new HashSet<>();
+        Set<Vector> points = new LinkedHashSet<>();
         double step = radius / Math.round(radius / this.getParticleDensity());
         switch (faces) {
             case 4:
@@ -156,7 +156,7 @@ public class RegularPolyhedron extends AbstractShape implements RadialShape, Pol
         double faceRadius = sideLength / (2 * Math.sin(Math.PI / sides));
         Style style = this.getStyle();
         for (Quaternion rotation : rotations) {
-            HashSet<Vector> facePoints = new HashSet<>(switch (style) {
+            Set<Vector> facePoints = new LinkedHashSet<>(switch (style) {
                 case OUTLINE -> generateFaceOutline(sides, faceRadius);
                 case FILL, SURFACE -> generateFaceSurface(sides, faceRadius);
             });

@@ -9,7 +9,7 @@ import ch.njol.skript.lang.Effect;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.util.Kleenean;
-import com.sovdee.skriptparticles.elements.sections.EffSecDrawShape.DrawEvent;
+import com.sovdee.skriptparticles.elements.sections.DrawShapeEffectSection.DrawEvent;
 import com.sovdee.skriptparticles.shapes.Shape;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;

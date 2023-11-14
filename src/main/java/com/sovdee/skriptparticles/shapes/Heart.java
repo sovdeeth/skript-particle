@@ -4,7 +4,7 @@ import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Contract;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -41,7 +41,7 @@ public class Heart extends AbstractShape implements LWHShape {
     @Override
     @Contract(pure = true)
     public Set<Vector> generateSurface() {
-        Set<Vector> points = new HashSet<>();
+        Set<Vector> points = new LinkedHashSet<>();
         double particleDensity = this.getParticleDensity();
         for (double w = width, l = length; w > 0 && l > 0; w -= particleDensity * 1.5, l -= particleDensity * 1.5) {
             points.addAll(MathUtil.calculateHeart(l / 2, w / 2, eccentricity, particleDensity));

@@ -203,10 +203,9 @@ public class ParticleTypes {
                     if (params[0].length == 0 || params[1].length == 0) {
                         return null;
                     }
-                    Location origin = new Location(null, 0, 0, 0);
                     Location destination = (Location) params[0][0];
                     int arrivalTime = (int) ((Timespan) params[1][0]).getTicks_i();
-                    Vibration vibration = new Vibration(origin, new Vibration.Destination.BlockDestination(destination), arrivalTime);
+                    Vibration vibration = new Vibration(new Vibration.Destination.BlockDestination(destination), arrivalTime);
                     return new Vibration[]{vibration};
                 }
             }.description("A mirror of SkBee's Vibration function. For use when SkBee is not installed.\n" +

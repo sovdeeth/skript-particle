@@ -6,7 +6,7 @@ import org.jetbrains.annotations.Contract;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -76,10 +76,10 @@ public class IrregularPolygon extends AbstractShape implements LWHShape {
     @Contract(pure = true)
     public Set<Vector> generateOutline() {
         double particleDensity = this.getParticleDensity();
-        Set<Vector> points = new HashSet<>(MathUtil.connectPoints(vertices, particleDensity));
+        Set<Vector> points = new LinkedHashSet<>(MathUtil.connectPoints(vertices, particleDensity));
         points.addAll(MathUtil.calculateLine(vertices.get(0), vertices.get(vertices.size() - 1), particleDensity));
         if (height != 0) {
-            Set<Vector> upperPoints = new HashSet<>();
+            Set<Vector> upperPoints = new LinkedHashSet<>();
             for (Vector v : points) {
                 upperPoints.add(new Vector(v.getX(), height, v.getZ()));
             }

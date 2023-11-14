@@ -119,7 +119,7 @@ public class RotationTypes {
                 }
             }
                     .description("Returns a quaternion from the given axis and angle parameters. The axis is a vector composed of 3 numbers, x, y, and z, and the angle is the rotation around that axis, in degrees.")
-                    .examples("set {_v} to axisAngle(180, 1, 0, 0)")
+                    .examples("set {_v} to axisAngleDegrees(180, 1, 0, 0)")
                     .since("1.0.0"));
         }
     }
