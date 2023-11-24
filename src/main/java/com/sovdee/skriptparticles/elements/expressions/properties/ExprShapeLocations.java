@@ -35,7 +35,7 @@ import java.util.ArrayList;
 public class ExprShapeLocations extends SimpleExpression<Location> {
 
     static {
-        Skript.registerExpression(ExprShapeLocations.class, Location.class, ExpressionType.COMBINED, "[particle] locations of %shapes% [[centered] [%-direction%] %location%]");
+        Skript.registerExpression(ExprShapeLocations.class, Location.class, ExpressionType.COMBINED, "[particle] locations of %shapes% [[centered] %direction% %location%]");
     }
 
     private Expression<Shape> shapeExpr;
@@ -44,9 +44,7 @@ public class ExprShapeLocations extends SimpleExpression<Location> {
     @Override
     public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, SkriptParser.ParseResult parseResult) {
         shapeExpr = (Expression<Shape>) exprs[0];
-        locationExpr = (Expression<Location>) exprs[2];
-        if (exprs[1] != null)
-            locationExpr = Direction.combine((Expression<? extends Direction>) exprs[1], locationExpr);
+        locationExpr = Direction.combine((Expression<? extends Direction>) exprs[1], (Expression<Location>) exprs[2]);
         return true;
     }
 
