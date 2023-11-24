@@ -28,13 +28,13 @@ import java.util.List;
 public class ExprShapeCopy extends SimpleExpression<Shape> {
 
     static {
-        Skript.registerExpression(ExprShapeCopy.class, Shape.class, ExpressionType.SIMPLE, "[a] cop(y|ies) of %shapes%");
+        Skript.registerExpression(ExprShapeCopy.class, Shape.class, ExpressionType.SIMPLE, "[a] shape cop(y|ies) of %shapes%");
     }
 
-    Expression<Shape> shapeExpr;
+    private Expression<Shape> shapeExpr;
 
     @Override
-    public boolean init(Expression<?>[] expressions, int i, Kleenean kleenean, ParseResult parseResult) {
+    public boolean init(Expression<?>[] expressions, int matchedPattern, Kleenean kleenean, ParseResult parseResult) {
         shapeExpr = (Expression<Shape>) expressions[0];
         return true;
     }
@@ -65,7 +65,7 @@ public class ExprShapeCopy extends SimpleExpression<Shape> {
     }
 
     @Override
-    public String toString(@Nullable Event event, boolean b) {
+    public String toString(@Nullable Event event, boolean debug) {
         return "shape copy";
     }
 }

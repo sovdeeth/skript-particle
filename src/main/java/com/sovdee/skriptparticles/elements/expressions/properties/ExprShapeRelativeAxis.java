@@ -43,16 +43,12 @@ public class ExprShapeRelativeAxis extends SimplePropertyExpression<Shape, Vecto
 
     @Override
     public @Nullable Vector convert(Shape shape) {
-        switch (axis) {
-            case 0:
-                return shape.getRelativeXAxis(false);
-            case 1:
-                return shape.getRelativeYAxis(false);
-            case 2:
-                return shape.getRelativeZAxis(false);
-            default:
-                return null;
-        }
+        return switch (axis) {
+            case 0 -> shape.getRelativeXAxis(false);
+            case 1 -> shape.getRelativeYAxis(false);
+            case 2 -> shape.getRelativeZAxis(false);
+            default -> null;
+        };
     }
 
     @Override

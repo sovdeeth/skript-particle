@@ -194,7 +194,7 @@ public class ShapeTypes {
 
                     @Override
                     public String toVariableNameString(Shape.Style style) {
-                        return "shapestyle:" + style.toString();
+                        return "shapestyle:" + style;
                     }
                 }));
     }

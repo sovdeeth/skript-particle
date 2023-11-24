@@ -9,3 +9,10 @@ types:
     cutoffshape: cutoff shape¦s
     polyshape: polygonal shape¦s
     shapestyle: shape style¦s
+
+particle motions:
+    inwards: inwards, inwards motion, towards center, towards the center
+    outwards: outwards, outwards motion, away from center, away from the center
+    clockwise: clockwise, clockwise motion
+    counterclockwise: anticlockwise, anticlockwise motion, counterclockwise, counterclockwise motion
+    none: none, no motion

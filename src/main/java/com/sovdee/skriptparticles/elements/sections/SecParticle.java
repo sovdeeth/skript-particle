@@ -18,7 +18,7 @@ import com.sovdee.skriptparticles.particles.ParticleMotion;
 import com.sovdee.skriptparticles.util.ParticleUtil;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
-import org.jetbrains.annotations.Nullable;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.skriptlang.skript.lang.entry.EntryContainer;
 import org.skriptlang.skript.lang.entry.EntryValidator;
 import org.skriptlang.skript.lang.entry.util.ExpressionEntryData;
@@ -56,6 +56,7 @@ import java.util.List;
 })
 @Since("1.0.2")
 public class SecParticle extends Section {
+    @Nullable
     public static Particle lastCreatedParticle;
     private static final EntryValidator validator = EntryValidator.builder()
             .addEntryData(new ExpressionEntryData<>("count", new SimpleLiteral<>(1, false), false, Number.class))
@@ -76,20 +77,25 @@ public class SecParticle extends Section {
     //- - if particle is dust, allow "color: color" and "size: double"
     //- force: boolean
     static {
-        Skript.registerSection(SecParticle.class, "create [a] [new] custom %particle% [particle]");
+        Skript.registerSection(SecParticle.class, "create [a] [new] custom %particle% [particle] [with]");
     }
 
     private Expression<org.bukkit.Particle> particle;
     private Expression<Number> count;
+    @Nullable
     private Expression<Vector> offset;
+    @Nullable
     private Expression<?> velocity;
+    @Nullable
     private Expression<Number> extra;
+    @Nullable
     private Expression<Object> data;
+    @Nullable
     private Expression<Boolean> force;
 
     @Override
     public boolean init(Expression<?>[] expressions, int matchedPattern, Kleenean isDelayed, SkriptParser.ParseResult parseResult, SectionNode sectionNode, List<TriggerItem> triggerItems) {
-        EntryContainer entryContainer = validator.validate(sectionNode);
+        @Nullable EntryContainer entryContainer = validator.validate(sectionNode);
         if (entryContainer == null)
             return false;
 
@@ -133,21 +139,21 @@ public class SecParticle extends Section {
     }
 
     private void execute(Event event) {
-        org.bukkit.Particle bukkitParticle = this.particle.getSingle(event);
+        org.bukkit. @Nullable Particle bukkitParticle = this.particle.getSingle(event);
         if (bukkitParticle == null)
             return;
-        Number count = this.count.getSingle(event);
+        @Nullable Number count = this.count.getSingle(event);
         if (count == null)
             return;
-        Vector offset = this.offset != null ? this.offset.getSingle(event) : null;
-        Number extra = this.extra != null ? this.extra.getSingle(event) : null;
-        Object data = this.data != null ? this.data.getSingle(event) : null;
-        Boolean force = this.force != null ? this.force.getSingle(event) : null;
+        @Nullable Vector offset = this.offset != null ? this.offset.getSingle(event) : null;
+        @Nullable Number extra = this.extra != null ? this.extra.getSingle(event) : null;
+        @Nullable Object data = this.data != null ? this.data.getSingle(event) : null;
+        @Nullable Boolean force = this.force != null ? this.force.getSingle(event) : null;
 
         Particle particle = (Particle) new Particle(bukkitParticle).count(count.intValue());
 
         if (velocity != null) {
-            Object v = velocity.getSingle(event);
+            @Nullable Object v = velocity.getSingle(event);
             if (v instanceof ParticleMotion motion) {
                 particle.motion(motion);
             } else if (v instanceof Vector vector) {

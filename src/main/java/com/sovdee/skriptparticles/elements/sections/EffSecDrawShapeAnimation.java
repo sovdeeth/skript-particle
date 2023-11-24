@@ -62,7 +62,7 @@ public class EffSecDrawShapeAnimation extends DrawShapeEffectSection {
     @Override
     @NonNull
     public String toString(@Nullable Event event, boolean debug) {
-        return "draw an animation of the shape of " + shapes.toString(event, debug) + " at " + locations.toString(event, debug) +
+        return "draw an animation of the shape of " + shapes.toString(event, debug) + " at " + (locations != null ? locations.toString(event, debug) : "shape's location") +
                 " for " + (players == null ? "all players" : players.toString(event, debug) + " over " + duration.toString(event, debug));
     }
 }

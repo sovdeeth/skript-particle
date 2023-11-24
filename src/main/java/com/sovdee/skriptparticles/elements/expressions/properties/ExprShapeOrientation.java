@@ -43,12 +43,12 @@ public class ExprShapeOrientation extends SimplePropertyExpression<Shape, Quater
     public Class<?>[] acceptChange(ChangeMode mode) {
         return switch (mode) {
             case SET, RESET, DELETE -> new Class[]{Quaternion.class};
-            case ADD, REMOVE, REMOVE_ALL -> null;
+            case ADD, REMOVE, REMOVE_ALL -> new Class[0];
         };
     }
 
     @Override
-    public void change(Event event, @Nullable Object[] delta, ChangeMode mode) {
+    public void change(Event event, Object @Nullable [] delta, ChangeMode mode) {
         switch (mode) {
             case SET:
                 if (delta == null || delta.length == 0) return;

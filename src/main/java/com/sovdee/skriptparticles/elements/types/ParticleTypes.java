@@ -1,6 +1,7 @@
 package com.sovdee.skriptparticles.elements.types;
 
 import ch.njol.skript.classes.ClassInfo;
+import ch.njol.skript.classes.EnumClassInfo;
 import ch.njol.skript.classes.Parser;
 import ch.njol.skript.lang.ParseContext;
 import ch.njol.skript.lang.function.Functions;
@@ -45,7 +46,6 @@ public class ParticleTypes {
                     .since("1.0.0")
                     .parser(new Parser<>() {
 
-                        @SuppressWarnings("NullableProblems")
                         @Nullable
                         @Override
                         public Particle parse(String s, ParseContext context) {
@@ -71,7 +71,6 @@ public class ParticleTypes {
                 .description("Represents a particle with extra data, including offset, count, data, and more.")
                 .parser(new Parser<>() {
 
-                    @SuppressWarnings("NullableProblems")
                     @Nullable
                     @Override
                     public com.sovdee.skriptparticles.particles.Particle parse(String s, ParseContext context) {
@@ -96,41 +95,10 @@ public class ParticleTypes {
         );
 
         // Particle motion class
-        Classes.registerClass(new ClassInfo<>(ParticleMotion.class, "particlemotion")
+        Classes.registerClass(new EnumClassInfo<>(ParticleMotion.class, "particlemotion", "particle motions")
                 .user("particle ?motions?")
                 .name("Particle Motion")
-                .description("Represents the motion of a particle relative to a shape, ie: inwards, outwards, clockwise, etc.")
-                .parser(new Parser<>() {
-
-                    @SuppressWarnings("NullableProblems")
-                    @Nullable
-                    @Override
-                    public ParticleMotion parse(String s, ParseContext context) {
-                        return switch (s.toLowerCase()) {
-                            case "inwards motion" -> ParticleMotion.INWARDS;
-                            case "outwards motion" -> ParticleMotion.OUTWARDS;
-                            case "clockwise motion" -> ParticleMotion.CLOCKWISE;
-                            case "counterclockwise motion" -> ParticleMotion.COUNTERCLOCKWISE;
-                            case "no motion" -> ParticleMotion.NONE;
-                            default -> null;
-                        };
-                    }
-
-                    @Override
-                    public boolean canParse(ParseContext context) {
-                        return true;
-                    }
-
-                    @Override
-                    public @NonNull String toString(ParticleMotion particleMotion, int flags) {
-                        return particleMotion.toString();
-                    }
-
-                    @Override
-                    public @NonNull String toVariableNameString(ParticleMotion particle) {
-                        return "particle motion:" + toString(particle, 0);
-                    }
-                })
+                .description("Represents the motion of a particle relative to a shape.")
         );
 
         Converters.registerConverter(Particle.class, com.sovdee.skriptparticles.particles.Particle.class, (particle) -> (com.sovdee.skriptparticles.particles.Particle) new com.sovdee.skriptparticles.particles.Particle(particle).count(1).extra(0));
@@ -145,7 +113,6 @@ public class ParticleTypes {
                     new Parameter<>("color", DefaultClasses.COLOR, true, null),
                     new Parameter<>("size", DefaultClasses.NUMBER, true, null)
             }, Classes.getExactClassInfo(DustOptions.class), true) {
-                @SuppressWarnings("NullableProblems")
                 @Override
                 public DustOptions[] executeSimple(Object[][] params) {
                     org.bukkit.Color color = ((Color) params[0][0]).asBukkitColor();
@@ -170,7 +137,6 @@ public class ParticleTypes {
                     new Parameter<>("toColor", DefaultClasses.COLOR, true, null),
                     new Parameter<>("size", DefaultClasses.NUMBER, true, null)
             }, Classes.getExactClassInfo(DustTransition.class), true) {
-                @SuppressWarnings("NullableProblems")
                 @Override
                 public DustTransition[] executeSimple(Object[][] params) {
                     org.bukkit.Color fromColor = ((Color) params[0][0]).asBukkitColor();
@@ -197,11 +163,10 @@ public class ParticleTypes {
                     new Parameter<>("to", DefaultClasses.LOCATION, true, null),
                     new Parameter<>("arrivalTime", DefaultClasses.TIMESPAN, true, null)
             }, Classes.getExactClassInfo(Vibration.class), true) {
-                @SuppressWarnings("NullableProblems")
                 @Override
                 public Vibration[] executeSimple(Object[][] params) {
                     if (params[0].length == 0 || params[1].length == 0) {
-                        return null;
+                        return new Vibration[0];
                     }
                     Location destination = (Location) params[0][0];
                     int arrivalTime = (int) ((Timespan) params[1][0]).getTicks_i();

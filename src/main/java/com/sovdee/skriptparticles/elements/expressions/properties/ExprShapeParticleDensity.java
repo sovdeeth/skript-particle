@@ -65,18 +65,16 @@ public class ExprShapeParticleDensity extends SimplePropertyExpression<Shape, Nu
     public Class<?>[] acceptChange(ChangeMode mode) {
         return switch (mode) {
             case ADD, REMOVE, SET, RESET, DELETE -> new Class[]{Number.class};
-            case REMOVE_ALL -> null;
+            case REMOVE_ALL -> new Class[0];
         };
     }
 
     @Override
-    public void change(Event event, @Nullable Object[] delta, ChangeMode mode) {
-        if (delta == null || delta.length == 0)
-            return;
+    public void change(Event event, Object @Nullable [] delta, ChangeMode mode) {
         Shape[] shapes = getExpr().getArray(event);
         if (shapes.length == 0)
             return;
-        double change = (delta[0] == null) ? 0.25 : ((Number) delta[0]).doubleValue();
+        double change = (delta == null) ? 0.25 : ((Number) delta[0]).doubleValue();
         switch (mode) {
             case REMOVE:
                 change = -change;

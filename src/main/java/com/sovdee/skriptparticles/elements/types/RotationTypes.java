@@ -62,7 +62,6 @@ public class RotationTypes {
                     new Parameter<>("z", DefaultClasses.NUMBER, true, new SimpleLiteral<Number>(0, true)),
                     new Parameter<>("w", DefaultClasses.NUMBER, true, new SimpleLiteral<Number>(1, true))
             }, Classes.getExactClassInfo(Quaternionf.class), true) {
-                @SuppressWarnings("NullableProblems")
                 @Override
                 public @Nullable Quaternionf[] executeSimple(Object[][] params) {
                     float w = ((Number) params[0][0]).floatValue();
@@ -84,7 +83,6 @@ public class RotationTypes {
                     new Parameter<>("y", DefaultClasses.NUMBER, true, null),
                     new Parameter<>("z", DefaultClasses.NUMBER, true, null)
             }, Classes.getExactClassInfo(Quaternionf.class), true) {
-                @SuppressWarnings("NullableProblems")
                 @Override
                 public @Nullable Quaternionf[] executeSimple(Object[][] params) {
                     float angle = ((Number) params[0][0]).floatValue();
@@ -107,7 +105,6 @@ public class RotationTypes {
                     new Parameter<>("y", DefaultClasses.NUMBER, true, null),
                     new Parameter<>("z", DefaultClasses.NUMBER, true, null)
             }, Classes.getExactClassInfo(Quaternionf.class), true) {
-                @SuppressWarnings("NullableProblems")
                 @Override
                 public @Nullable Quaternionf[] executeSimple(Object[][] params) {
                     float angle = ((Number) params[0][0]).floatValue() * (float) Math.PI / 180;

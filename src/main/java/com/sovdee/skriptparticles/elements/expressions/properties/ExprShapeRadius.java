@@ -40,19 +40,17 @@ public class ExprShapeRadius extends SimplePropertyExpression<RadialShape, Numbe
     public Class<?>[] acceptChange(ChangeMode mode) {
         return switch (mode) {
             case SET, RESET, DELETE, ADD, REMOVE -> new Class[]{Number.class};
-            case REMOVE_ALL -> null;
+            case REMOVE_ALL -> new Class[0];
         };
     }
 
     @Override
-    public void change(Event event, @Nullable Object[] delta, ChangeMode mode) {
-        if ((mode == ChangeMode.ADD || mode == ChangeMode.SET || mode == ChangeMode.REMOVE) && (delta == null || delta.length == 0))
-            return;
+    public void change(Event event, Object @Nullable [] delta, ChangeMode mode) {
         RadialShape[] radialShapes = getExpr().getArray(event);
         if (radialShapes.length == 0)
             return;
 
-        double deltaValue = (delta[0] != null) ? ((Number) delta[0]).doubleValue() : 1;
+        double deltaValue = (delta != null) ? ((Number) delta[0]).doubleValue() : 1;
         switch (mode) {
             case REMOVE:
                 deltaValue = -deltaValue;

@@ -39,12 +39,12 @@ public class ExprShapeStyle extends SimplePropertyExpression<Shape, Shape.Style>
     public Class<?>[] acceptChange(ChangeMode mode) {
         return switch (mode) {
             case SET -> new Class[]{Shape.Style.class};
-            case ADD, REMOVE, REMOVE_ALL, DELETE, RESET -> null;
+            case ADD, REMOVE, REMOVE_ALL, DELETE, RESET -> new Class[0];
         };
     }
 
     @Override
-    public void change(Event event, @Nullable Object[] delta, ChangeMode mode) {
+    public void change(Event event, Object @Nullable [] delta, ChangeMode mode) {
         if (delta == null || delta.length != 1) return;
         Shape.Style style = (Shape.Style) delta[0];
         for (Shape shape : getExpr().getArray(event)) {

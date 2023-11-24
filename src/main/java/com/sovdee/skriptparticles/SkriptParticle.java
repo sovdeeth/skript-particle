@@ -22,12 +22,12 @@ public class SkriptParticle extends JavaPlugin {
     // todo, next release
     // custom shapes
     // icosphere
+    // expressions for particles
     // todo, later versions
     // beziers
     // better triangle filling (basically allow any 3d model)
     // gradients
     // text rendering
-    // animation?
 
     @Nullable
     public static SkriptParticle getInstance() {

@@ -53,12 +53,12 @@ public class ExprStarRadii extends SimplePropertyExpression<Shape, Number> {
     public @Nullable Class<?>[] acceptChange(Changer.ChangeMode mode) {
         return switch (mode) {
             case SET, ADD, REMOVE -> new Class[]{Number.class};
-            default -> null;
+            default -> new Class[0];
         };
     }
 
     @Override
-    public void change(Event event, @Nullable Object[] delta, Changer.ChangeMode mode) {
+    public void change(Event event, Object @Nullable [] delta, Changer.ChangeMode mode) {
         if (delta == null || delta.length == 0)
             return;
         double deltaValue = ((Number) delta[0]).doubleValue();

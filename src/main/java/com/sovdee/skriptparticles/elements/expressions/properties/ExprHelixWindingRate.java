@@ -42,7 +42,7 @@ public class ExprHelixWindingRate extends SimplePropertyExpression<Shape, Number
     public Class<?>[] acceptChange(ChangeMode mode) {
         return switch (mode) {
             case SET, DELETE, ADD, REMOVE, RESET -> new Class[]{Number.class};
-            default -> null;
+            default -> new Class[0];
         };
     }
 

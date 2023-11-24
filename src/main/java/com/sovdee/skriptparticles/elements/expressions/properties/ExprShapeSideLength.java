@@ -40,16 +40,13 @@ public class ExprShapeSideLength extends SimplePropertyExpression<PolyShape, Num
     public Class<?>[] acceptChange(ChangeMode mode) {
         return switch (mode) {
             case SET, ADD, REMOVE, DELETE, RESET -> new Class[]{Number.class};
-            case REMOVE_ALL -> null;
+            case REMOVE_ALL -> new Class[0];
         };
     }
 
     @Override
-    public void change(Event event, @Nullable Object[] delta, ChangeMode mode) {
-        if ((mode == ChangeMode.ADD || mode == ChangeMode.SET || mode == ChangeMode.REMOVE) && (delta == null || delta.length == 0))
-            return;
-
-        double change = (delta[0] != null) ? ((Number) delta[0]).doubleValue() : 1;
+    public void change(Event event, Object @Nullable [] delta, ChangeMode mode) {
+        double change = (delta != null) ? ((Number) delta[0]).doubleValue() : 1;
 
         switch (mode) {
             case REMOVE:

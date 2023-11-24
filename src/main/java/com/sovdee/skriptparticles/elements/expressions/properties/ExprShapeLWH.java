@@ -57,12 +57,12 @@ public class ExprShapeLWH extends SimplePropertyExpression<LWHShape, Number> {
     public Class<?>[] acceptChange(ChangeMode mode) {
         return switch (mode) {
             case SET, DELETE, RESET, ADD, REMOVE -> new Class[]{Number.class};
-            default -> null;
+            default -> new Class[0];
         };
     }
 
     @Override
-    public void change(Event event, @Nullable Object[] delta, ChangeMode mode) {
+    public void change(Event event, Object @Nullable [] delta, ChangeMode mode) {
         double value = 1;
         if (delta != null && delta.length != 0)
             value = ((Number) delta[0]).doubleValue();
@@ -108,7 +108,7 @@ public class ExprShapeLWH extends SimplePropertyExpression<LWHShape, Number> {
             case 0 -> "length";
             case 1 -> "width";
             case 2 -> "height";
-            default -> null;
+            default -> "unknown";
         };
     }
 

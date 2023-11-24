@@ -23,10 +23,10 @@ public enum ParticleMotion {
     }
 
     private Vector getAntiClockwiseMotion(Vector axis, Vector point) {
-        return axis.getCrossProduct(point);
+        return axis.getCrossProduct(point).normalize();
     }
 
     private Vector getOutwardsMotion(Vector point) {
-        return point.clone();
+        return point.clone().normalize();
     }
 }

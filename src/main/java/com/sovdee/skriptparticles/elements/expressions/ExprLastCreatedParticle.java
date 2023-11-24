@@ -32,7 +32,7 @@ public class ExprLastCreatedParticle extends SimpleExpression<Particle> {
 
     @Override
     @Nullable
-    protected Particle[] get(Event evente) {
+    protected Particle[] get(Event event) {
         return new Particle[]{SecParticle.lastCreatedParticle};
     }
 

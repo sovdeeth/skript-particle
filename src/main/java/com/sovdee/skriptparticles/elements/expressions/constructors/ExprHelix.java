@@ -15,7 +15,7 @@ import com.sovdee.skriptparticles.shapes.Helix;
 import com.sovdee.skriptparticles.shapes.Shape.Style;
 import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
-import org.jetbrains.annotations.Nullable;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 @Name("Particle Helix / Spiral")
 @Description({
@@ -38,6 +38,7 @@ public class ExprHelix extends SimpleExpression<Helix> {
 
     private Expression<Number> radius;
     private Expression<Number> height;
+    @Nullable
     private Expression<Number> windingRate;
     private boolean isClockwise = true;
     private Style style;
@@ -75,11 +76,12 @@ public class ExprHelix extends SimpleExpression<Helix> {
     @Override
     @Nullable
     protected Helix[] get(Event event) {
-        Number radius = this.radius.getSingle(event);
-        Number height = this.height.getSingle(event);
-        Number windingRate = this.windingRate == null ? 1 : this.windingRate.getSingle(event);
+        @Nullable Number radius = this.radius.getSingle(event);
+        @Nullable Number height = this.height.getSingle(event);
+        @Nullable Number windingRate = this.windingRate == null ? 1 : this.windingRate.getSingle(event);
         if (radius == null || height == null || windingRate == null)
-            return null;
+            return new Helix[0];
+
         radius = Math.max(radius.doubleValue(), MathUtil.EPSILON);
         height = Math.max(height.doubleValue(), MathUtil.EPSILON);
         double slope = 1.0 / Math.max(windingRate.doubleValue(), MathUtil.EPSILON);

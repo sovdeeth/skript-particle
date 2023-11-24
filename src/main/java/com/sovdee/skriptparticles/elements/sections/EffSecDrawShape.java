@@ -17,7 +17,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.jetbrains.annotations.Nullable;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicLong;
@@ -66,7 +66,9 @@ public class EffSecDrawShape extends DrawShapeEffectSection {
         }, EventValues.TIME_NOW);
     }
 
+    @Nullable
     private Expression<Timespan> duration;
+    @Nullable
     private Expression<Timespan> delay;
 
     @Override
@@ -81,12 +83,12 @@ public class EffSecDrawShape extends DrawShapeEffectSection {
     @Override
     protected void setupAsync(Event event, Collection<DynamicLocation> locations, Collection<Shape> shapes, Collection<Player> recipients) {
         long period, iterations;
-        if (duration == null) {
+        if (this.duration == null) {
             period = 1;
             iterations = 1;
         } else {
-            Timespan delay = (this.delay == null ? ONE_TICK : this.delay.getSingle(event));
-            Timespan duration = this.duration.getSingle(event);
+            @Nullable Timespan delay = (this.delay == null ? ONE_TICK : this.delay.getSingle(event));
+            @Nullable Timespan duration = this.duration.getSingle(event);
             if (delay == null || duration == null) return;
 
             period = Math.max(delay.getTicks_i(), 1);

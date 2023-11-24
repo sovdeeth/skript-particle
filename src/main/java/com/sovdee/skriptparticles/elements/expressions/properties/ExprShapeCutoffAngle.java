@@ -38,12 +38,12 @@ public class ExprShapeCutoffAngle extends SimplePropertyExpression<CutoffShape, 
     public Class<?>[] acceptChange(ChangeMode mode) {
         return switch (mode) {
             case SET, RESET, DELETE, ADD, REMOVE -> new Class[]{Number.class};
-            case REMOVE_ALL -> null;
+            case REMOVE_ALL -> new Class[0];
         };
     }
 
     @Override
-    public void change(Event event, @Nullable Object[] delta, ChangeMode mode) {
+    public void change(Event event, Object @Nullable [] delta, ChangeMode mode) {
         double angle = 0;
         if (delta != null && delta.length != 0)
             angle = ((Number) delta[0]).doubleValue();

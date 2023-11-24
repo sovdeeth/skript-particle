@@ -25,7 +25,7 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.jetbrains.annotations.Nullable;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -47,8 +47,11 @@ public abstract class DrawShapeEffectSection extends EffectSection {
     }
 
     protected Expression<Shape> shapes;
+    @Nullable
     protected Expression<Direction> directions;
+    @Nullable
     protected Expression<?> locations;
+    @Nullable
     protected Expression<Player> players;
     @Nullable
     private Trigger trigger;

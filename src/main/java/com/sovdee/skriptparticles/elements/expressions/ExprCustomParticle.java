@@ -35,10 +35,14 @@ public class ExprCustomParticle extends SimpleExpression<Particle> {
                         "[with offset %-vector%] [with extra %-number%] [force:with force]");
     }
 
+    @Nullable
     private Expression<Number> count;
     private Expression<?> particle;
+    @Nullable
     private Expression<Object> data;
+    @Nullable
     private Expression<Vector> offset;
+    @Nullable
     private Expression<Number> extra;
     private boolean force;
 
@@ -56,7 +60,8 @@ public class ExprCustomParticle extends SimpleExpression<Particle> {
     @Override
     @Nullable
     protected Particle[] get(Event event) {
-        Object particleExpr = this.particle.getSingle(event);
+        @Nullable Object particleExpr = this.particle.getSingle(event);
+
         if (particleExpr == null) return new Particle[0];
         Particle particle;
         if (particleExpr instanceof Particle) {
@@ -66,9 +71,10 @@ public class ExprCustomParticle extends SimpleExpression<Particle> {
         } else {
             return new Particle[0];
         }
+
         particle = particle.clone();
         if (count != null) {
-            Number count = this.count.getSingle(event);
+            @Nullable Number count = this.count.getSingle(event);
             if (count != null) {
                 particle.count(count.intValue());
             } else {
@@ -78,7 +84,7 @@ public class ExprCustomParticle extends SimpleExpression<Particle> {
         }
 
         if (data != null) {
-            Object data = this.data.getSingle(event);
+            @Nullable Object data = this.data.getSingle(event);
             if (data instanceof ItemType itemType) {
                 data = itemType.getRandom();
             }
@@ -86,12 +92,12 @@ public class ExprCustomParticle extends SimpleExpression<Particle> {
         }
 
         if (offset != null) {
-            Vector offset = this.offset.getSingle(event);
+            @Nullable Vector offset = this.offset.getSingle(event);
             if (offset != null) particle.offset(offset.getX(), offset.getY(), offset.getZ());
         }
 
         if (extra != null) {
-            Number extra = this.extra.getSingle(event);
+            @Nullable Number extra = this.extra.getSingle(event);
             if (extra != null) particle.extra(extra.doubleValue());
         }
 
@@ -111,7 +117,7 @@ public class ExprCustomParticle extends SimpleExpression<Particle> {
     }
 
     @Override
-    public String toString(@Nullable Event e, boolean debug) {
+    public String toString(@Nullable Event event, boolean debug) {
         return "custom particle";
     }
 

@@ -33,9 +33,13 @@ public class ExprRotation extends SimpleExpression<Quaternion> {
                 "[the|a] rotation (from|between) %vector% (to|and) %vector%");
     }
 
+    @Nullable
     private Expression<Number> angle;
+    @Nullable
     private Expression<Vector> axis;
+    @Nullable
     private Expression<Vector> from;
+    @Nullable
     private Expression<Vector> to;
     private boolean isRadians = false;
 
@@ -55,20 +59,22 @@ public class ExprRotation extends SimpleExpression<Quaternion> {
     @Override
     @Nullable
     protected Quaternion[] get(Event event) {
-        if (axis != null) {
-            Vector axis = this.axis.getSingle(event);
-            Number angle = this.angle.getSingle(event);
+        if (axis != null && angle != null) {
+            @Nullable Vector axis = this.axis.getSingle(event);
+            @Nullable Number angle = this.angle.getSingle(event);
             if (axis == null || angle == null)
-                return null;
+                return new Quaternion[0];
             float angleFloat = angle.floatValue();
             if (!isRadians)
                 angleFloat = (float) Math.toRadians(angleFloat);
             return new Quaternion[]{new Quaternion().rotationAxis(angleFloat, axis)};
         } else {
-            Vector from = this.from.getSingle(event);
-            Vector to = this.to.getSingle(event);
             if (from == null || to == null)
-                return null;
+                return new Quaternion[0];
+            @Nullable Vector from = this.from.getSingle(event);
+            @Nullable Vector to = this.to.getSingle(event);
+            if (from == null || to == null)
+                return new Quaternion[0];
             return new Quaternion[]{new Quaternion().rotationTo(from, to)};
         }
     }
@@ -84,10 +90,10 @@ public class ExprRotation extends SimpleExpression<Quaternion> {
     }
 
     @Override
-    public String toString(@Nullable Event e, boolean debug) {
+    public String toString(@Nullable Event event, boolean debug) {
         if (axis == null)
-            return "rotation from " + from.toString(e, debug) + " to " + to.toString(e, debug);
-        return "rotation around " + axis.toString(e, debug) + " by " + angle.toString(e, debug) + (isRadians ? " radians" : " degrees");
+            return "rotation from " + (from != null ? from.toString(event, debug) : "null") + " to " + (to != null ? to.toString(event, debug) : "null");
+        return "rotation around " + axis.toString(event, debug) + " by " + (angle != null ? angle.toString(event, debug) : "null") + (isRadians ? " radians" : " degrees");
     }
 
 }
