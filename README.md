@@ -37,7 +37,7 @@ command /magic:
             set {_yaw} to yaw of {_view}
             # figure out the rotation needed to rotate the shape 
             set {_rotation} to rotation from vector(0, 1, 0) to {_view}
-            draw {_shapes::*} at player's eye location ~ {_view}:
+            draw shapes {_shapes::*} at player's eye location ~ {_view}:
                 # only happens for this draw call, the original shape is not modified
                 # note that this is called once for each shape, hence `drawn shape` and not `drawn shapes`
                 rotate shape drawn shape by {_rotation}
