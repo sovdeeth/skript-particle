@@ -40,8 +40,8 @@ public class ExprRectangle extends SimpleExpression<Rectangle> {
 
     static {
         Skript.registerExpression(ExprRectangle.class, Rectangle.class, ExpressionType.COMBINED,
-                "[a] [solid:(solid|filled)] [:xz|:xy|:yz] rectangle (with|of) length %number% and width %number%",
-                "[a] [solid:(solid|filled)] [:xz|:xy|:yz] rectangle (from|with corners [at]) %location/entity/vector% (to|and) %location/entity/vector%"
+                "[a[n]] [solid:(solid|filled)] [:xz|:xy|:yz] rectangle (with|of) length %number% and width %number%",
+                "[a[n]] [solid:(solid|filled)] [:xz|:xy|:yz] rectangle (from|with corners [at]) %location/entity/vector% (to|and) %location/entity/vector%"
         );
     }
 
@@ -91,7 +91,6 @@ public class ExprRectangle extends SimpleExpression<Rectangle> {
             if (corner1 instanceof Vector && corner2 instanceof Vector) {
                 // if both are vectors, create a static rectangle
                 rectangle = new Rectangle((Vector) corner1, (Vector) corner2, plane);
-                return new Rectangle[]{rectangle};
             } else if (corner1 instanceof Vector || corner2 instanceof Vector) {
                 // if only one is a vector, return empty array
                 return null;
