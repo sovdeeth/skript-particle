@@ -15,6 +15,7 @@ import ch.njol.skript.util.Getter;
 import ch.njol.skript.util.Timespan;
 import ch.njol.skript.variables.Variables;
 import ch.njol.util.Kleenean;
+import com.sovdee.skriptparticles.SkriptParticle;
 import com.sovdee.skriptparticles.shapes.Shape;
 import com.sovdee.skriptparticles.util.DynamicLocation;
 import org.bukkit.Bukkit;
@@ -35,7 +36,7 @@ import java.util.function.Consumer;
 
 public abstract class DrawShapeEffectSection extends EffectSection {
 
-    public static final Timespan ONE_TICK = Timespan.fromTicks_i(1);
+    public static final Timespan ONE_TICK = Timespan.fromTicks(1);
 
     static {
         EventValues.registerEventValue(DrawEvent.class, Shape.class, new Getter<>() {
@@ -105,7 +106,7 @@ public abstract class DrawShapeEffectSection extends EffectSection {
      * @param hasSection Whether this section had a valid section body.
      * @return Whether this expression was initialised successfully. An error should be printed prior to returning false to specify the cause
      */
-    public boolean init(Expression<?>[] expressions, int matchedPattern, Kleenean isDelayed, ParseResult parseResult, boolean hasSection) {
+    public boolean init(@Nullable Expression<?>[] expressions, int matchedPattern, Kleenean isDelayed, ParseResult parseResult, boolean hasSection) {
         shapes = (Expression<Shape>) expressions[0];
 
         if (expressions[2] != null) {
@@ -136,9 +137,9 @@ public abstract class DrawShapeEffectSection extends EffectSection {
             recipients.addAll(Bukkit.getOnlinePlayers());
         }
 
-        Object localVars = Variables.copyLocalVariables(event);
+        @Nullable Object localVars = Variables.copyLocalVariables(event);
 
-        Consumer<Shape> consumer;
+        @Nullable Consumer<Shape> consumer;
         if (trigger != null) {
             consumer = shape -> {
                 DrawEvent drawEvent = new DrawEvent(shape);
@@ -153,10 +154,11 @@ public abstract class DrawShapeEffectSection extends EffectSection {
 
         // Figure out what locations to draw at, or what entities to follow
         List<DynamicLocation> locations = new ArrayList<>();
-        Direction direction = null;
+        @Nullable Direction direction = null;
         if (!useShapeLocation) {
             if (directions != null)
                 direction = directions.getSingle(event);
+            assert this.locations != null;
             for (Object location : this.locations.getArray(event)) {
                 if (location instanceof Entity) {
                     locations.add(new DynamicLocation((Entity) location, direction));
@@ -207,26 +209,42 @@ public abstract class DrawShapeEffectSection extends EffectSection {
         runnable.runTaskAsynchronously(Skript.getInstance());
     }
 
-    protected void executeSync(Event event, Collection<DynamicLocation> locations, Consumer<Shape> consumer, Collection<Player> recipients) {
+    protected void executeSync(Event event, Collection<DynamicLocation> locations, @Nullable Consumer<Shape> consumer, Collection<Player> recipients) {
         Shape shapeCopy;
-        for (DynamicLocation dynamicLocation : locations) {
-            for (Shape shape : shapes.getArray(event)) {
-                if (consumer != null) {
-                    // copy the shape so that it can be modified by the consumer without affecting the original
-                    shapeCopy = shape.clone();
-                    shapeCopy.draw(dynamicLocation, consumer, recipients);
-                } else {
-                    shape.draw(dynamicLocation, recipients);
+        try {
+            for (DynamicLocation dynamicLocation : locations) {
+                for (Shape shape : shapes.getArray(event)) {
+                    if (consumer != null) {
+                        // copy the shape so that it can be modified by the consumer without affecting the original
+                        shapeCopy = shape.clone();
+                        shapeCopy.draw(dynamicLocation, consumer, recipients);
+                    } else {
+                        shape.draw(dynamicLocation, recipients);
+                    }
                 }
             }
+        } catch (IllegalArgumentException exception) {
+            SkriptParticle.severe("Unable to draw shape[s]! Please check that your particles are valid!");
+            SkriptParticle.severe("Exception: " + exception.getMessage());
+            SkriptParticle.severe("To see the full stack trace, set Skript's verbosity to very high or debug.");
+            if (Skript.logVeryHigh())
+                exception.printStackTrace();
         }
     }
 
     protected void executeAsync(Collection<DynamicLocation> locations, Collection<Shape> shapes, Collection<Player> recipients) {
-        for (DynamicLocation dynamicLocation : locations) {
-            for (Shape shape : shapes) {
-                shape.draw(dynamicLocation, recipients);
+        try {
+            for (DynamicLocation dynamicLocation : locations) {
+                for (Shape shape : shapes) {
+                    shape.draw(dynamicLocation, recipients);
+                }
             }
+        } catch (IllegalArgumentException exception) {
+            SkriptParticle.severe("Unable to draw shape[s]! Please check that your particles are valid!");
+            SkriptParticle.severe("Exception: " + exception.getMessage());
+            SkriptParticle.severe("To see the full stack trace, set Skript's verbosity to very high or debug.");
+            if (Skript.logVeryHigh())
+                exception.printStackTrace();
         }
     }
 

@@ -14,7 +14,7 @@ import com.sovdee.skriptparticles.util.DynamicLocation;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.jetbrains.annotations.Nullable;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.Collection;
 import java.util.function.Consumer;
@@ -36,7 +36,7 @@ public class EffSecDrawShapeAnimation extends DrawShapeEffectSection {
     private Expression<Timespan> duration;
 
     @Override
-    public boolean init(Expression<?>[] expressions, int matchedPattern, Kleenean isDelayed, ParseResult parseResult, boolean hasSection) {
+    public boolean init(@Nullable Expression<?>[] expressions, int matchedPattern, Kleenean isDelayed, ParseResult parseResult, boolean hasSection) {
         duration = (Expression<Timespan>) expressions[4];
         return super.init(expressions, matchedPattern, isDelayed, parseResult, hasSection);
     }
@@ -45,13 +45,13 @@ public class EffSecDrawShapeAnimation extends DrawShapeEffectSection {
      * This method should not be called for this section.
      */
     @Override
-    protected void executeSync(Event event, Collection<DynamicLocation> locations, Consumer<Shape> consumer, Collection<Player> recipients) {
+    protected void executeSync(Event event, Collection<DynamicLocation> locations, @Nullable Consumer<Shape> consumer, Collection<Player> recipients) {
         // intentionally empty
     }
 
     @Override
     protected void setupAsync(Event event, Collection<DynamicLocation> locations, Collection<Shape> shapes, Collection<Player> recipients) {
-        Timespan duration = this.duration.getOptionalSingle(event).orElse(Timespan.fromTicks_i(0));
+        Timespan duration = this.duration.getOptionalSingle(event).orElse(Timespan.fromTicks(0));
         long milliseconds = duration.getMilliSeconds();
         for (Shape shape : shapes) {
             shape.setAnimationDuration(milliseconds);

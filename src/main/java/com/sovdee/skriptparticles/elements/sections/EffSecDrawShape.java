@@ -72,7 +72,7 @@ public class EffSecDrawShape extends DrawShapeEffectSection {
     private Expression<Timespan> delay;
 
     @Override
-    public boolean init(Expression<?>[] expressions, int matchedPattern, Kleenean isDelayed, ParseResult parseResult, boolean hasSection) {
+    public boolean init(@Nullable Expression<?>[] expressions, int matchedPattern, Kleenean isDelayed, ParseResult parseResult, boolean hasSection) {
         if (parseResult.hasTag("duration")) {
             duration = (Expression<Timespan>) expressions[4];
             delay = (Expression<Timespan>) expressions[5];
@@ -91,8 +91,8 @@ public class EffSecDrawShape extends DrawShapeEffectSection {
             @Nullable Timespan duration = this.duration.getSingle(event);
             if (delay == null || duration == null) return;
 
-            period = Math.max(delay.getTicks_i(), 1);
-            iterations = Math.max(duration.getTicks_i() / period, 1);
+            period = Math.max(delay.getTicks(), 1);
+            iterations = Math.max(duration.getTicks() / period, 1);
         }
         AtomicLong currentIteration = new AtomicLong(0);
         BukkitRunnable runnable = new BukkitRunnable() {
