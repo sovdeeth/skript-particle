@@ -52,21 +52,21 @@ public class Helix extends AbstractShape implements RadialShape, LWHShape {
         this.direction = direction;
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     @Contract(pure = true)
-    public Set<Vector> generateOutline() {
-        return MathUtil.calculateHelix(radius, height, slope, direction, this.getParticleDensity());
+    public void generateOutline(Set<Vector> points) {
+        points.addAll(MathUtil.calculateHelix(radius, height, slope, direction, this.getParticleDensity()));
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     @Contract(pure = true)
-    public Set<Vector> generateSurface() {
-        Set<Vector> points = new LinkedHashSet<>();
+    public void generateSurface(Set<Vector> points) {
         double particleDensity = this.getParticleDensity();
         for (double r = radius; r > 0; r -= particleDensity) {
             points.addAll(MathUtil.calculateHelix(r, height, slope, direction, particleDensity));
         }
-        return points;
     }
 
     @Override

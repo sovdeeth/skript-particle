@@ -10,8 +10,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.Set;
 
 /*
@@ -104,10 +102,10 @@ public class Cuboid extends AbstractShape implements LWHShape {
         heightStep = 2 * halfHeight / Math.round(2 * halfHeight / this.getParticleDensity());
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     @Contract(pure = true)
-    public Set<Vector> generateOutline() {
-        HashSet<Vector> points = new LinkedHashSet<>();
+    public void generateOutline(Set<Vector> points) {
         for (double x = -halfLength; x <= halfLength; x += lengthStep) {
             points.add(new Vector(x, -halfHeight, -halfWidth));
             points.add(new Vector(x, -halfHeight, halfWidth));
@@ -126,13 +124,12 @@ public class Cuboid extends AbstractShape implements LWHShape {
             points.add(new Vector(halfLength, -halfHeight, z));
             points.add(new Vector(halfLength, halfHeight, z));
         }
-        return points;
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     @Contract(pure = true)
-    public Set<Vector> generateSurface() {
-        HashSet<Vector> points = new LinkedHashSet<>();
+    public void generateSurface(Set<Vector> points) {
         for (double x = -halfLength; x <= halfLength; x += lengthStep) {
             for (double z = -halfWidth; z <= halfWidth; z += widthStep) {
                 points.add(new Vector(x, -halfHeight, z));
@@ -151,13 +148,12 @@ public class Cuboid extends AbstractShape implements LWHShape {
                 points.add(new Vector(x, y, halfWidth));
             }
         }
-        return points;
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     @Contract(pure = true)
-    public Set<Vector> generateFilled() {
-        HashSet<Vector> points = new LinkedHashSet<>();
+    public void generateFilled(Set<Vector> points) {
         for (double x = -halfLength; x <= halfLength; x += lengthStep) {
             for (double y = -halfHeight; y <= halfHeight; y += heightStep) {
                 for (double z = -halfWidth; z <= halfWidth; z += widthStep) {
@@ -165,12 +161,11 @@ public class Cuboid extends AbstractShape implements LWHShape {
                 }
             }
         }
-        return points;
     }
 
     @Override
     @Contract(pure = true)
-    public Set<Vector> generatePoints() {
+    public void generatePoints(Set<Vector> points) {
         if (isDynamic) {
             assert negativeCorner != null;
             assert positiveCorner != null;
@@ -182,9 +177,8 @@ public class Cuboid extends AbstractShape implements LWHShape {
             this.setLocation(new DynamicLocation(negative.clone().add(positive.subtract(negative).toVector().multiply(0.5))));
         }
         calculateSteps();
-        Set<Vector> points = super.generatePoints();
+        super.generatePoints(points);
         points.forEach(vector -> vector.add(centerOffset));
-        return points;
     }
 
     // Ensure that the points are always needing to be updated if the start or end location is dynamic

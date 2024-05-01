@@ -169,7 +169,7 @@ public class ParticleTypes {
                         return new Vibration[0];
                     }
                     Location destination = (Location) params[0][0];
-                    int arrivalTime = (int) ((Timespan) params[1][0]).getTicks_i();
+                    int arrivalTime = (int) ((Timespan) params[1][0]).getTicks();
                     Vibration vibration = new Vibration(new Vibration.Destination.BlockDestination(destination), arrivalTime);
                     return new Vibration[]{vibration};
                 }

@@ -41,29 +41,35 @@ public class Circle extends AbstractShape implements RadialShape, LWHShape {
 
     @Override
     @Contract(pure = true)
-    public Set<Vector> generateOutline() {
+    @SuppressWarnings("ConstantConditions")
+    public void generateOutline(Set<Vector> points) {
         Set<Vector> circle = MathUtil.calculateCircle(radius, this.getParticleDensity(), cutoffAngle);
         if (height != 0)
-            return MathUtil.fillVertically(circle, height, this.getParticleDensity());
-        return circle;
+            points.addAll(MathUtil.fillVertically(circle, height, this.getParticleDensity()));
+        else
+            points.addAll(circle);
     }
 
 
     @Override
     @Contract(pure = true)
-    public Set<Vector> generateSurface() {
+    @SuppressWarnings("ConstantConditions")
+    public void generateSurface(Set<Vector> points) {
         if (height != 0)
-            return MathUtil.calculateCylinder(radius, height, this.getParticleDensity(), cutoffAngle);
-        return MathUtil.calculateDisc(radius, this.getParticleDensity(), cutoffAngle);
+            points.addAll(MathUtil.calculateCylinder(radius, height, this.getParticleDensity(), cutoffAngle));
+        else
+            points.addAll(MathUtil.calculateDisc(radius, this.getParticleDensity(), cutoffAngle));
     }
 
     @Override
     @Contract(pure = true)
-    public Set<Vector> generateFilled() {
+    @SuppressWarnings("ConstantConditions")
+    public void generateFilled(Set<Vector> points) {
         Set<Vector> disc = MathUtil.calculateDisc(radius, this.getParticleDensity(), cutoffAngle);
         if (height != 0)
-            return MathUtil.fillVertically(disc, height, this.getParticleDensity());
-        return disc;
+            points.addAll(MathUtil.fillVertically(disc, height, this.getParticleDensity()));
+        else
+            points.addAll(disc);
     }
 
     @Override

@@ -83,20 +83,21 @@ public class Line extends AbstractShape implements LWHShape {
 
     @Override
     @Contract(pure = true)
-    public Set<Vector> generatePoints() {
+    public void generatePoints(Set<Vector> points) {
         if (isDynamic) {
             assert startLocation != null;
             assert endLocation != null;
             this.start = new Vector(0, 0, 0);
             this.end = endLocation.getLocation().toVector().subtract(startLocation.getLocation().toVector());
         }
-        return super.generatePoints();
+        super.generatePoints(points);
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     @Contract(pure = true)
-    public Set<Vector> generateOutline() {
-        return MathUtil.calculateLine(start, end, this.getParticleDensity());
+    public void generateOutline(Set<Vector> points) {
+        points.addAll(MathUtil.calculateLine(start, end, this.getParticleDensity()));
     }
 
     /**

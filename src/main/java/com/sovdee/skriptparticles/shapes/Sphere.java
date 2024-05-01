@@ -31,23 +31,24 @@ public class Sphere extends AbstractShape implements RadialShape {
 
     @Override
     @Contract(pure = true)
-    public Set<Vector> generateOutline() {
-        return this.generateSurface();
+    public void generateOutline(Set<Vector> points) {
+        this.generateSurface(points);
     }
 
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     @Contract(pure = true)
-    public Set<Vector> generateSurface() {
+    public void generateSurface(Set<Vector> points) {
         double particleDensity = this.getParticleDensity();
         int pointCount = 4 * (int) (Math.PI * radius * radius / (particleDensity * particleDensity));
-        return MathUtil.calculateFibonacciSphere(pointCount, radius, cutoffAngle);
+        points.addAll(MathUtil.calculateFibonacciSphere(pointCount, radius, cutoffAngle));
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     @Contract(pure = true)
-    public Set<Vector> generateFilled() {
-        Set<Vector> points = generateSurface();
+    public void generateFilled(Set<Vector> points) {
         double particleDensity = this.getParticleDensity();
         int subSpheres = (int) (radius / particleDensity) - 1;
         double radiusStep = radius / subSpheres;
@@ -56,7 +57,6 @@ public class Sphere extends AbstractShape implements RadialShape {
             int pointCount = 4 * (int) (Math.PI * subRadius * subRadius / (particleDensity * particleDensity));
             points.addAll(MathUtil.calculateFibonacciSphere(pointCount, subRadius, cutoffAngle));
         }
-        return points;
     }
 
     @Override

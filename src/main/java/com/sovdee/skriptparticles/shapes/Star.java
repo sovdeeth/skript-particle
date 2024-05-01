@@ -30,22 +30,22 @@ public class Star extends AbstractShape {
         this.angle = MathUtil.clamp(angle, MathUtil.EPSILON, Math.PI);
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     @Contract(pure = true)
-    public Set<Vector> generateOutline() {
-        return MathUtil.calculateStar(innerRadius, outerRadius, angle, this.getParticleDensity());
+    public void generateOutline(Set<Vector> points) {
+        points.addAll(MathUtil.calculateStar(innerRadius, outerRadius, angle, this.getParticleDensity()));
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     @Contract(pure = true)
-    public Set<Vector> generateSurface() {
-        Set<Vector> points = new LinkedHashSet<>();
+    public void generateSurface(Set<Vector> points) {
         double minRadius = Math.min(innerRadius, outerRadius);
         double particleDensity = this.getParticleDensity();
         for (double r = 0; r < minRadius; r += particleDensity) {
             points.addAll(MathUtil.calculateStar(innerRadius - r, outerRadius - r, angle, particleDensity));
         }
-        return points;
     }
 
     @Override

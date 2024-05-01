@@ -15,10 +15,12 @@ import org.jetbrains.annotations.Contract;
 import org.joml.Quaternionf;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.UUID;
 import java.util.function.Consumer;
 
@@ -34,6 +36,7 @@ public abstract class AbstractShape implements Shape {
     private Vector offset;
     private @Nullable DynamicLocation location;
     private Particle particle;
+    private @Nullable Comparator<Vector> ordering;
     private double particleDensity = 0.25; // todo: make this configurable
     private long animationDuration = 0;
 
@@ -69,7 +72,11 @@ public abstract class AbstractShape implements Shape {
     public Set<Vector> getPoints(Quaternion orientation) {
         State state = getState(orientation);
         if (needsUpdate || !lastState.equals(state) || points.isEmpty()) {
-            points = generatePoints();
+            if (ordering != null)
+                points = new TreeSet<>(ordering);
+            else
+                points = new LinkedHashSet<>();
+            generatePoints(points);
             for (Vector point : points) {
                 orientation.transform(point);
                 point.multiply(scale);
@@ -88,14 +95,14 @@ public abstract class AbstractShape implements Shape {
 
     @Override
     @Contract(pure = true)
-    public Set<Vector> generateSurface() {
-        return generateOutline();
+    public void generateSurface(Set<Vector> points) {
+        generateOutline(points);
     }
 
     @Override
     @Contract(pure = true)
-    public Set<Vector> generateFilled() {
-        return generateSurface();
+    public void generateFilled(Set<Vector> points) {
+        generateSurface(points);
     }
 
     @Override
@@ -293,6 +300,17 @@ public abstract class AbstractShape implements Shape {
     @Override
     public void setParticle(Particle particle) {
         this.particle = particle;
+    }
+
+    @Override
+    public @Nullable Comparator<Vector> getOrdering() {
+        return ordering;
+    }
+
+    @Override
+    public void setOrdering(Comparator<Vector> comparator) {
+        ordering = comparator;
+        this.setNeedsUpdate(true);
     }
 
     @Override

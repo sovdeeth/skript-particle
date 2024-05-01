@@ -64,9 +64,9 @@ public class BezierCurve extends AbstractShape {
         return controlPoints;
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
-    public Set<Vector> generateOutline() {
-        Set<Vector> points = new LinkedHashSet<>();
+    public void generateOutline(Set<Vector> points) {
         List<Vector> controlPoints = evaluateControlPoints();
 
         int steps = (int) (estimateLength(controlPoints) / getParticleDensity());
@@ -82,7 +82,6 @@ public class BezierCurve extends AbstractShape {
             }
             points.add(tempCP.get(0));
         }
-        return points;
     }
 
     private double estimateLength() {

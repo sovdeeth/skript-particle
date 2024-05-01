@@ -154,10 +154,10 @@ public class Rectangle extends AbstractShape implements LWHShape {
         widthStep = 2 * halfLength / Math.round(2 * halfLength / particleDensity);
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     @Contract(pure = true)
-    public Set<Vector> generateOutline() {
-        Set<Vector> points = new LinkedHashSet<>();
+    public void generateOutline(Set<Vector> points) {
         for (double l = -halfLength + widthStep; l < halfLength; l += widthStep) {
             points.add(vectorFromLengthWidth(l, -halfWidth));
             points.add(vectorFromLengthWidth(l, halfWidth));
@@ -166,24 +166,22 @@ public class Rectangle extends AbstractShape implements LWHShape {
             points.add(vectorFromLengthWidth(-halfLength, w));
             points.add(vectorFromLengthWidth(halfLength, w));
         }
-        return points;
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     @Contract(pure = true)
-    public Set<Vector> generateSurface() {
-        Set<Vector> points = new LinkedHashSet<>();
+    public void generateSurface(Set<Vector> points) {
         for (double w = -halfWidth; w <= halfWidth; w += lengthStep) {
             for (double l = -halfLength; l <= halfLength; l += widthStep) {
                 points.add(vectorFromLengthWidth(l, w));
             }
         }
-        return points;
     }
 
     @Override
     @Contract(pure = true)
-    public Set<Vector> generatePoints() {
+    public void generatePoints(Set<Vector> points) {
         if (isDynamic) {
             assert positiveCorner != null;
             assert negativeCorner != null;
@@ -200,9 +198,8 @@ public class Rectangle extends AbstractShape implements LWHShape {
             this.setLocation(new DynamicLocation(neg.clone().add(offset)));
         }
         calculateSteps();
-        Set<Vector> points = super.generatePoints();
+        super.generatePoints(points);
         points.forEach(vector -> vector.add(centerOffset));
-        return points;
     }
 
     @Override
@@ -265,7 +262,7 @@ public class Rectangle extends AbstractShape implements LWHShape {
     }
 
     /**
-     * Sets the plane of the rectangle. Ensures the shape will be updated on the next call to {@link #generatePoints()}.
+     * Sets the plane of the rectangle. Ensures the shape will be updated on the next call to {@link Shape#generatePoints(Set)}.
      * @param plane the plane of the rectangle.
      */
     public void setPlane(Plane plane) {

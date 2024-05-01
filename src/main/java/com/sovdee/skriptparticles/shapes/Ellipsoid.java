@@ -36,20 +36,20 @@ public class Ellipsoid extends AbstractShape implements LWHShape {
         this.zRadius = Math.max(zRadius, MathUtil.EPSILON);
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     @Contract(pure = true)
-    public Set<Vector> generateOutline() {
-        HashSet<Vector> points = new LinkedHashSet<>();
+    public void generateOutline(Set<Vector> points) {
         double particleDensity = this.getParticleDensity();
         points.addAll(MathUtil.calculateEllipse(xRadius, zRadius, particleDensity, 2 * Math.PI));
         points.addAll(XY_ROTATION.transform(MathUtil.calculateEllipse(xRadius, yRadius, particleDensity, 2 * Math.PI)));
         points.addAll(ZY_ROTATION.transform(MathUtil.calculateEllipse(yRadius, zRadius, particleDensity, 2 * Math.PI)));
-        return points;
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     @Contract(pure = true)
-    public Set<Vector> generateSurface() {
+    public void generateSurface(Set<Vector> points) {
         List<Vector> ellipse;
         double particleDensity = this.getParticleDensity();
         if (xRadius > zRadius) {
@@ -57,13 +57,13 @@ public class Ellipsoid extends AbstractShape implements LWHShape {
         } else {
             ellipse = ZY_ROTATION.transform(MathUtil.calculateEllipse(yRadius, zRadius, particleDensity, 2 * Math.PI));
         }
-        return generateEllipsoid(ellipse, 1);
+        points.addAll(generateEllipsoid(ellipse, 1));
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     @Contract(pure = true)
-    public Set<Vector> generateFilled() {
-        Set<Vector> points = new LinkedHashSet<>();
+    public void generateFilled(Set<Vector> points) {
         List<Vector> ellipse;
         double radius = Math.max(xRadius, zRadius);
         double particleDensity = this.getParticleDensity();
@@ -77,7 +77,6 @@ public class Ellipsoid extends AbstractShape implements LWHShape {
             }
             points.addAll(generateEllipsoid(ellipse, r));
         }
-        return points;
     }
 
     /**

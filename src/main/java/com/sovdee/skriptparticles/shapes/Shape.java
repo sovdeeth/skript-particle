@@ -11,10 +11,11 @@ import org.jetbrains.annotations.Contract;
 import org.joml.Quaternionf;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 /**
  * Represents a shape that can be drawn with particles.
@@ -51,39 +52,38 @@ public interface Shape extends Cloneable {
     /**
      * Generates the points for the shape. Depends on the set style.
      * No orientation, offset, or scale is applied.
-     *
-     * @return A set of points that make up the shape.
      */
     @Contract(pure = true)
-    default Set<Vector> generatePoints() {
-        return getStyle().generatePoints(this);
+    default void generatePoints(Set<Vector> points) {
+        getStyle().generatePoints(this, points);
     }
 
     /**
      * Generates the points for the shape, if the style is set to OUTLINE.
      *
-     * @return A set of points that make up the shape.
+     * @param points A set that will be filled with the points that make up the shape.
      */
     @Contract(pure = true)
-    Set<Vector> generateOutline();
+    void generateOutline(Set<Vector> points);
 
     /**
      * Generates the points for the shape, if the style is set to SURFACE.
      * Default implementation is to return the same as generateOutline().
      *
-     * @return A set of points that make up the shape.
+     * @param points A set that will be filled with the points that make up the shape.
      */
     @Contract(pure = true)
-    Set<Vector> generateSurface();
+    void generateSurface(Set<Vector> points);
 
     /**
      * Generates the points for the shape, if the style is set to FILL.
      * Default implementation is to return the same as generateSurface().
      *
-     * @return A set of points that make up the shape.
+     * @param points A set that will be filled with the points that make up the shape.
      */
     @Contract(pure = true)
-    Set<Vector> generateFilled();
+    void generateFilled(Set<Vector> points);
+
 
     /**
      * Draws a shape using the default location, orientation, and particle.
@@ -249,6 +249,20 @@ public interface Shape extends Cloneable {
     void setParticle(Particle particle);
 
     /**
+     * @return The comparator used to order the particles for drawing
+     */
+    @Nullable Comparator<Vector> getOrdering();
+
+    /**
+     * Sets the comparator to be used to order the particles for drawing.
+     * Using a null value means the particles will be drawn in the order they are calculated.
+     *
+     * @param comparator the Comparator to use.
+     */
+    void setOrdering(@Nullable Comparator<Vector> comparator);
+
+
+    /**
      * @return the particle density of the shape.
      */
     double getParticleDensity();
@@ -346,21 +360,21 @@ public interface Shape extends Cloneable {
      * FILL: Draws the shape as a solid.
      */
     enum Style {
-        OUTLINE(shape -> shape.generateOutline()),
-        SURFACE(shape -> shape.generateSurface()),
-        FILL(shape -> shape.generateFilled());
+        OUTLINE((shape, points) -> shape.generateOutline(points)),
+        SURFACE((shape, points) -> shape.generateSurface(points)),
+        FILL((shape, points) -> shape.generateFilled(points));
 
-        private final Function<Shape, Set<Vector>> generatePoints;
+        private final BiConsumer<Shape, Set<Vector>> generatePoints;
 
-        Style(Function<Shape, Set<Vector>> generatePoints) {
+        Style(BiConsumer<Shape, Set<Vector>> generatePoints) {
             this.generatePoints = generatePoints;
         }
 
         /**
-         * @return the points of the shape, generated using the correct style.
+         * Puts the points of the shape, generated using the correct style, into the points parameter.
          */
-        public Set<Vector> generatePoints(Shape shape) {
-            return generatePoints.apply(shape);
+        public void generatePoints(Shape shape, Set<Vector> points) {
+            generatePoints.accept(shape, points);
         }
 
         public String toString() {

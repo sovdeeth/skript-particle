@@ -4,7 +4,6 @@ import com.sovdee.skriptparticles.util.MathUtil;
 import com.sovdee.skriptparticles.util.Quaternion;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -83,21 +82,23 @@ public class RegularPolyhedron extends AbstractShape implements RadialShape, Pol
         };
     }
 
+
+    @SuppressWarnings("ConstantConditions")
     @Override
     @Contract(pure = true)
-    public Set<Vector> generateOutline() {
-        return switch (faces) {
+    public void generateOutline(Set<Vector> points) {
+        points.addAll(switch (faces) {
             case 4 -> generatePolyhedron(TETRAHEDRON_FACES, radius);
             case 8 -> generatePolyhedron(OCTAHEDRON_FACES, radius);
             case 20 -> generatePolyhedron(ICOSAHEDRON_FACES, radius);
             case 12 -> generatePolyhedron(DODECAHEDRON_FACES, radius);
             default -> new HashSet<>();
-        };
+        });
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
-    public @NotNull Set<Vector> generateFilled() {
-        Set<Vector> points = new LinkedHashSet<>();
+    public void generateFilled(Set<Vector> points) {
         double step = radius / Math.round(radius / this.getParticleDensity());
         switch (faces) {
             case 4:
@@ -120,10 +121,7 @@ public class RegularPolyhedron extends AbstractShape implements RadialShape, Pol
                     points.addAll(generatePolyhedron(ICOSAHEDRON_FACES, i));
                 }
                 break;
-            default:
-                return points;
         }
-        return points;
     }
 
     /**

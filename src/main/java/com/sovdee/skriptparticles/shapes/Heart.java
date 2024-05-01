@@ -32,21 +32,21 @@ public class Heart extends AbstractShape implements LWHShape {
         this.eccentricity = Math.max(eccentricity, 1);
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     @Contract(pure = true)
-    public Set<Vector> generateOutline() {
-        return MathUtil.calculateHeart(length / 2, width / 2, eccentricity, this.getParticleDensity());
+    public void generateOutline(Set<Vector> points) {
+        points.addAll(MathUtil.calculateHeart(length / 2, width / 2, eccentricity, this.getParticleDensity()));
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     @Contract(pure = true)
-    public Set<Vector> generateSurface() {
-        Set<Vector> points = new LinkedHashSet<>();
+    public void generateSurface(Set<Vector> points) {
         double particleDensity = this.getParticleDensity();
         for (double w = width, l = length; w > 0 && l > 0; w -= particleDensity * 1.5, l -= particleDensity * 1.5) {
             points.addAll(MathUtil.calculateHeart(l / 2, w / 2, eccentricity, particleDensity));
         }
-        return points;
     }
 
     @Override

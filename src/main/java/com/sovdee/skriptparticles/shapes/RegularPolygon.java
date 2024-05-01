@@ -3,7 +3,6 @@ package com.sovdee.skriptparticles.shapes;
 import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;
 
@@ -58,29 +57,36 @@ public class RegularPolygon extends AbstractShape implements PolyShape, RadialSh
         this.height = Math.max(height, 0);
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     @Contract(pure = true)
-    public Set<Vector> generateOutline() {
+    public void generateOutline(Set<Vector> points) {
         if (height == 0)
-            return MathUtil.calculateRegularPolygon(this.radius, this.angle, this.getParticleDensity(), true);
-        return MathUtil.calculateRegularPrism(this.radius, this.angle, this.height, this.getParticleDensity(), true);
+            points.addAll(MathUtil.calculateRegularPolygon(this.radius, this.angle, this.getParticleDensity(), true));
+        else
+            points.addAll(MathUtil.calculateRegularPrism(this.radius, this.angle, this.height, this.getParticleDensity(), true));
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     @Contract(pure = true)
-    public Set<Vector> generateSurface() {
+    public void generateSurface(Set<Vector> points) {
         if (height == 0)
-            return MathUtil.calculateRegularPolygon(this.radius, this.angle, this.getParticleDensity(), false);
-        return MathUtil.calculateRegularPrism(this.radius, this.angle, this.height, this.getParticleDensity(), false);
+            points.addAll(MathUtil.calculateRegularPolygon(this.radius, this.angle, this.getParticleDensity(), false));
+        else
+            points.addAll(MathUtil.calculateRegularPrism(this.radius, this.angle, this.height, this.getParticleDensity(), false));
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
-    public @NotNull Set<Vector> generateFilled() {
+    public void generateFilled(Set<Vector> points) {
         if (height == 0)
-            return generateSurface();
-        double particleDensity = this.getParticleDensity();
-        Set<Vector> polygon = MathUtil.calculateRegularPolygon(this.radius, this.angle, particleDensity, false);
-        return MathUtil.fillVertically(polygon, height, particleDensity);
+            generateSurface(points);
+        else {
+            double particleDensity = this.getParticleDensity();
+            Set<Vector> polygon = MathUtil.calculateRegularPolygon(this.radius, this.angle, particleDensity, false);
+            points.addAll(MathUtil.fillVertically(polygon, height, particleDensity));
+        }
     }
 
     @Override

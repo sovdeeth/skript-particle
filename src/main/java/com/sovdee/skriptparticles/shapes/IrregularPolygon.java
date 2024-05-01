@@ -72,11 +72,12 @@ public class IrregularPolygon extends AbstractShape implements LWHShape {
         this.height = high - low;
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     @Contract(pure = true)
-    public Set<Vector> generateOutline() {
+    public void generateOutline(Set<Vector> points) {
         double particleDensity = this.getParticleDensity();
-        Set<Vector> points = new LinkedHashSet<>(MathUtil.connectPoints(vertices, particleDensity));
+        points.addAll(MathUtil.connectPoints(vertices, particleDensity));
         points.addAll(MathUtil.calculateLine(vertices.get(0), vertices.get(vertices.size() - 1), particleDensity));
         if (height != 0) {
             Set<Vector> upperPoints = new LinkedHashSet<>();
@@ -88,7 +89,6 @@ public class IrregularPolygon extends AbstractShape implements LWHShape {
                 points.addAll(MathUtil.calculateLine(v, new Vector(v.getX(), height, v.getZ()), particleDensity));
             }
         }
-        return points;
     }
 
     @Override

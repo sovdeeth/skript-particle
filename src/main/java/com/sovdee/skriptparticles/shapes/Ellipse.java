@@ -43,32 +43,37 @@ public class Ellipse extends AbstractShape implements LWHShape {
         this.cutoffAngle = 2 * Math.PI;
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     @Contract(pure = true)
-    public Set<Vector> generateOutline() {
+    public void generateOutline(Set<Vector> points) {
         Set<Vector> ellipse = new LinkedHashSet<>(MathUtil.calculateEllipse(xRadius, zRadius, this.getParticleDensity(), cutoffAngle));
         if (height != 0)
-            return MathUtil.fillVertically(ellipse, height, this.getParticleDensity());
-        return ellipse;
+            points.addAll(MathUtil.fillVertically(ellipse, height, this.getParticleDensity()));
+        else
+            points.addAll(ellipse);
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     @Contract(pure = true)
-    public Set<Vector> generateSurface() {
+    public void generateSurface(Set<Vector> points) {
         // if height is not 0, make it a cylinder
-        if (height != 0) {
-            return MathUtil.calculateCylinder(xRadius, zRadius, height, this.getParticleDensity(), cutoffAngle);
-        }
-        return MathUtil.calculateEllipticalDisc(xRadius, zRadius, this.getParticleDensity(), cutoffAngle);
+        if (height != 0)
+            points.addAll(MathUtil.calculateCylinder(xRadius, zRadius, height, this.getParticleDensity(), cutoffAngle));
+        else
+            points.addAll(MathUtil.calculateEllipticalDisc(xRadius, zRadius, this.getParticleDensity(), cutoffAngle));
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     @Contract(pure = true)
-    public Set<Vector> generateFilled() {
+    public void generateFilled(Set<Vector> points) {
         Set<Vector> disc = MathUtil.calculateEllipticalDisc(xRadius, zRadius, this.getParticleDensity(), cutoffAngle);
         if (height != 0)
-            return MathUtil.fillVertically(disc, height, this.getParticleDensity());
-        return disc;
+            points.addAll(MathUtil.fillVertically(disc, height, this.getParticleDensity()));
+        else
+            points.addAll(disc);
     }
 
     @Override

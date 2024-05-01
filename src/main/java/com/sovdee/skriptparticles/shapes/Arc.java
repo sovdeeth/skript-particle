@@ -34,8 +34,8 @@ public class Arc extends Circle implements CutoffShape {
 
     @Override
     @Contract(pure = true)
-    public Set<Vector> generateSurface() {
-        return generateFilled();
+    public void generateSurface(Set<Vector> points) {
+        generateFilled(points);
     }
 
     @Override
