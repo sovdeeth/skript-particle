@@ -51,7 +51,7 @@ import java.util.List;
             "\tvelocity: inwards",
             "\textra: 0.5",
             "\tforce: true",
-            "\tdata: dustOptions(red, 5)",
+            "\tdata: dustOption(red, 5)",
         "set {_particle} to last created particle",
 })
 @Since("1.0.2")

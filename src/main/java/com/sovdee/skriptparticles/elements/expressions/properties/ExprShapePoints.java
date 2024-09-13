@@ -50,6 +50,11 @@ public class ExprShapePoints extends PropertyExpression<Shape, Vector> {
     }
 
     @Override
+    public boolean isSingle() {
+        return false;
+    }
+
+    @Override
     public Class<? extends Vector> getReturnType() {
         return Vector.class;
     }
