@@ -155,8 +155,8 @@ public class ExprLine extends SimpleExpression<Line> {
     public boolean isSingle() {
         return switch (matchedPattern) {
             case 0 -> end.isSingle() && start.isSingle();
-            case 1 -> true;
-            default -> false;
+            case 1, 2 -> true;
+            default -> throw new IllegalStateException("invalid pattern " + matchedPattern);
         };
     }
 
