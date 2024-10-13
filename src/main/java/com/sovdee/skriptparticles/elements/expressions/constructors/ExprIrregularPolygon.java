@@ -36,7 +36,8 @@ import java.util.List;
 public class ExprIrregularPolygon extends SimpleExpression<IrregularPolygon> {
 
     static {
-        Skript.registerExpression(ExprIrregularPolygon.class, IrregularPolygon.class, ExpressionType.COMBINED, "[a] [2d] polygon (from|with) [vertices|points] %vectors/locations% [and height %-number%]");
+        Skript.registerExpression(ExprIrregularPolygon.class, IrregularPolygon.class, ExpressionType.COMBINED,
+                "[a] [2d] polygon (from|with) [vertices|points] %vectors/locations% [and height %-number%]");
     }
 
     private Expression<?> points;
