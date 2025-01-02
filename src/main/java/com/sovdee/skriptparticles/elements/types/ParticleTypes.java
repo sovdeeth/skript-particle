@@ -11,6 +11,7 @@ import ch.njol.skript.registrations.Classes;
 import ch.njol.skript.registrations.DefaultClasses;
 import ch.njol.skript.util.Color;
 import ch.njol.skript.util.Timespan;
+import ch.njol.skript.util.Timespan.TimePeriod;
 import com.sovdee.skriptparticles.particles.ParticleMotion;
 import com.sovdee.skriptparticles.util.ParticleUtil;
 import org.bukkit.Location;
@@ -169,7 +170,7 @@ public class ParticleTypes {
                         return new Vibration[0];
                     }
                     Location destination = (Location) params[0][0];
-                    int arrivalTime = (int) ((Timespan) params[1][0]).getTicks();
+                    int arrivalTime = (int) ((Timespan) params[1][0]).getAs(TimePeriod.TICK);
                     Vibration vibration = new Vibration(new Vibration.Destination.BlockDestination(destination), arrivalTime);
                     return new Vibration[]{vibration};
                 }

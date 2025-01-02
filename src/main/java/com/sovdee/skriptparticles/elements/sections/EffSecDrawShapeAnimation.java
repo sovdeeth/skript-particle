@@ -8,6 +8,7 @@ import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.util.Timespan;
+import ch.njol.skript.util.Timespan.TimePeriod;
 import ch.njol.util.Kleenean;
 import com.sovdee.skriptparticles.shapes.Shape;
 import com.sovdee.skriptparticles.util.DynamicLocation;
@@ -51,8 +52,8 @@ public class EffSecDrawShapeAnimation extends DrawShapeEffectSection {
 
     @Override
     protected void setupAsync(Event event, Collection<DynamicLocation> locations, Collection<Shape> shapes, Collection<Player> recipients) {
-        Timespan duration = this.duration.getOptionalSingle(event).orElse(Timespan.fromTicks(0));
-        long milliseconds = duration.getMilliSeconds();
+        Timespan duration = this.duration.getOptionalSingle(event).orElse(new Timespan(TimePeriod.TICK, 0));
+        long milliseconds = duration.getAs(TimePeriod.MILLISECOND);
         for (Shape shape : shapes) {
             shape.setAnimationDuration(milliseconds);
         }

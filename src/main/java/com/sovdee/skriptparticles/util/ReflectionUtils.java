@@ -9,12 +9,12 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 
 public class ReflectionUtils {
-    private static final String VERSION = Bukkit.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3] + ".";
+    private static final String CRAFTBUKKIT_PACKAGE = Bukkit.getServer().getClass().getPackage().getName();
     private static final boolean DEBUG = false; //SkBee.getPlugin().getPluginConfig().SETTINGS_DEBUG;
 
     @Nullable
     public static Class<?> getOBCClass(String obcClassString) {
-        String name = "org.bukkit.craftbukkit." + VERSION + obcClassString;
+        String name = CRAFTBUKKIT_PACKAGE + obcClassString;
         try {
             return Class.forName(name);
         } catch (ClassNotFoundException e) {

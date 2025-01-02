@@ -11,8 +11,8 @@ import ch.njol.skript.lang.TriggerItem;
 import ch.njol.skript.lang.parser.ParserInstance;
 import ch.njol.skript.registrations.EventValues;
 import ch.njol.skript.util.Direction;
-import ch.njol.skript.util.Getter;
 import ch.njol.skript.util.Timespan;
+import ch.njol.skript.util.Timespan.TimePeriod;
 import ch.njol.skript.variables.Variables;
 import ch.njol.util.Kleenean;
 import com.sovdee.skriptparticles.SkriptParticle;
@@ -36,15 +36,10 @@ import java.util.function.Consumer;
 
 public abstract class DrawShapeEffectSection extends EffectSection {
 
-    public static final Timespan ONE_TICK = Timespan.fromTicks(1);
+    public static final Timespan ONE_TICK = new Timespan(TimePeriod.TICK, 1);
 
     static {
-        EventValues.registerEventValue(DrawEvent.class, Shape.class, new Getter<>() {
-            @Override
-            public Shape get(DrawEvent event) {
-                return event.getShape();
-            }
-        }, EventValues.TIME_NOW);
+        EventValues.registerEventValue(DrawEvent.class, Shape.class, DrawEvent::getShape, EventValues.TIME_NOW);
     }
 
     protected Expression<Shape> shapes;

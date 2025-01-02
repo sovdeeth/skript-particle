@@ -8,8 +8,8 @@ import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.registrations.EventValues;
-import ch.njol.skript.util.Getter;
 import ch.njol.skript.util.Timespan;
+import ch.njol.skript.util.Timespan.TimePeriod;
 import ch.njol.util.Kleenean;
 import com.sovdee.skriptparticles.shapes.Shape;
 import com.sovdee.skriptparticles.util.DynamicLocation;
@@ -58,12 +58,7 @@ public class EffSecDrawShape extends DrawShapeEffectSection {
                 "[sync:sync[hronously]] draw [the] shape[s] [of] %shapes% [%-directions% %-locations/entities%] [to %-players%]",
                 "draw [the] shape[s] [of] %shapes% [%-directions% %-locations/entities%] [to %-players%] (duration:for) [duration] %timespan% [with (delay|refresh [rate]) [of] %-timespan%]"
         );
-        EventValues.registerEventValue(EffSecDrawShape.DrawEvent.class, Shape.class, new Getter<>() {
-            @Override
-            public Shape get(EffSecDrawShape.DrawEvent event) {
-                return event.getShape();
-            }
-        }, EventValues.TIME_NOW);
+        EventValues.registerEventValue(EffSecDrawShape.DrawEvent.class, Shape.class, DrawEvent::getShape, EventValues.TIME_NOW);
     }
 
     @Nullable
@@ -91,8 +86,8 @@ public class EffSecDrawShape extends DrawShapeEffectSection {
             @Nullable Timespan duration = this.duration.getSingle(event);
             if (delay == null || duration == null) return;
 
-            period = Math.max(delay.getTicks(), 1);
-            iterations = Math.max(duration.getTicks() / period, 1);
+            period = Math.max(delay.getAs(TimePeriod.TICK), 1);
+            iterations = Math.max(duration.getAs(TimePeriod.TICK) / period, 1);
         }
         AtomicLong currentIteration = new AtomicLong(0);
         BukkitRunnable runnable = new BukkitRunnable() {
