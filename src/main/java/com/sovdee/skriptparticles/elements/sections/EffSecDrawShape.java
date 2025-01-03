@@ -8,6 +8,7 @@ import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.registrations.EventValues;
+import ch.njol.skript.util.Getter;
 import ch.njol.skript.util.Timespan;
 import ch.njol.skript.util.Timespan.TimePeriod;
 import ch.njol.util.Kleenean;
@@ -58,7 +59,12 @@ public class EffSecDrawShape extends DrawShapeEffectSection {
                 "[sync:sync[hronously]] draw [the] shape[s] [of] %shapes% [%-directions% %-locations/entities%] [to %-players%]",
                 "draw [the] shape[s] [of] %shapes% [%-directions% %-locations/entities%] [to %-players%] (duration:for) [duration] %timespan% [with (delay|refresh [rate]) [of] %-timespan%]"
         );
-        EventValues.registerEventValue(EffSecDrawShape.DrawEvent.class, Shape.class, DrawEvent::getShape, EventValues.TIME_NOW);
+        EventValues.registerEventValue(EffSecDrawShape.DrawEvent.class, Shape.class, new Getter<Shape, DrawEvent>() {
+            @Override
+            public Shape get(DrawEvent drawEvent) {
+                return drawEvent.getShape();
+            }
+        }, EventValues.TIME_NOW);
     }
 
     @Nullable

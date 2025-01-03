@@ -14,7 +14,7 @@ public class ReflectionUtils {
 
     @Nullable
     public static Class<?> getOBCClass(String obcClassString) {
-        String name = CRAFTBUKKIT_PACKAGE + obcClassString;
+        String name = CRAFTBUKKIT_PACKAGE + "." + obcClassString;
         try {
             return Class.forName(name);
         } catch (ClassNotFoundException e) {
