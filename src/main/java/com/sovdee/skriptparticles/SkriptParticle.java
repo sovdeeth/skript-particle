@@ -2,8 +2,8 @@ package com.sovdee.skriptparticles;
 
 import ch.njol.skript.Skript;
 import ch.njol.skript.SkriptAddon;
-import ch.njol.skript.bstats.bukkit.Metrics;
 import ch.njol.skript.util.Version;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
