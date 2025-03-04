@@ -131,8 +131,8 @@ public class EffRotateShape extends Effect {
     @Override
     public String toString(@Nullable Event event, boolean debug) {
         if (rotation != null)
-            return "rotate shape " + shapes.toString(event, debug) + " by " + rotation.toString(event, debug);
-        return "rotate shape " + shapes.toString(event, debug) + " around " + (relative ? "relative " : "") +
+            return "rotate shape " + (useDrawnShapes ? "drawn shapes" : shapes.toString(event, debug)) + " by " + rotation.toString(event, debug);
+        return "rotate shape " + (useDrawnShapes ? "drawn shapes" : shapes.toString(event, debug)) + " around " + (relative ? "relative " : "") +
                 (vectorAxis != null ? "vector " + vectorAxis.toString(event, debug) : axis + " axis") + " by " +
                 angle.toString(event, debug) + (isRadians ? " radians" : " degrees");
     }
