@@ -15,22 +15,21 @@ import org.jetbrains.annotations.Nullable;
 
 @Name("Shape Length/Width/Height")
 @Description({
-        "The length, width, or height of a shape. Changing this will change the size of the shape. Resetting or deleting it will set it back to the default value of 1.",
-        "Be sure to use 'shape length' instead of just 'length' to avoid conflicts with other syntax."
+        "The length, width, or height of a shape. Changing this will change the size of the shape. Resetting or deleting it will set it back to the default value of 1."
 })
 @Examples({
-        "set {_shape}'s length to 5",
-        "set {_shape}'s width to 5",
-        "set {_shape}'s height to 5",
-        "reset {_shape}'s length",
-        "reset {_shape}'s width",
-        "add 6 to {_shape}'s height"
+        "set {_shape}'s shape length to 5",
+        "set {_shape}'s shape width to 5",
+        "set {_shape}'s shape height to 5",
+        "reset {_shape}'s shape length",
+        "reset {_shape}'s shape width",
+        "add 6 to {_shape}'s shape height"
 })
 @Since("1.0.0")
 public class ExprShapeLWH extends SimplePropertyExpression<LWHShape, Number> {
 
     static {
-        register(ExprShapeLWH.class, Number.class, "[shape] (:length|:width|:height)", "lwhshapes");
+        register(ExprShapeLWH.class, Number.class, "shape (:length|:width|:height)", "lwhshapes");
     }
 
     private int lwh;

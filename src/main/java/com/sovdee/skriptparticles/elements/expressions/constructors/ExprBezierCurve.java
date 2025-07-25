@@ -1,16 +1,16 @@
 package com.sovdee.skriptparticles.elements.expressions.constructors;
 
 import ch.njol.skript.Skript;
+import ch.njol.skript.doc.Description;
+import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Name;
+import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.ExpressionType;
-import ch.njol.skript.lang.Literal;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
 import com.sovdee.skriptparticles.shapes.BezierCurve;
-import com.sovdee.skriptparticles.shapes.Circle;
-import com.sovdee.skriptparticles.shapes.Shape;
-import com.sovdee.skriptparticles.util.MathUtil;
 import com.sovdee.skriptparticles.util.Point;
 import org.bukkit.event.Event;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -19,6 +19,15 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
+@Name("Particle Bezier Curve")
+@Description({
+        "Creates a bezier curve between the given start and end points, using the given control points to change the curve."
+})
+@Examples({
+        "set {_shape} to a bezier curve from {a} to {b} with control points {c} and {d}",
+        "set {_shape} to a curve from player to player's target with control point (location 3 above player)"
+})
+@Since("1.3.0")
 public class ExprBezierCurve extends SimpleExpression<BezierCurve> {
 
     static {

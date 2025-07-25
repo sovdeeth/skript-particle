@@ -25,17 +25,17 @@ import java.util.ArrayList;
         "If you want the vectors relative to the center of the shape, use the 'shape points' expression."
 })
 @Examples({
-        "set {_locations::*} to locations of (circle of radius 10) centered at player",
+        "set {_locations::*} to point locations of (circle of radius 10) centered at player",
         "teleport player to random element of {_locations::*}",
         "",
         "# drawing the shape yourself: (skbee particle syntax)",
-        "draw 1 dust using dustOptions(red, 1) at (locations of (circle of radius 10) centered at player)"
+        "draw 1 dust using dustOptions(red, 1) at (particle locations of (circle of radius 10) centered at player)"
 })
 @Since("1.0.0")
 public class ExprShapeLocations extends SimpleExpression<Location> {
 
     static {
-        Skript.registerExpression(ExprShapeLocations.class, Location.class, ExpressionType.COMBINED, "[particle] locations of %shapes% [[centered] %direction% %location%]");
+        Skript.registerExpression(ExprShapeLocations.class, Location.class, ExpressionType.COMBINED, "(particle|point) locations of %shapes% [[centered] %direction% %location%]");
     }
 
     private Expression<Shape> shapeExpr;

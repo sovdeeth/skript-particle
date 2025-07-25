@@ -18,16 +18,16 @@ import org.jetbrains.annotations.Nullable;
         "Changing this will scale the shape accordingly. Resetting or deleting it will set it back to the default scale of 1."
 })
 @Examples({
-        "set {_shape}'s scale to 2",
-        "set scale of {_shape} to 0.5",
-        "set scale of {_shape} to 2 * (scale of {_shape})",
-        "reset {_shape}'s scale"
+        "set {_shape}'s shape scale to 2",
+        "set shape scale of {_shape} to 0.5",
+        "set shape scale of {_shape} to 2 * (scale of {_shape})",
+        "reset {_shape}'s shape scale"
 })
 @Since("1.0.0")
 public class ExprShapeScale extends SimplePropertyExpression<Shape, Number> {
 
     static {
-        PropertyExpression.register(ExprShapeScale.class, Number.class, "scale", "shapes");
+        PropertyExpression.register(ExprShapeScale.class, Number.class, "shape scale", "shapes");
     }
 
     @Override

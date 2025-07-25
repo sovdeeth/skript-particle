@@ -81,6 +81,7 @@ public class SecParticle extends Section {
     }
 
     private Expression<org.bukkit.Particle> particle;
+    @Nullable
     private Expression<Number> count;
     @Nullable
     private Expression<Vector> offset;
@@ -93,6 +94,7 @@ public class SecParticle extends Section {
     @Nullable
     private Expression<Boolean> force;
 
+    @SuppressWarnings("unchecked")
     @Override
     public boolean init(Expression<?>[] expressions, int matchedPattern, Kleenean isDelayed, SkriptParser.ParseResult parseResult, SectionNode sectionNode, List<TriggerItem> triggerItems) {
         @Nullable EntryContainer entryContainer = validator.validate(sectionNode);

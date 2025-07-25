@@ -26,7 +26,7 @@ import org.jetbrains.annotations.Nullable;
 public class ExprShapeSides extends SimplePropertyExpression<PolyShape, Integer> {
 
     static {
-        register(ExprShapeSides.class, Integer.class, "side[s| count]", "polyshapes");
+        register(ExprShapeSides.class, Integer.class, "side(s| count)", "polyshapes");
     }
 
     @Override
