@@ -1,7 +1,7 @@
 # skript-particle
  Skript addon for creating complex particle effects with minimal hassle.
  
- **Requires Skript 2.7+, Java 17, Paper 1.17.1+**
+ **Requires Skript 2.10+, Java 17, Paper 1.19.4+**
  
  Download at the [releases page.](https://github.com/sovdeeth/skript-particle/releases) 
 
@@ -58,6 +58,7 @@ command /magic:
   - 2D Regular and Irregular Polygons and Prisms
   - Regular polyhedra
   - Rectangles and cuboids
+  - Bezier Curves
 - Drawing:
   - Three styles: outline, surface, and filled. Some shapes only support one or two of these styles.
   - Rotation to any orientation.
@@ -74,17 +75,17 @@ command /magic:
 - Particles:
   - Expression for custom particles
   - Section for custom particles
+- Animation
+  - Ability to stretch out drawing a shape over a timespan
 
  ## Planned Features:
  - Shapes:
-   - Bezier Curves
    - Custom shapes defined by a function
    - "Common but difficult to code" shapes like hearts, stars, and more
  - Drawing:
    - Combining shapes into a custom shape to be drawn as a single shape.
    - Gradient colour fields, with custom colour nodes.
  - Animation:
-   - Ability to stretch out drawing a shape over a timespan
    - Set up a pre-made animation in a custom structure, play back with one draw call 
 
 ![2022-08-28_00 10 57](https://user-images.githubusercontent.com/10354869/187062233-5f51ba7b-60f4-44f8-bf6b-862a4e2381fd.png)
