@@ -11,7 +11,6 @@ import ch.njol.skript.lang.TriggerItem;
 import ch.njol.skript.lang.parser.ParserInstance;
 import ch.njol.skript.registrations.EventValues;
 import ch.njol.skript.util.Direction;
-import ch.njol.skript.util.Getter;
 import ch.njol.skript.util.Timespan;
 import ch.njol.skript.util.Timespan.TimePeriod;
 import ch.njol.skript.variables.Variables;
@@ -40,12 +39,7 @@ public abstract class DrawShapeEffectSection extends EffectSection {
     public static final Timespan ONE_TICK = new Timespan(TimePeriod.TICK, 1);
 
     static {
-        EventValues.registerEventValue(DrawEvent.class, Shape.class, new Getter<Shape, DrawEvent>() {
-            @Override
-            public Shape get(DrawEvent drawEvent) {
-                return drawEvent.getShape();
-            }
-        }, EventValues.TIME_NOW);
+        EventValues.registerEventValue(DrawEvent.class, Shape.class, DrawEvent::getShape, EventValues.TIME_NOW);
     }
 
     protected Expression<Shape> shapes;
@@ -82,7 +76,7 @@ public abstract class DrawShapeEffectSection extends EffectSection {
             AtomicBoolean delayed = new AtomicBoolean(false);
             Runnable afterLoading = () -> delayed.set(!getParser().getHasDelayBefore().isFalse());
             assert sectionNode != null;
-            trigger = loadCode(sectionNode, "draw", afterLoading, DrawEvent.class);
+            trigger = loadCode(sectionNode, "draw", null, afterLoading, DrawEvent.class);
             if (delayed.get()) {
                 Skript.error("Delays can't be used within a Draw Shape Effect Section");
                 return false;
@@ -144,10 +138,7 @@ public abstract class DrawShapeEffectSection extends EffectSection {
         if (trigger != null) {
             consumer = shape -> {
                 DrawEvent drawEvent = new DrawEvent(shape);
-                Variables.setLocalVariables(drawEvent, localVars);
-                TriggerItem.walk(trigger, drawEvent);
-                Variables.setLocalVariables(event, Variables.copyLocalVariables(drawEvent));
-                Variables.removeLocals(drawEvent);
+                Variables.withLocalVariables(event, drawEvent, () -> TriggerItem.walk(trigger, drawEvent));
             };
         } else {
             consumer = null;
@@ -216,11 +207,9 @@ public abstract class DrawShapeEffectSection extends EffectSection {
             for (DynamicLocation dynamicLocation : locations) {
                 for (Shape shape : shapes.getArray(event)) {
                     if (consumer != null) {
-                        // copy the shape so that it can be modified by the consumer without affecting the original
-                        shapeCopy = shape.clone();
-                        shapeCopy.draw(dynamicLocation, consumer, recipients);
+                        shape.clone().draw(dynamicLocation, consumer, recipients);
                     } else {
-                        shape.draw(dynamicLocation, recipients);
+                        shape.clone().draw(dynamicLocation, recipients);
                     }
                 }
             }
@@ -237,7 +226,7 @@ public abstract class DrawShapeEffectSection extends EffectSection {
         try {
             for (DynamicLocation dynamicLocation : locations) {
                 for (Shape shape : shapes) {
-                    shape.draw(dynamicLocation, recipients);
+                    shape.clone().draw(dynamicLocation, recipients);
                 }
             }
         } catch (IllegalArgumentException exception) {

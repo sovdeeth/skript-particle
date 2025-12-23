@@ -366,6 +366,8 @@ public abstract class AbstractShape implements Shape {
         shape.setStyle(this.style);
         shape.showLocalAxes(this.drawLocalAxes);
         shape.showGlobalAxes(this.drawGlobalAxes);
+        shape.setAnimationDuration(this.animationDuration);
+        shape.setOrdering(this.ordering);
         // ensure that the shape's points are updated, so we don't have to recalculate them unless we change the copy.
         shape.setPoints(this.getPoints());
         shape.setNeedsUpdate(this.needsUpdate);
