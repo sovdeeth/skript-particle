@@ -29,7 +29,7 @@ import java.util.ArrayList;
         "teleport player to random element of {_locations::*}",
         "",
         "# drawing the shape yourself: (skbee particle syntax)",
-        "draw 1 dust using dustOptions(red, 1) at (particle locations of (circle of radius 10) centered at player)"
+        "draw 1 red dust at (particle locations of (circle of radius 10) centered at player)"
 })
 @Since("1.0.0")
 public class ExprShapeLocations extends SimpleExpression<Location> {

@@ -45,7 +45,7 @@ import java.util.concurrent.atomic.AtomicLong;
         "synchronously draw the shape of a sphere with radius 1 at player's location",
         "",
         "draw the shape {_shape} at player's location:",
-            "\tset event-shape's particle to dust using dustOption(red, 1)",
+            "\tset event-shape's particle to red dust",
         "",
         "synchronously draw shape (a sphere with radius 1 and a cube with radius 1) at player's location:",
             "\tset event-shape's radius to 2",
