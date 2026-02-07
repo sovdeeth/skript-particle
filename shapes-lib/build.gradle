@@ -1,0 +1,17 @@
+plugins {
+    id 'java-library'
+}
+
+group = 'com.sovdee'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    api "org.joml:joml:${jomlVersion}"
+}
+
+java {
+    toolchain.languageVersion.set(JavaLanguageVersion.of(21))
+}
