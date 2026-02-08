@@ -4,15 +4,16 @@ import com.sovdee.shapes.util.MathUtil;
 import org.joml.Vector3d;
 
 import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  * A line shape defined by two vector endpoints.
- * For dynamic (entity-following) lines, use the plugin-side DynamicLine wrapper.
+ * Supports both static endpoints and dynamic suppliers for entity-following.
  */
 public class Line extends AbstractShape implements LWHShape {
 
-    private Vector3d start;
-    private Vector3d end;
+    private Supplier<Vector3d> startSupplier;
+    private Supplier<Vector3d> endSupplier;
 
     public Line(Vector3d end) {
         this(new Vector3d(0, 0, 0), end);
@@ -22,54 +23,82 @@ public class Line extends AbstractShape implements LWHShape {
         super();
         if (start.equals(end))
             throw new IllegalArgumentException("Start and end locations cannot be the same.");
-        this.start = new Vector3d(start);
-        this.end = new Vector3d(end);
+        final Vector3d s = new Vector3d(start);
+        final Vector3d e = new Vector3d(end);
+        this.startSupplier = () -> new Vector3d(s);
+        this.endSupplier = () -> new Vector3d(e);
+    }
+
+    public Line(Supplier<Vector3d> start, Supplier<Vector3d> end) {
+        super();
+        this.startSupplier = start;
+        this.endSupplier = end;
+        setDynamic(true);
     }
 
     @Override
     public void generateOutline(Set<Vector3d> points) {
-        points.addAll(MathUtil.calculateLine(start, end, this.getParticleDensity()));
+        points.addAll(MathUtil.calculateLine(getStart(), getEnd(), this.getParticleDensity()));
     }
 
     public Vector3d getStart() {
-        return new Vector3d(start);
+        return startSupplier.get();
     }
 
     public void setStart(Vector3d start) {
-        if (start.equals(end))
-            throw new IllegalArgumentException("Start and end points must not be identical");
-        this.start = new Vector3d(start);
+        final Vector3d s = new Vector3d(start);
+        this.startSupplier = () -> new Vector3d(s);
         this.setNeedsUpdate(true);
     }
 
     public Vector3d getEnd() {
-        return new Vector3d(end);
+        return endSupplier.get();
     }
 
     public void setEnd(Vector3d end) {
-        if (end.equals(start))
-            throw new IllegalArgumentException("Start and end points must not be identical");
-        this.end = new Vector3d(end);
+        final Vector3d e = new Vector3d(end);
+        this.endSupplier = () -> new Vector3d(e);
         this.setNeedsUpdate(true);
+    }
+
+    public Supplier<Vector3d> getStartSupplier() {
+        return startSupplier;
+    }
+
+    public void setStartSupplier(Supplier<Vector3d> startSupplier) {
+        this.startSupplier = startSupplier;
+    }
+
+    public Supplier<Vector3d> getEndSupplier() {
+        return endSupplier;
+    }
+
+    public void setEndSupplier(Supplier<Vector3d> endSupplier) {
+        this.endSupplier = endSupplier;
     }
 
     @Override
     public void setParticleCount(int particleCount) {
         particleCount = Math.max(particleCount, 1);
+        Vector3d start = getStart();
+        Vector3d end = getEnd();
         this.setParticleDensity(new Vector3d(end).sub(start).length() / particleCount);
         this.setNeedsUpdate(true);
     }
 
     @Override
     public double getLength() {
-        return new Vector3d(start).sub(end).length();
+        return new Vector3d(getStart()).sub(getEnd()).length();
     }
 
     @Override
     public void setLength(double length) {
         length = Math.max(length, MathUtil.EPSILON);
+        Vector3d start = getStart();
+        Vector3d end = getEnd();
         Vector3d direction = new Vector3d(end).sub(start).normalize();
-        end = new Vector3d(start).add(direction.mul(length));
+        Vector3d newEnd = new Vector3d(start).add(direction.mul(length));
+        setEnd(newEnd);
         this.setNeedsUpdate(true);
     }
 
@@ -87,10 +116,16 @@ public class Line extends AbstractShape implements LWHShape {
 
     @Override
     public Shape clone() {
-        return this.copyTo(new Line(new Vector3d(this.start), new Vector3d(this.end)));
+        Line clone;
+        if (isDynamic()) {
+            clone = new Line(this.startSupplier, this.endSupplier);
+        } else {
+            clone = new Line(getStart(), getEnd());
+        }
+        return this.copyTo(clone);
     }
 
     public String toString() {
-        return "Line from " + this.start + " to " + this.end;
+        return "Line from " + getStart() + " to " + getEnd();
     }
 }

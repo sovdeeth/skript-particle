@@ -7,8 +7,7 @@ import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.expressions.base.SimplePropertyExpression;
 import com.sovdee.shapes.CutoffShape;
-import com.sovdee.skriptparticles.shapes.DrawableShape;
-import com.sovdee.skriptparticles.shapes.Shape;
+import com.sovdee.shapes.Shape;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,7 +31,7 @@ public class ExprShapeCutoffAngle extends SimplePropertyExpression<Shape, Number
 
     @Override
     public @Nullable Number convert(Shape shape) {
-        if (shape instanceof DrawableShape ds && ds.getShape() instanceof CutoffShape cs)
+        if (shape instanceof CutoffShape cs)
             return cs.getCutoffAngle();
         return null;
     }
@@ -57,7 +56,7 @@ public class ExprShapeCutoffAngle extends SimplePropertyExpression<Shape, Number
                 angle = -angle;
             case ADD:
                 for (Shape shape : getExpr().getArray(event)) {
-                    if (shape instanceof DrawableShape ds && ds.getShape() instanceof CutoffShape cs)
+                    if (shape instanceof CutoffShape cs)
                         cs.setCutoffAngle(cs.getCutoffAngle() + angle);
                 }
                 break;
@@ -65,7 +64,7 @@ public class ExprShapeCutoffAngle extends SimplePropertyExpression<Shape, Number
             case RESET:
             case SET:
                 for (Shape shape : getExpr().getArray(event)) {
-                    if (shape instanceof DrawableShape ds && ds.getShape() instanceof CutoffShape cs)
+                    if (shape instanceof CutoffShape cs)
                         cs.setCutoffAngle(angle);
                 }
                 break;

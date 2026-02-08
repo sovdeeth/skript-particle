@@ -5,6 +5,7 @@ import org.joml.Vector3d;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  * A bezier curve defined by control points as Vector3d.
@@ -13,6 +14,7 @@ import java.util.Set;
 public class BezierCurve extends AbstractShape {
 
     private List<Vector3d> controlPoints;
+    private Supplier<List<Vector3d>> controlPointsSupplier;
 
     /**
      * Creates a bezier curve from the given control points.
@@ -29,6 +31,18 @@ public class BezierCurve extends AbstractShape {
             this.controlPoints.add(new Vector3d(cp));
     }
 
+    public BezierCurve(Supplier<List<Vector3d>> controlPointsSupplier) {
+        super();
+        this.controlPointsSupplier = controlPointsSupplier;
+        List<Vector3d> pts = controlPointsSupplier.get();
+        if (pts.size() < 2)
+            throw new IllegalArgumentException("A bezier curve must have at least 2 control points.");
+        this.controlPoints = new ArrayList<>();
+        for (Vector3d cp : pts)
+            this.controlPoints.add(new Vector3d(cp));
+        setDynamic(true);
+    }
+
     public BezierCurve(BezierCurve curve) {
         super();
         this.controlPoints = new ArrayList<>();
@@ -38,6 +52,12 @@ public class BezierCurve extends AbstractShape {
 
     @Override
     public void generateOutline(Set<Vector3d> points) {
+        if (controlPointsSupplier != null) {
+            List<Vector3d> pts = controlPointsSupplier.get();
+            this.controlPoints = new ArrayList<>();
+            for (Vector3d cp : pts)
+                this.controlPoints.add(new Vector3d(cp));
+        }
         int steps = (int) (estimateLength() / getParticleDensity());
 
         for (double step = 0; step < steps; step++) {
@@ -81,8 +101,18 @@ public class BezierCurve extends AbstractShape {
         this.setNeedsUpdate(true);
     }
 
+    public Supplier<List<Vector3d>> getControlPointsSupplier() {
+        return controlPointsSupplier;
+    }
+
     @Override
     public Shape clone() {
-        return this.copyTo(new BezierCurve(this));
+        BezierCurve clone;
+        if (controlPointsSupplier != null) {
+            clone = new BezierCurve(controlPointsSupplier);
+        } else {
+            clone = new BezierCurve(this);
+        }
+        return this.copyTo(clone);
     }
 }

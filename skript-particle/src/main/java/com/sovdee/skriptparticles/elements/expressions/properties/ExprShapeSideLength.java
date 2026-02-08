@@ -7,8 +7,7 @@ import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.expressions.base.SimplePropertyExpression;
 import com.sovdee.shapes.PolyShape;
-import com.sovdee.skriptparticles.shapes.DrawableShape;
-import com.sovdee.skriptparticles.shapes.Shape;
+import com.sovdee.shapes.Shape;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
 
@@ -34,7 +33,7 @@ public class ExprShapeSideLength extends SimplePropertyExpression<Shape, Number>
     @Override
     @Nullable
     public Number convert(Shape shape) {
-        if (shape instanceof DrawableShape ds && ds.getShape() instanceof PolyShape ps)
+        if (shape instanceof PolyShape ps)
             return ps.getSideLength();
         return null;
     }
@@ -57,7 +56,7 @@ public class ExprShapeSideLength extends SimplePropertyExpression<Shape, Number>
                 change = -change;
             case ADD:
                 for (Shape shape : getExpr().getArray(event)) {
-                    if (shape instanceof DrawableShape ds && ds.getShape() instanceof PolyShape ps)
+                    if (shape instanceof PolyShape ps)
                         ps.setSideLength(Math.max(0.001, ps.getSideLength() + change));
                 }
                 break;
@@ -66,7 +65,7 @@ public class ExprShapeSideLength extends SimplePropertyExpression<Shape, Number>
             case SET:
                 change = Math.max(0.001, change);
                 for (Shape shape : getExpr().getArray(event)) {
-                    if (shape instanceof DrawableShape ds && ds.getShape() instanceof PolyShape ps)
+                    if (shape instanceof PolyShape ps)
                         ps.setSideLength(change);
                 }
                 break;

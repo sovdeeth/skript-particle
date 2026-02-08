@@ -1,6 +1,8 @@
 package com.sovdee.skriptparticles.particles;
 
-import com.sovdee.skriptparticles.shapes.Shape;
+import com.sovdee.shapes.Shape;
+import com.sovdee.skriptparticles.shapes.DrawData;
+import com.sovdee.skriptparticles.util.VectorConversion;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -47,17 +49,19 @@ public class Particle extends ParticleEffect {
     }
 
     public void spawn(Vector delta) {
-        if (parent == null || parent.getLastLocation() == null) return;
+        if (parent == null) return;
+        DrawData dd = DrawData.of(parent);
+        if (dd.getLastLocation() == null) return;
         if (motion != null) {
-            Vector motionVector = motion.getMotionVector(parent.getRelativeYAxis(true), delta);
+            Vector yAxis = dd.getLastOrientation().transform(new Vector(0, 1, 0));
+            Vector motionVector = motion.getMotionVector(yAxis, delta);
             this.offset(motionVector.getX(), motionVector.getY(), motionVector.getZ());
             this.count(0);
         }
         if (gradient != null) {
             color(gradient.calculateColour(delta));
         }
-        location(parent.getLastLocation().getLocation().add(delta));
-        // note that the values we change here do persist, so we may need to reset them after spawning if it causes issues
+        location(dd.getLastLocation().getLocation().add(delta));
         super.spawn();
     }
 

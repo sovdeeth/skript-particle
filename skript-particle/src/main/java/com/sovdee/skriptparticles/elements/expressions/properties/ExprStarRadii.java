@@ -9,10 +9,9 @@ import ch.njol.skript.expressions.base.SimplePropertyExpression;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.util.Kleenean;
+import com.sovdee.shapes.Shape;
 import com.sovdee.shapes.Star;
 import com.sovdee.shapes.util.MathUtil;
-import com.sovdee.skriptparticles.shapes.DrawableShape;
-import com.sovdee.skriptparticles.shapes.Shape;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
 
@@ -44,7 +43,7 @@ public class ExprStarRadii extends SimplePropertyExpression<Shape, Number> {
 
     @Override
     public @Nullable Number convert(Shape shape) {
-        if (shape instanceof DrawableShape ds && ds.getShape() instanceof Star star) {
+        if (shape instanceof Star star) {
             return (isInner ? star.getInnerRadius() : star.getOuterRadius());
         }
         return null;
@@ -70,7 +69,7 @@ public class ExprStarRadii extends SimplePropertyExpression<Shape, Number> {
                 deltaValue = -deltaValue;
             case ADD:
                 for (Shape shape : shapes) {
-                    if (shape instanceof DrawableShape ds && ds.getShape() instanceof Star star) {
+                    if (shape instanceof Star star) {
                         if (isInner) {
                             star.setInnerRadius(Math.max(star.getInnerRadius() + deltaValue, MathUtil.EPSILON));
                         } else {
@@ -82,7 +81,7 @@ public class ExprStarRadii extends SimplePropertyExpression<Shape, Number> {
             case SET:
                 deltaValue = Math.max(deltaValue, MathUtil.EPSILON);
                 for (Shape shape : shapes) {
-                    if (shape instanceof DrawableShape ds && ds.getShape() instanceof Star star) {
+                    if (shape instanceof Star star) {
                         if (isInner) {
                             star.setInnerRadius(deltaValue);
                         } else {

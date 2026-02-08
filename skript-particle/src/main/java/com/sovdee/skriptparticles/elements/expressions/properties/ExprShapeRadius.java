@@ -8,8 +8,7 @@ import ch.njol.skript.doc.Since;
 import ch.njol.skript.expressions.base.PropertyExpression;
 import ch.njol.skript.expressions.base.SimplePropertyExpression;
 import com.sovdee.shapes.RadialShape;
-import com.sovdee.skriptparticles.shapes.DrawableShape;
-import com.sovdee.skriptparticles.shapes.Shape;
+import com.sovdee.shapes.Shape;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
 
@@ -34,7 +33,7 @@ public class ExprShapeRadius extends SimplePropertyExpression<Shape, Number> {
     @Override
     @Nullable
     public Number convert(Shape shape) {
-        if (shape instanceof DrawableShape ds && ds.getShape() instanceof RadialShape rs)
+        if (shape instanceof RadialShape rs)
             return rs.getRadius();
         return null;
     }
@@ -60,7 +59,7 @@ public class ExprShapeRadius extends SimplePropertyExpression<Shape, Number> {
                 deltaValue = -deltaValue;
             case ADD:
                 for (Shape shape : shapes) {
-                    if (shape instanceof DrawableShape ds && ds.getShape() instanceof RadialShape rs)
+                    if (shape instanceof RadialShape rs)
                         rs.setRadius(Math.max(0.001, rs.getRadius() + deltaValue));
                 }
                 break;
@@ -69,7 +68,7 @@ public class ExprShapeRadius extends SimplePropertyExpression<Shape, Number> {
             case SET:
                 deltaValue = Math.max(0.001, deltaValue);
                 for (Shape shape : shapes) {
-                    if (shape instanceof DrawableShape ds && ds.getShape() instanceof RadialShape rs)
+                    if (shape instanceof RadialShape rs)
                         rs.setRadius(deltaValue);
                 }
                 break;

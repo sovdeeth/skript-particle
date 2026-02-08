@@ -6,9 +6,11 @@ import ch.njol.skript.doc.Examples;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.expressions.base.PropertyExpression;
 import ch.njol.skript.expressions.base.SimplePropertyExpression;
-import com.sovdee.skriptparticles.shapes.Shape;
+import com.sovdee.shapes.Shape;
+import com.sovdee.skriptparticles.util.VectorConversion;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
+import org.joml.Vector3d;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,7 +32,7 @@ public class ExprShapeOffset extends SimplePropertyExpression<Shape, Vector> {
 
     @Override
     public @Nullable Vector convert(Shape shape) {
-        return shape.getOffset();
+        return VectorConversion.toBukkit(shape.getOffset());
     }
 
     @Override
@@ -49,13 +51,13 @@ public class ExprShapeOffset extends SimplePropertyExpression<Shape, Vector> {
                 if (delta == null || delta.length == 0)
                     return;
                 for (Shape shape : getExpr().getArray(event)) {
-                    shape.setOffset(((Vector) delta[0]));
+                    shape.setOffset(VectorConversion.toJOML((Vector) delta[0]));
                 }
                 break;
             case RESET:
             case DELETE:
                 for (Shape shape : getExpr().getArray(event)) {
-                    shape.setOffset(new Vector(0, 0, 0));
+                    shape.setOffset(new Vector3d(0, 0, 0));
                 }
                 break;
             case ADD:

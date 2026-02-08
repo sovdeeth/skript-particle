@@ -11,8 +11,10 @@ import ch.njol.skript.lang.Literal;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
-import com.sovdee.skriptparticles.shapes.DrawableShape;
-import com.sovdee.skriptparticles.shapes.Shape;
+import com.sovdee.shapes.Shape;
+import com.sovdee.shapes.Shape.Style;
+import com.sovdee.shapes.SphericalCap;
+import com.sovdee.skriptparticles.shapes.DrawData;
 import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
@@ -75,9 +77,10 @@ public class ExprSphericalCap extends SimpleExpression<Shape> {
         if (!isRadians)
             angle = Math.toRadians(angle.doubleValue());
 
-        DrawableShape shape = new DrawableShape(new com.sovdee.shapes.SphericalCap(radius.doubleValue(), angle.doubleValue()));
+        SphericalCap shape = new SphericalCap(radius.doubleValue(), angle.doubleValue());
         if (isSector)
-            shape.setStyle(Shape.Style.FILL);
+            shape.setStyle(Style.FILL);
+        shape.setDrawContext(new DrawData());
 
         return new Shape[]{shape};
     }

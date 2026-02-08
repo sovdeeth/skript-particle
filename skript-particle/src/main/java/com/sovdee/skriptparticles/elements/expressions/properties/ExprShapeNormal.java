@@ -7,8 +7,10 @@ import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.expressions.base.PropertyExpression;
 import ch.njol.skript.expressions.base.SimplePropertyExpression;
-import com.sovdee.skriptparticles.shapes.Shape;
+import com.sovdee.shapes.Shape;
 import com.sovdee.skriptparticles.util.Quaternion;
+import com.sovdee.skriptparticles.util.VectorConversion;
+import org.joml.Quaterniond;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
@@ -33,7 +35,7 @@ public class ExprShapeNormal extends SimplePropertyExpression<Shape, Vector> {
 
     @Override
     public Vector convert(Shape shape) {
-        return shape.getRelativeYAxis(false);
+        return VectorConversion.toBukkit(shape.getRelativeYAxis(false));
     }
 
     @Override
@@ -50,14 +52,15 @@ public class ExprShapeNormal extends SimplePropertyExpression<Shape, Vector> {
         switch (mode) {
             case SET:
                 if (delta == null || delta.length == 0) return;
+                Quaternion q = new Quaternion().rotationTo((Vector) delta[0]);
                 for (Shape shape : getExpr().getArray(event)) {
-                    shape.setOrientation(new Quaternion().rotationTo((Vector) delta[0]));
+                    shape.setOrientation(new Quaterniond(q.x, q.y, q.z, q.w));
                 }
                 break;
             case RESET:
             case DELETE:
                 for (Shape shape : getExpr().getArray(event)) {
-                    shape.setOrientation(Quaternion.IDENTITY);
+                    shape.setOrientation(new Quaterniond());
                 }
                 break;
             case ADD:

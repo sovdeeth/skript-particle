@@ -10,10 +10,11 @@ import ch.njol.skript.lang.ExpressionType;
 import ch.njol.skript.lang.SkriptParser;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
+import com.sovdee.shapes.Rectangle;
 import com.sovdee.shapes.Rectangle.Plane;
-import com.sovdee.skriptparticles.shapes.DrawableShape;
-import com.sovdee.skriptparticles.shapes.DynamicRectangle;
-import com.sovdee.skriptparticles.shapes.Shape;
+import com.sovdee.shapes.Shape;
+import com.sovdee.shapes.Shape.Style;
+import com.sovdee.skriptparticles.shapes.DrawData;
 import com.sovdee.skriptparticles.util.DynamicLocation;
 import com.sovdee.skriptparticles.util.MathUtil;
 import com.sovdee.skriptparticles.util.VectorConversion;
@@ -50,7 +51,7 @@ public class ExprRectangle extends SimpleExpression<Shape> {
 
     private Expression<Number> lengthExpr;
     private Expression<Number> widthExpr;
-    private Shape.Style style;
+    private Style style;
     private Expression<?> corner1Expr;
     private Expression<?> corner2Expr;
     private int matchedPattern;
@@ -58,7 +59,7 @@ public class ExprRectangle extends SimpleExpression<Shape> {
 
     @Override
     public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, SkriptParser.ParseResult parseResult) {
-        style = parseResult.hasTag("solid") ? Shape.Style.SURFACE : Shape.Style.OUTLINE;
+        style = parseResult.hasTag("solid") ? Style.SURFACE : Style.OUTLINE;
         this.matchedPattern = matchedPattern;
         if (matchedPattern == 0) {
             lengthExpr = (Expression<Number>) exprs[0];
@@ -75,7 +76,7 @@ public class ExprRectangle extends SimpleExpression<Shape> {
 
     @Override
     protected @Nullable Shape[] get(Event event) {
-        DrawableShape shape;
+        Shape shape;
         if (matchedPattern == 0) {
             if (lengthExpr == null || widthExpr == null) return null;
             Number length = lengthExpr.getSingle(event);
@@ -83,7 +84,7 @@ public class ExprRectangle extends SimpleExpression<Shape> {
             if (length == null || width == null) return null;
             length = Math.max(length.doubleValue(), MathUtil.EPSILON);
             width = Math.max(width.doubleValue(), MathUtil.EPSILON);
-            shape = new DrawableShape(new com.sovdee.shapes.Rectangle(length.doubleValue(), width.doubleValue(), plane));
+            shape = new Rectangle(length.doubleValue(), width.doubleValue(), plane);
         } else {
             if (corner1Expr == null || corner2Expr == null) return null;
             Object corner1 = corner1Expr.getSingle(event);
@@ -91,18 +92,24 @@ public class ExprRectangle extends SimpleExpression<Shape> {
             if (corner1 == null || corner2 == null) return null;
 
             if (corner1 instanceof Vector && corner2 instanceof Vector) {
-                shape = new DrawableShape(new com.sovdee.shapes.Rectangle(VectorConversion.toJOML((Vector) corner1), VectorConversion.toJOML((Vector) corner2), plane));
+                shape = new Rectangle(VectorConversion.toJOML((Vector) corner1), VectorConversion.toJOML((Vector) corner2), plane);
             } else if (corner1 instanceof Vector || corner2 instanceof Vector) {
                 return null;
             } else {
-                corner1 = DynamicLocation.fromLocationEntity(corner1);
-                corner2 = DynamicLocation.fromLocationEntity(corner2);
-                if (corner1 == null || corner2 == null)
+                DynamicLocation dl1 = DynamicLocation.fromLocationEntity(corner1);
+                DynamicLocation dl2 = DynamicLocation.fromLocationEntity(corner2);
+                if (dl1 == null || dl2 == null)
                     return null;
-                shape = new DrawableShape(new DynamicRectangle((DynamicLocation) corner1, (DynamicLocation) corner2, plane));
+                // Use Supplier-based Rectangle for dynamic corners
+                shape = new Rectangle(
+                        () -> VectorConversion.toJOML(dl1.getLocation().toVector()),
+                        () -> VectorConversion.toJOML(dl2.getLocation().toVector()),
+                        plane
+                );
             }
         }
         shape.setStyle(style);
+        shape.setDrawContext(new DrawData());
         return new Shape[]{shape};
     }
 
@@ -118,7 +125,7 @@ public class ExprRectangle extends SimpleExpression<Shape> {
 
     @Override
     public String toString(@Nullable Event event, boolean debug) {
-        return (style == Shape.Style.SURFACE ? "solid " : "") +
+        return (style == Style.SURFACE ? "solid " : "") +
                 switch (plane) {
                     case XZ -> " xz ";
                     case XY -> " xy ";

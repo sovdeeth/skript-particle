@@ -4,6 +4,7 @@ import com.sovdee.shapes.util.MathUtil;
 import org.joml.Vector3d;
 
 import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  * A rectangle shape, defined by a plane and dimensions.
@@ -17,6 +18,8 @@ public class Rectangle extends AbstractShape implements LWHShape {
     private double lengthStep = 1.0;
     private double widthStep = 1.0;
     private Vector3d centerOffset = new Vector3d(0, 0, 0);
+    private Supplier<Vector3d> cornerASupplier;
+    private Supplier<Vector3d> cornerBSupplier;
 
     public Rectangle(double length, double width, Plane plane) {
         super();
@@ -39,6 +42,18 @@ public class Rectangle extends AbstractShape implements LWHShape {
             case YZ -> centerOffset.x = 0;
         }
         calculateSteps();
+    }
+
+    public Rectangle(Supplier<Vector3d> cornerA, Supplier<Vector3d> cornerB, Plane plane) {
+        super();
+        this.plane = plane;
+        this.cornerASupplier = cornerA;
+        this.cornerBSupplier = cornerB;
+        Vector3d a = cornerA.get();
+        Vector3d b = cornerB.get();
+        setLengthWidth(a, b);
+        calculateSteps();
+        setDynamic(true);
     }
 
     private void setLengthWidth(Vector3d cornerA, Vector3d cornerB) {
@@ -91,6 +106,11 @@ public class Rectangle extends AbstractShape implements LWHShape {
 
     @Override
     public void generatePoints(Set<Vector3d> points) {
+        if (cornerASupplier != null && cornerBSupplier != null) {
+            Vector3d a = cornerASupplier.get();
+            Vector3d b = cornerBSupplier.get();
+            setLengthWidth(a, b);
+        }
         calculateSteps();
         super.generatePoints(points);
         points.forEach(vector -> vector.add(centerOffset));
@@ -137,9 +157,17 @@ public class Rectangle extends AbstractShape implements LWHShape {
         this.setNeedsUpdate(true);
     }
 
+    public Supplier<Vector3d> getCornerASupplier() { return cornerASupplier; }
+    public Supplier<Vector3d> getCornerBSupplier() { return cornerBSupplier; }
+
     @Override
     public Shape clone() {
-        Rectangle rectangle = new Rectangle(this.getLength(), this.getWidth(), plane);
+        Rectangle rectangle;
+        if (cornerASupplier != null && cornerBSupplier != null) {
+            rectangle = new Rectangle(cornerASupplier, cornerBSupplier, plane);
+        } else {
+            rectangle = new Rectangle(this.getLength(), this.getWidth(), plane);
+        }
         rectangle.centerOffset = new Vector3d(this.centerOffset);
         return this.copyTo(rectangle);
     }

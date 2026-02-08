@@ -10,7 +10,8 @@ import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.util.Timespan;
 import ch.njol.skript.util.Timespan.TimePeriod;
 import ch.njol.util.Kleenean;
-import com.sovdee.skriptparticles.shapes.Shape;
+import com.sovdee.shapes.Shape;
+import com.sovdee.skriptparticles.shapes.DrawData;
 import com.sovdee.skriptparticles.util.DynamicLocation;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -55,7 +56,7 @@ public class EffSecDrawShapeAnimation extends DrawShapeEffectSection {
         Timespan duration = this.duration.getOptionalSingle(event).orElse(new Timespan(TimePeriod.TICK, 0));
         long milliseconds = duration.getAs(TimePeriod.MILLISECOND);
         for (Shape shape : shapes) {
-            shape.setAnimationDuration(milliseconds);
+            DrawData.of(shape).setAnimationDuration(milliseconds);
         }
         super.setupAsync(event, locations, shapes, recipients);
     }

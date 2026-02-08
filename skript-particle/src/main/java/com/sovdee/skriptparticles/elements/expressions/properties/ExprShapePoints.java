@@ -8,7 +8,8 @@ import ch.njol.skript.expressions.base.PropertyExpression;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.util.Kleenean;
-import com.sovdee.skriptparticles.shapes.Shape;
+import com.sovdee.shapes.Shape;
+import com.sovdee.skriptparticles.util.VectorConversion;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
@@ -44,7 +45,7 @@ public class ExprShapePoints extends PropertyExpression<Shape, Vector> {
     protected Vector[] get(Event event, Shape[] source) {
         List<Vector> points = new ArrayList<>();
         for (Shape shape : source) {
-            points.addAll(shape.getPoints());
+            points.addAll(VectorConversion.toBukkit(shape.getPoints()));
         }
         return points.toArray(new Vector[0]);
     }

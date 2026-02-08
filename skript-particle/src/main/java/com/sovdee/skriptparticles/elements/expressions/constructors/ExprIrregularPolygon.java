@@ -11,8 +11,9 @@ import ch.njol.skript.lang.Literal;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
-import com.sovdee.skriptparticles.shapes.DrawableShape;
-import com.sovdee.skriptparticles.shapes.Shape;
+import com.sovdee.shapes.IrregularPolygon;
+import com.sovdee.shapes.Shape;
+import com.sovdee.skriptparticles.shapes.DrawData;
 import com.sovdee.skriptparticles.util.DynamicLocation;
 import com.sovdee.skriptparticles.util.VectorConversion;
 import org.bukkit.Location;
@@ -80,15 +81,15 @@ public class ExprIrregularPolygon extends SimpleExpression<Shape> {
             }
         }
         Number height = this.height != null ? this.height.getSingle(event) : null;
-        com.sovdee.shapes.IrregularPolygon libPolygon;
+        IrregularPolygon shape;
         if (height != null) {
-            libPolygon = new com.sovdee.shapes.IrregularPolygon(vertices, height.doubleValue());
+            shape = new IrregularPolygon(vertices, height.doubleValue());
         } else {
-            libPolygon = new com.sovdee.shapes.IrregularPolygon(vertices);
+            shape = new IrregularPolygon(vertices);
         }
-        DrawableShape shape = new DrawableShape(libPolygon);
+        shape.setDrawContext(new DrawData());
         if (locationOffset != null) {
-            shape.setLocation(new DynamicLocation((Location) points[0]));
+            DrawData.of(shape).setLocation(new DynamicLocation((Location) points[0]));
         }
         return new Shape[]{shape};
     }

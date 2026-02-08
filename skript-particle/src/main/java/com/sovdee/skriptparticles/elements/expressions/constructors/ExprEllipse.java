@@ -11,9 +11,10 @@ import ch.njol.skript.lang.Literal;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
-import com.sovdee.skriptparticles.shapes.DrawableShape;
-import com.sovdee.skriptparticles.shapes.Shape;
-import com.sovdee.skriptparticles.shapes.Shape.Style;
+import com.sovdee.shapes.Ellipse;
+import com.sovdee.shapes.Shape;
+import com.sovdee.shapes.Shape.Style;
+import com.sovdee.skriptparticles.shapes.DrawData;
 import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
@@ -55,9 +56,9 @@ public class ExprEllipse extends SimpleExpression<Shape> {
         if (matchedPattern == 1) {
             height = (Expression<Number>) exprs[2];
             style = switch (parseResult.mark) {
-                case 0 -> Shape.Style.SURFACE;
-                case 1 -> Shape.Style.OUTLINE;
-                default -> Shape.Style.FILL;
+                case 0 -> Style.SURFACE;
+                case 1 -> Style.OUTLINE;
+                default -> Style.FILL;
             };
         }
 
@@ -95,8 +96,9 @@ public class ExprEllipse extends SimpleExpression<Shape> {
         zRadius = Math.max(zRadius.doubleValue(), MathUtil.EPSILON);
         height = Math.max(height.doubleValue(), 0);
 
-        DrawableShape shape = new DrawableShape(new com.sovdee.shapes.Ellipse(xRadius.doubleValue(), zRadius.doubleValue(), height.doubleValue()));
+        Ellipse shape = new Ellipse(xRadius.doubleValue(), zRadius.doubleValue(), height.doubleValue());
         shape.setStyle(style);
+        shape.setDrawContext(new DrawData());
         return new Shape[]{shape};
     }
 

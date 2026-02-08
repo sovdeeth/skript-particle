@@ -10,10 +10,11 @@ import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.util.Kleenean;
 import com.sovdee.skriptparticles.elements.sections.DrawShapeEffectSection.DrawEvent;
-import com.sovdee.skriptparticles.shapes.Shape;
+import com.sovdee.shapes.Shape;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Quaterniond;
 import org.joml.Quaternionf;
 
 @Name("Rotate Shape")
@@ -81,7 +82,7 @@ public class EffRotateShape extends Effect {
 
     @Override
     protected void execute(Event event) {
-        Quaternionf rotation;
+        Quaterniond rotation;
         if (isAxisAngle) {
             Number angle = this.angle.getSingle(event);
             if (angle == null) return;
@@ -105,10 +106,11 @@ public class EffRotateShape extends Effect {
                 axis = vectorAxis.getSingle(event);
                 if (axis == null) return;
             }
-            rotation = new Quaternionf().rotationAxis((float) angle.doubleValue(), (float) axis.getX(), (float) axis.getY(), (float) axis.getZ());
+            rotation = new Quaterniond().rotationAxis(angle.doubleValue(), axis.getX(), axis.getY(), axis.getZ());
         } else {
-            rotation = this.rotation.getSingle(event);
-            if (rotation == null) return;
+            Quaternionf rotationF = this.rotation.getSingle(event);
+            if (rotationF == null) return;
+            rotation = new Quaterniond(rotationF.x, rotationF.y, rotationF.z, rotationF.w);
         }
 
         Shape[] shapes;
@@ -119,7 +121,7 @@ public class EffRotateShape extends Effect {
         }
 
         for (Shape shape : shapes) {
-            Quaternionf orientation = shape.getOrientation();
+            Quaterniond orientation = shape.getOrientation();
             if (relative) {
                 shape.setOrientation(orientation.mul(rotation));
             } else {

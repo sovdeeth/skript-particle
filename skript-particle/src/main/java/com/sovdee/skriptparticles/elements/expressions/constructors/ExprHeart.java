@@ -11,8 +11,10 @@ import ch.njol.skript.lang.Literal;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
-import com.sovdee.skriptparticles.shapes.DrawableShape;
-import com.sovdee.skriptparticles.shapes.Shape;
+import com.sovdee.shapes.Heart;
+import com.sovdee.shapes.Shape;
+import com.sovdee.shapes.Shape.Style;
+import com.sovdee.skriptparticles.shapes.DrawData;
 import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
@@ -82,10 +84,11 @@ public class ExprHeart extends SimpleExpression<Shape> {
         length = Math.max(length.doubleValue(), MathUtil.EPSILON);
         eccentricity = Math.max(eccentricity.doubleValue(), 1);
 
-        DrawableShape shape = new DrawableShape(new com.sovdee.shapes.Heart(width.doubleValue(), length.doubleValue(), eccentricity.doubleValue()));
+        Heart shape = new Heart(width.doubleValue(), length.doubleValue(), eccentricity.doubleValue());
         if (isSolid) {
-            shape.setStyle(Shape.Style.SURFACE);
+            shape.setStyle(Style.SURFACE);
         }
+        shape.setDrawContext(new DrawData());
         return new Shape[]{shape};
     }
 

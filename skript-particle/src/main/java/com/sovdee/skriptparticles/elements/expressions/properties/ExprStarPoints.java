@@ -7,8 +7,7 @@ import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.expressions.base.SimplePropertyExpression;
 import com.sovdee.shapes.Star;
-import com.sovdee.skriptparticles.shapes.DrawableShape;
-import com.sovdee.skriptparticles.shapes.Shape;
+import com.sovdee.shapes.Shape;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,7 +30,7 @@ public class ExprStarPoints extends SimplePropertyExpression<Shape, Number> {
 
     @Override
     public @Nullable Number convert(Shape shape) {
-        if (shape instanceof DrawableShape ds && ds.getShape() instanceof Star star)
+        if (shape instanceof Star star)
             return star.getStarPoints();
         return null;
     }
@@ -56,7 +55,7 @@ public class ExprStarPoints extends SimplePropertyExpression<Shape, Number> {
                 deltaValue = -deltaValue;
             case ADD:
                 for (Shape shape : shapes) {
-                    if (shape instanceof DrawableShape ds && ds.getShape() instanceof Star star) {
+                    if (shape instanceof Star star) {
                         star.setStarPoints(Math.max(star.getStarPoints() + deltaValue, 2));
                     }
                 }
@@ -64,7 +63,7 @@ public class ExprStarPoints extends SimplePropertyExpression<Shape, Number> {
             case SET:
                 deltaValue = Math.max(deltaValue, 2);
                 for (Shape shape : shapes) {
-                    if (shape instanceof DrawableShape ds && ds.getShape() instanceof Star star) {
+                    if (shape instanceof Star star) {
                         star.setStarPoints(deltaValue);
                     }
                 }

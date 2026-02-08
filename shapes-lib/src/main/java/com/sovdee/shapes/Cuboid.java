@@ -4,6 +4,7 @@ import com.sovdee.shapes.util.MathUtil;
 import org.joml.Vector3d;
 
 import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  * A cuboid shape, defined either by dimensions or by two corner vectors.
@@ -14,6 +15,8 @@ public class Cuboid extends AbstractShape implements LWHShape {
     private double halfLength, halfWidth, halfHeight;
     private double lengthStep, widthStep, heightStep;
     private Vector3d centerOffset = new Vector3d(0, 0, 0);
+    private Supplier<Vector3d> cornerASupplier;
+    private Supplier<Vector3d> cornerBSupplier;
 
     public Cuboid(double length, double width, double height) {
         super();
@@ -32,6 +35,19 @@ public class Cuboid extends AbstractShape implements LWHShape {
         this.halfHeight = Math.abs(cornerB.y - cornerA.y) / 2;
         centerOffset = new Vector3d(cornerB).add(cornerA).mul(0.5);
         calculateSteps();
+    }
+
+    public Cuboid(Supplier<Vector3d> cornerA, Supplier<Vector3d> cornerB) {
+        super();
+        this.cornerASupplier = cornerA;
+        this.cornerBSupplier = cornerB;
+        Vector3d a = cornerA.get();
+        Vector3d b = cornerB.get();
+        this.halfLength = Math.max(Math.abs(b.x - a.x) / 2, MathUtil.EPSILON);
+        this.halfWidth = Math.max(Math.abs(b.z - a.z) / 2, MathUtil.EPSILON);
+        this.halfHeight = Math.max(Math.abs(b.y - a.y) / 2, MathUtil.EPSILON);
+        calculateSteps();
+        setDynamic(true);
     }
 
     private void calculateSteps() {
@@ -97,6 +113,13 @@ public class Cuboid extends AbstractShape implements LWHShape {
 
     @Override
     public void generatePoints(Set<Vector3d> points) {
+        if (cornerASupplier != null && cornerBSupplier != null) {
+            Vector3d a = cornerASupplier.get();
+            Vector3d b = cornerBSupplier.get();
+            this.halfLength = Math.max(Math.abs(b.x - a.x) / 2, MathUtil.EPSILON);
+            this.halfWidth = Math.max(Math.abs(b.z - a.z) / 2, MathUtil.EPSILON);
+            this.halfHeight = Math.max(Math.abs(b.y - a.y) / 2, MathUtil.EPSILON);
+        }
         calculateSteps();
         super.generatePoints(points);
         points.forEach(vector -> vector.add(centerOffset));
@@ -142,9 +165,17 @@ public class Cuboid extends AbstractShape implements LWHShape {
         this.setNeedsUpdate(true);
     }
 
+    public Supplier<Vector3d> getCornerASupplier() { return cornerASupplier; }
+    public Supplier<Vector3d> getCornerBSupplier() { return cornerBSupplier; }
+
     @Override
     public Shape clone() {
-        Cuboid cuboid = new Cuboid(getLength(), getWidth(), getHeight());
+        Cuboid cuboid;
+        if (cornerASupplier != null && cornerBSupplier != null) {
+            cuboid = new Cuboid(cornerASupplier, cornerBSupplier);
+        } else {
+            cuboid = new Cuboid(getLength(), getWidth(), getHeight());
+        }
         cuboid.centerOffset = new Vector3d(this.centerOffset);
         return this.copyTo(cuboid);
     }

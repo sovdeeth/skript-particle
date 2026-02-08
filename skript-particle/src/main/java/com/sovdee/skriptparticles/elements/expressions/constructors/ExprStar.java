@@ -10,8 +10,10 @@ import ch.njol.skript.lang.Literal;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
-import com.sovdee.skriptparticles.shapes.DrawableShape;
-import com.sovdee.skriptparticles.shapes.Shape;
+import com.sovdee.shapes.Shape;
+import com.sovdee.shapes.Shape.Style;
+import com.sovdee.shapes.Star;
+import com.sovdee.skriptparticles.shapes.DrawData;
 import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
@@ -75,10 +77,10 @@ public class ExprStar extends SimpleExpression<Shape> {
         innerRadius = Math.max(innerRadius.doubleValue(), MathUtil.EPSILON);
         outerRadius = Math.max(outerRadius.doubleValue(), MathUtil.EPSILON);
 
-        DrawableShape shape = new DrawableShape(new com.sovdee.shapes.Star(innerRadius.doubleValue(), outerRadius.doubleValue(), angle));
+        Star shape = new Star(innerRadius.doubleValue(), outerRadius.doubleValue(), angle);
         if (isSolid)
-            shape.setStyle(Shape.Style.SURFACE);
-
+            shape.setStyle(Style.SURFACE);
+        shape.setDrawContext(new DrawData());
         return new Shape[]{shape};
     }
 

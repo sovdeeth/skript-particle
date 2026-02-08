@@ -11,9 +11,10 @@ import ch.njol.skript.lang.Literal;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
-import com.sovdee.skriptparticles.shapes.DrawableShape;
-import com.sovdee.skriptparticles.shapes.Shape;
-import com.sovdee.skriptparticles.shapes.Shape.Style;
+import com.sovdee.shapes.EllipticalArc;
+import com.sovdee.shapes.Shape;
+import com.sovdee.shapes.Shape.Style;
+import com.sovdee.skriptparticles.shapes.DrawData;
 import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
@@ -107,8 +108,9 @@ public class ExprEllipticalArc extends SimpleExpression<Shape> {
             angle = Math.toRadians(angle.doubleValue());
 
         angle = MathUtil.clamp(angle.doubleValue(), 0, Math.PI * 2);
-        DrawableShape shape = new DrawableShape(new com.sovdee.shapes.EllipticalArc(xRadius.doubleValue(), zRadius.doubleValue(), height.doubleValue(), angle.doubleValue()));
+        EllipticalArc shape = new EllipticalArc(xRadius.doubleValue(), zRadius.doubleValue(), height.doubleValue(), angle.doubleValue());
         shape.setStyle(style);
+        shape.setDrawContext(new DrawData());
         return new Shape[]{shape};
     }
 

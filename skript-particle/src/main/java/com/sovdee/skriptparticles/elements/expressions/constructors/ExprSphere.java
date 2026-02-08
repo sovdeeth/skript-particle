@@ -11,8 +11,10 @@ import ch.njol.skript.lang.Literal;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
-import com.sovdee.skriptparticles.shapes.DrawableShape;
-import com.sovdee.skriptparticles.shapes.Shape;
+import com.sovdee.shapes.Shape;
+import com.sovdee.shapes.Shape.Style;
+import com.sovdee.shapes.Sphere;
+import com.sovdee.skriptparticles.shapes.DrawData;
 import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
@@ -56,8 +58,9 @@ public class ExprSphere extends SimpleExpression<Shape> {
 
         radius = Math.max(radius.doubleValue(), MathUtil.EPSILON);
 
-        DrawableShape shape = new DrawableShape(new com.sovdee.shapes.Sphere(radius.doubleValue()));
-        if (isSolid) shape.setStyle(Shape.Style.FILL);
+        Sphere shape = new Sphere(radius.doubleValue());
+        if (isSolid) shape.setStyle(Style.FILL);
+        shape.setDrawContext(new DrawData());
         return new Shape[]{shape};
     }
 

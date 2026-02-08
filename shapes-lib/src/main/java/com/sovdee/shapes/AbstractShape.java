@@ -23,6 +23,9 @@ public abstract class AbstractShape implements Shape {
     private Comparator<Vector3d> ordering;
     private double particleDensity = 0.25;
 
+    private DrawContext drawContext;
+    private boolean dynamic = false;
+
     private State lastState;
     private boolean needsUpdate = false;
 
@@ -48,7 +51,7 @@ public abstract class AbstractShape implements Shape {
     @Override
     public Set<Vector3d> getPoints(Quaterniond orientation) {
         State state = getState(orientation);
-        if (needsUpdate || !lastState.equals(state) || points.isEmpty()) {
+        if (dynamic || needsUpdate || !lastState.equals(state) || points.isEmpty()) {
             if (ordering != null)
                 points = new TreeSet<>(ordering);
             else
@@ -189,6 +192,26 @@ public abstract class AbstractShape implements Shape {
         this.needsUpdate = needsUpdate;
     }
 
+    @Override
+    public DrawContext getDrawContext() {
+        return drawContext;
+    }
+
+    @Override
+    public void setDrawContext(DrawContext drawContext) {
+        this.drawContext = drawContext;
+    }
+
+    @Override
+    public boolean isDynamic() {
+        return dynamic;
+    }
+
+    @Override
+    public void setDynamic(boolean dynamic) {
+        this.dynamic = dynamic;
+    }
+
     public abstract Shape clone();
 
     @Override
@@ -202,6 +225,9 @@ public abstract class AbstractShape implements Shape {
         shape.setPoints(this.getPoints());
         shape.setNeedsUpdate(this.needsUpdate);
         shape.setLastState(this.lastState);
+        shape.setDynamic(this.dynamic);
+        if (this.drawContext != null)
+            shape.setDrawContext(this.drawContext.copy());
         return shape;
     }
 

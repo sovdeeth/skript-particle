@@ -11,9 +11,10 @@ import ch.njol.skript.lang.Literal;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
-import com.sovdee.skriptparticles.shapes.DrawableShape;
-import com.sovdee.skriptparticles.shapes.Shape;
-import com.sovdee.skriptparticles.shapes.Shape.Style;
+import com.sovdee.shapes.Ellipsoid;
+import com.sovdee.shapes.Shape;
+import com.sovdee.shapes.Shape.Style;
+import com.sovdee.skriptparticles.shapes.DrawData;
 import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
@@ -86,8 +87,9 @@ public class ExprEllipsoid extends SimpleExpression<Shape> {
         yRadius = Math.max(yRadius.doubleValue(), MathUtil.EPSILON);
         zRadius = Math.max(zRadius.doubleValue(), MathUtil.EPSILON);
 
-        DrawableShape shape = new DrawableShape(new com.sovdee.shapes.Ellipsoid(xRadius.doubleValue(), yRadius.doubleValue(), zRadius.doubleValue()));
+        Ellipsoid shape = new Ellipsoid(xRadius.doubleValue(), yRadius.doubleValue(), zRadius.doubleValue());
         shape.setStyle(style);
+        shape.setDrawContext(new DrawData());
         return new Shape[]{shape};
     }
 

@@ -7,8 +7,9 @@ import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.expressions.base.PropertyExpression;
 import ch.njol.skript.expressions.base.SimplePropertyExpression;
-import com.sovdee.skriptparticles.shapes.Shape;
+import com.sovdee.shapes.Shape;
 import com.sovdee.skriptparticles.util.Quaternion;
+import org.joml.Quaterniond;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -35,7 +36,8 @@ public class ExprShapeOrientation extends SimplePropertyExpression<Shape, Quater
     @Override
     @Nullable
     public Quaternion convert(Shape shape) {
-        return shape.getOrientation();
+        Quaterniond q = shape.getOrientation();
+        return new Quaternion((float) q.x, (float) q.y, (float) q.z, (float) q.w);
     }
 
     @Override
@@ -52,14 +54,15 @@ public class ExprShapeOrientation extends SimplePropertyExpression<Shape, Quater
         switch (mode) {
             case SET:
                 if (delta == null || delta.length == 0) return;
+                Quaternion q = (Quaternion) delta[0];
                 for (Shape shape : getExpr().getArray(event)) {
-                    shape.setOrientation((Quaternion) delta[0]);
+                    shape.setOrientation(new Quaterniond(q.x, q.y, q.z, q.w));
                 }
                 break;
             case RESET:
             case DELETE:
                 for (Shape shape : getExpr().getArray(event)) {
-                    shape.setOrientation(Quaternion.IDENTITY);
+                    shape.setOrientation(new Quaterniond());
                 }
                 break;
             case ADD:

@@ -11,7 +11,8 @@ import ch.njol.skript.lang.SkriptParser;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.skript.util.Direction;
 import ch.njol.util.Kleenean;
-import com.sovdee.skriptparticles.shapes.Shape;
+import com.sovdee.shapes.Shape;
+import com.sovdee.skriptparticles.util.VectorConversion;
 import org.bukkit.Location;
 import org.bukkit.event.Event;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -61,7 +62,7 @@ public class ExprShapeLocations extends SimpleExpression<Location> {
 
         ArrayList<Location> locations = new ArrayList<>();
         for (Shape shape : shapes) {
-            locations.addAll(shape.getPoints().stream().map(point -> center.clone().add(point)).toList());
+            locations.addAll(VectorConversion.toBukkit(shape.getPoints()).stream().map(point -> center.clone().add(point)).toList());
         }
         return locations.toArray(new Location[0]);
     }

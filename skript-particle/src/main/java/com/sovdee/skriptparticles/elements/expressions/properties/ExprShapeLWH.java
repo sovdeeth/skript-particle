@@ -10,8 +10,7 @@ import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser;
 import ch.njol.util.Kleenean;
 import com.sovdee.shapes.LWHShape;
-import com.sovdee.skriptparticles.shapes.DrawableShape;
-import com.sovdee.skriptparticles.shapes.Shape;
+import com.sovdee.shapes.Shape;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
 
@@ -45,7 +44,7 @@ public class ExprShapeLWH extends SimplePropertyExpression<Shape, Number> {
     @Override
     @Nullable
     public Number convert(Shape shape) {
-        if (!(shape instanceof DrawableShape ds && ds.getShape() instanceof LWHShape lwhShape))
+        if (!(shape instanceof LWHShape lwhShape))
             return null;
         return switch (lwh) {
             case 0 -> lwhShape.getLength();
@@ -75,7 +74,7 @@ public class ExprShapeLWH extends SimplePropertyExpression<Shape, Number> {
                 value = -value;
             case ADD:
                 for (Shape shape : getExpr().getArray(event)) {
-                    if (shape instanceof DrawableShape ds && ds.getShape() instanceof LWHShape lwhShape) {
+                    if (shape instanceof LWHShape lwhShape) {
                         switch (lwh) {
                             case 0 -> lwhShape.setLength(lwhShape.getLength() + value);
                             case 1 -> lwhShape.setWidth(lwhShape.getWidth() + value);
@@ -88,7 +87,7 @@ public class ExprShapeLWH extends SimplePropertyExpression<Shape, Number> {
             case RESET:
             case SET:
                 for (Shape shape : getExpr().getArray(event)) {
-                    if (shape instanceof DrawableShape ds && ds.getShape() instanceof LWHShape lwhShape) {
+                    if (shape instanceof LWHShape lwhShape) {
                         switch (lwh) {
                             case 0 -> lwhShape.setLength(value);
                             case 1 -> lwhShape.setWidth(value);

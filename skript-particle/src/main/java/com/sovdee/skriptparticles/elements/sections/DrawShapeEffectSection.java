@@ -15,8 +15,9 @@ import ch.njol.skript.util.Timespan;
 import ch.njol.skript.util.Timespan.TimePeriod;
 import ch.njol.skript.variables.Variables;
 import ch.njol.util.Kleenean;
+import com.sovdee.shapes.Shape;
 import com.sovdee.skriptparticles.SkriptParticle;
-import com.sovdee.skriptparticles.shapes.Shape;
+import com.sovdee.skriptparticles.shapes.DrawManager;
 import com.sovdee.skriptparticles.util.DynamicLocation;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -55,23 +56,8 @@ public abstract class DrawShapeEffectSection extends EffectSection {
     protected boolean useShapeLocation;
     protected boolean sync;
 
-    /**
-     * Called just after the constructor. Handles checking for delays in the section body and setting the sync tag, then
-     * passes execution to {@link #init(Expression[], int, Kleenean, ParseResult, boolean)}.
-     *
-     * @param expressions all %expr%s included in the matching pattern in the order they appear in the pattern. If an optional value was left out it will still be included in this list
-     *            holding the default value of the desired type which usually depends on the event.
-     * @param matchedPattern The index of the pattern which matched
-     * @param isDelayed Whether this expression is used after a delay or not (i.e. if the event has already passed when this expression will be called)
-     * @param parseResult Additional information about the match.
-     * @param sectionNode The section node that represents this section.
-     * @param list A list of {@link TriggerItem}s that belong to this section. This list is modifiable.
-     * @return Whether this expression was initialised successfully. An error should be printed prior to returning false to specify the cause.
-     * @see ParserInstance#isCurrentEvent(Class...)
-     */
     @Override
     public boolean init(Expression<?>[] expressions, int matchedPattern, Kleenean isDelayed, ParseResult parseResult, @Nullable SectionNode sectionNode, @Nullable List<TriggerItem> list) {
-        // handle delays in the section body
         if (hasSection()) {
             AtomicBoolean delayed = new AtomicBoolean(false);
             Runnable afterLoading = () -> delayed.set(!getParser().getHasDelayBefore().isFalse());
@@ -85,22 +71,6 @@ public abstract class DrawShapeEffectSection extends EffectSection {
         return init(expressions, matchedPattern, isDelayed, parseResult, hasSection());
     }
 
-    /**
-     * Called just after the constructor. By default, this method does sets the following fields:
-     *  - {@link #shapes} to the first expression
-     *  - {@link #directions} to the second expression
-     *  - {@link #locations} to the third expression
-     *  - {@link #players} to the fourth expression
-     *  - {@link #sync} to whether the sync tag was present
-     *
-     * @param expressions all %expr%s included in the matching pattern in the order they appear in the pattern. If an optional value was left out it will still be included in this list
-     *            holding the default value of the desired type which usually depends on the event.
-     * @param matchedPattern The index of the pattern which matched
-     * @param isDelayed Whether this expression is used after a delay or not (i.e. if the event has already passed when this expression will be called)
-     * @param parseResult Additional information about the match.
-     * @param hasSection Whether this section had a valid section body.
-     * @return Whether this expression was initialised successfully. An error should be printed prior to returning false to specify the cause
-     */
     public boolean init(@Nullable Expression<?>[] expressions, int matchedPattern, Kleenean isDelayed, ParseResult parseResult, boolean hasSection) {
         shapes = (Expression<Shape>) expressions[0];
 
@@ -123,7 +93,7 @@ public abstract class DrawShapeEffectSection extends EffectSection {
     protected TriggerItem walk(Event event) {
         debug(event, true);
 
-        Delay.addDelayedEvent(event); // Mark this event as delayed
+        Delay.addDelayedEvent(event);
 
         Collection<Player> recipients = new ArrayList<>();
         if (players != null) {
@@ -144,7 +114,6 @@ public abstract class DrawShapeEffectSection extends EffectSection {
             consumer = null;
         }
 
-        // Figure out what locations to draw at, or what entities to follow
         List<DynamicLocation> locations = new ArrayList<>();
         @Nullable Direction direction = null;
         if (!useShapeLocation) {
@@ -159,15 +128,12 @@ public abstract class DrawShapeEffectSection extends EffectSection {
                 }
             }
         } else {
-            // blank value means use shape location
             locations.add(new DynamicLocation());
         }
 
         if (sync) {
             executeSync(event, locations, consumer, recipients);
         } else {
-            // Clone shapes and run Consumer before going async
-            // We can't guarantee that the consumer will be thread-safe, so we need do this before going async
             List<Shape> preppedShapes = new ArrayList<>();
             Shape preppedShape;
             for (Shape shape : shapes.getArray(event)) {
@@ -184,13 +150,6 @@ public abstract class DrawShapeEffectSection extends EffectSection {
         return getNext();
     }
 
-    /**
-     * Sets up the async task to draw the shapes at the given locations for the given recipients.
-     * Should be called from {@link #walk(Event)} if {@link #sync} is false, and will return the next trigger item to run.
-     * @param locations the locations to draw the shapes at
-     * @param shapes the shapes to draw
-     * @param recipients the players to draw the shapes for
-     */
     protected void setupAsync(Event event, Collection<DynamicLocation> locations, Collection<Shape> shapes, Collection<Player> recipients) {
         BukkitRunnable runnable = new BukkitRunnable() {
             @Override
@@ -202,14 +161,14 @@ public abstract class DrawShapeEffectSection extends EffectSection {
     }
 
     protected void executeSync(Event event, Collection<DynamicLocation> locations, @Nullable Consumer<Shape> consumer, Collection<Player> recipients) {
-        Shape shapeCopy;
         try {
             for (DynamicLocation dynamicLocation : locations) {
                 for (Shape shape : shapes.getArray(event)) {
+                    Shape clone = shape.clone();
                     if (consumer != null) {
-                        shape.clone().draw(dynamicLocation, consumer, recipients);
+                        DrawManager.drawWithConsumer(clone, dynamicLocation, consumer, recipients);
                     } else {
-                        shape.clone().draw(dynamicLocation, recipients);
+                        DrawManager.draw(clone, dynamicLocation, recipients);
                     }
                 }
             }
@@ -226,7 +185,7 @@ public abstract class DrawShapeEffectSection extends EffectSection {
         try {
             for (DynamicLocation dynamicLocation : locations) {
                 for (Shape shape : shapes) {
-                    shape.clone().draw(dynamicLocation, recipients);
+                    DrawManager.draw(shape.clone(), dynamicLocation, recipients);
                 }
             }
         } catch (IllegalArgumentException exception) {

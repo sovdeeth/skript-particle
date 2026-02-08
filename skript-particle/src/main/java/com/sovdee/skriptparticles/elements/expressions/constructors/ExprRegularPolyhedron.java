@@ -10,9 +10,10 @@ import ch.njol.skript.lang.Literal;
 import ch.njol.skript.lang.SkriptParser;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
-import com.sovdee.skriptparticles.shapes.DrawableShape;
-import com.sovdee.skriptparticles.shapes.Shape;
-import com.sovdee.skriptparticles.shapes.Shape.Style;
+import com.sovdee.shapes.RegularPolyhedron;
+import com.sovdee.shapes.Shape;
+import com.sovdee.shapes.Shape.Style;
+import com.sovdee.skriptparticles.shapes.DrawData;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
 
@@ -42,7 +43,7 @@ public class ExprRegularPolyhedron extends SimpleExpression<Shape> {
     public boolean init(Expression<?>[] expressions, int i, Kleenean kleenean, SkriptParser.ParseResult parseResult) {
         radius = (Expression<Number>) expressions[0];
         faces = parseResult.hasTag("tetra") ? 4 : parseResult.hasTag("octa") ? 8 : parseResult.hasTag("dodeca") ? 12 : 20;
-        style = parseResult.hasTag("hollow") ? Shape.Style.SURFACE : parseResult.hasTag("solid") ? Shape.Style.FILL : Shape.Style.OUTLINE;
+        style = parseResult.hasTag("hollow") ? Style.SURFACE : parseResult.hasTag("solid") ? Style.FILL : Style.OUTLINE;
 
         if (radius instanceof Literal<Number> literal && literal.getSingle().doubleValue() <= 0) {
             Skript.error("The radius of the polyhedron must be greater than 0. (radius: " +
@@ -57,8 +58,9 @@ public class ExprRegularPolyhedron extends SimpleExpression<Shape> {
     protected @Nullable Shape[] get(Event event) {
         if (radius.getSingle(event) == null)
             return new Shape[0];
-        DrawableShape shape = new DrawableShape(new com.sovdee.shapes.RegularPolyhedron(radius.getSingle(event).doubleValue(), faces));
+        RegularPolyhedron shape = new RegularPolyhedron(radius.getSingle(event).doubleValue(), faces);
         shape.setStyle(style);
+        shape.setDrawContext(new DrawData());
         return new Shape[]{shape};
     }
 

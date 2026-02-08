@@ -11,8 +11,10 @@ import ch.njol.skript.lang.Literal;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
-import com.sovdee.skriptparticles.shapes.DrawableShape;
-import com.sovdee.skriptparticles.shapes.Shape;
+import com.sovdee.shapes.Circle;
+import com.sovdee.shapes.Shape;
+import com.sovdee.shapes.Shape.Style;
+import com.sovdee.skriptparticles.shapes.DrawData;
 import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -38,7 +40,7 @@ public class ExprCircle extends SimpleExpression<Shape> {
 
     private Expression<Number> radius;
     private Expression<Number> height;
-    private Shape.Style style;
+    private Style style;
     private boolean isCylinder;
 
     @Override
@@ -61,12 +63,12 @@ public class ExprCircle extends SimpleExpression<Shape> {
             }
 
             style = switch (parseResult.mark) {
-                case 0 -> Shape.Style.SURFACE;
-                case 1 -> Shape.Style.OUTLINE;
-                default -> Shape.Style.FILL;
+                case 0 -> Style.SURFACE;
+                case 1 -> Style.OUTLINE;
+                default -> Style.FILL;
             };
         } else {
-            style = parseResult.hasTag("disc") ? Shape.Style.SURFACE : Shape.Style.OUTLINE;
+            style = parseResult.hasTag("disc") ? Style.SURFACE : Style.OUTLINE;
         }
         return true;
     }
@@ -82,8 +84,9 @@ public class ExprCircle extends SimpleExpression<Shape> {
         radius = Math.max(radius.doubleValue(), MathUtil.EPSILON);
         height = Math.max(height.doubleValue(), 0);
 
-        DrawableShape shape = new DrawableShape(new com.sovdee.shapes.Circle(radius.doubleValue(), height.doubleValue()));
+        Circle shape = new Circle(radius.doubleValue(), height.doubleValue());
         shape.setStyle(style);
+        shape.setDrawContext(new DrawData());
         return new Shape[]{shape};
     }
 

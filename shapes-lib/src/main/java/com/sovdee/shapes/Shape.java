@@ -174,6 +174,31 @@ public interface Shape extends Cloneable {
     void setParticleCount(int particleCount);
 
     /**
+     * @return the draw context attached to this shape, or null if none.
+     */
+    DrawContext getDrawContext();
+
+    /**
+     * Sets the draw context for this shape.
+     *
+     * @param drawContext The draw context to attach.
+     */
+    void setDrawContext(DrawContext drawContext);
+
+    /**
+     * @return whether the shape is dynamic (always regenerates points).
+     */
+    boolean isDynamic();
+
+    /**
+     * Sets whether the shape is dynamic.
+     * Dynamic shapes always regenerate points, bypassing state caching.
+     *
+     * @param dynamic Whether the shape is dynamic.
+     */
+    void setDynamic(boolean dynamic);
+
+    /**
      * @return whether the shape needs a point update.
      */
     boolean needsUpdate();

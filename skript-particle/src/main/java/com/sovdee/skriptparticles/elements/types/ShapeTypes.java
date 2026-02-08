@@ -4,12 +4,12 @@ import ch.njol.skript.classes.ClassInfo;
 import ch.njol.skript.classes.Parser;
 import ch.njol.skript.lang.ParseContext;
 import ch.njol.skript.registrations.Classes;
-import com.sovdee.skriptparticles.shapes.Shape;
+import com.sovdee.shapes.Shape;
 import org.jetbrains.annotations.Nullable;
 
 public class ShapeTypes {
     static {
-        // Shape
+        // Shape — register the library shape directly
         Classes.registerClass(new ClassInfo<>(Shape.class, "shape")
                 .user("shapes?")
                 .name("Shape")
@@ -39,7 +39,7 @@ public class ShapeTypes {
                 .cloner(Shape::clone)
         );
 
-        // Style
+        // Style — use library Style directly (no duplicate enum)
         Classes.registerClass(new ClassInfo<>(Shape.Style.class, "shapestyle")
                 .user("shape ?styles?")
                 .name("Shape Style")

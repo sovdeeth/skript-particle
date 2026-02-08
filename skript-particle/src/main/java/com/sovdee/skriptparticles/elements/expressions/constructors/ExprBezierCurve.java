@@ -10,13 +10,16 @@ import ch.njol.skript.lang.ExpressionType;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
-import com.sovdee.skriptparticles.shapes.DrawableShape;
-import com.sovdee.skriptparticles.shapes.DynamicBezierCurve;
-import com.sovdee.skriptparticles.shapes.Shape;
+import com.sovdee.shapes.BezierCurve;
+import com.sovdee.shapes.Shape;
+import com.sovdee.skriptparticles.shapes.DrawData;
 import com.sovdee.skriptparticles.util.Point;
+import com.sovdee.skriptparticles.util.VectorConversion;
+import org.bukkit.Location;
 import org.bukkit.event.Event;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3d;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,16 +54,32 @@ public class ExprBezierCurve extends SimpleExpression<Shape> {
 
     @Override
     protected Shape @Nullable [] get(@NonNull Event event) {
-        @Nullable Point<?> start = Point.of(this.start.getSingle(event));
-        @Nullable Point<?> end = Point.of(this.end.getSingle(event));
-        if (start == null || end == null)
+        @Nullable Point<?> startPt = Point.of(this.start.getSingle(event));
+        @Nullable Point<?> endPt = Point.of(this.end.getSingle(event));
+        if (startPt == null || endPt == null)
             return null;
-        List<Point<?>> controlPoints = new ArrayList<>();
+        List<Point<?>> controlPts = new ArrayList<>();
         for (Object value : this.controlPoints.getArray(event)) {
-            controlPoints.add(Point.of(value));
+            controlPts.add(Point.of(value));
         }
 
-        return new Shape[]{new DrawableShape(new DynamicBezierCurve(start, end, controlPoints))};
+        // Use Supplier-based BezierCurve for dynamic control points
+        BezierCurve curve = getBezierCurve(startPt, controlPts, endPt);
+        return new Shape[]{curve};
+    }
+
+    private static @NonNull BezierCurve getBezierCurve(@NonNull Point<?> startPt, List<Point<?>> controlPts, @NonNull Point<?> endPt) {
+        BezierCurve curve = new BezierCurve(() -> {
+            Location origin = startPt.getLocation();
+            List<Vector3d> result = new ArrayList<>();
+            result.add(VectorConversion.toJOML(startPt.getVector(origin)));
+            for (Point<?> cp : controlPts)
+                result.add(VectorConversion.toJOML(cp.getVector(origin)));
+            result.add(VectorConversion.toJOML(endPt.getVector(origin)));
+            return result;
+        });
+        curve.setDrawContext(new DrawData());
+        return curve;
     }
 
     @Override

@@ -9,7 +9,8 @@ import ch.njol.skript.expressions.base.SimplePropertyExpression;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser;
 import ch.njol.util.Kleenean;
-import com.sovdee.skriptparticles.shapes.Shape;
+import com.sovdee.shapes.Shape;
+import com.sovdee.skriptparticles.util.VectorConversion;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
 
@@ -44,9 +45,9 @@ public class ExprShapeRelativeAxis extends SimplePropertyExpression<Shape, Vecto
     @Override
     public @Nullable Vector convert(Shape shape) {
         return switch (axis) {
-            case 0 -> shape.getRelativeXAxis(false);
-            case 1 -> shape.getRelativeYAxis(false);
-            case 2 -> shape.getRelativeZAxis(false);
+            case 0 -> VectorConversion.toBukkit(shape.getRelativeXAxis(false));
+            case 1 -> VectorConversion.toBukkit(shape.getRelativeYAxis(false));
+            case 2 -> VectorConversion.toBukkit(shape.getRelativeZAxis(false));
             default -> null;
         };
     }

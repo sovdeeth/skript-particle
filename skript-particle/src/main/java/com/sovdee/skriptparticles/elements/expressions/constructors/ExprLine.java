@@ -11,9 +11,9 @@ import ch.njol.skript.lang.Literal;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
-import com.sovdee.skriptparticles.shapes.DrawableShape;
-import com.sovdee.skriptparticles.shapes.DynamicLine;
-import com.sovdee.skriptparticles.shapes.Shape;
+import com.sovdee.shapes.Line;
+import com.sovdee.shapes.Shape;
+import com.sovdee.skriptparticles.shapes.DrawData;
 import com.sovdee.skriptparticles.util.DynamicLocation;
 import com.sovdee.skriptparticles.util.MathUtil;
 import com.sovdee.skriptparticles.util.VectorConversion;
@@ -88,6 +88,11 @@ public class ExprLine extends SimpleExpression<Shape> {
         return true;
     }
 
+    private Shape attachDrawData(Shape shape) {
+        shape.setDrawContext(new DrawData());
+        return shape;
+    }
+
     @Override
     @Nullable
     protected Shape[] get(Event event) {
@@ -99,7 +104,7 @@ public class ExprLine extends SimpleExpression<Shape> {
                 for (Object startObject : start) {
                     for (Object endObject : end) {
                         if (startObject instanceof Vector startVector && endObject instanceof Vector endVector) {
-                            lines.add(new DrawableShape(new com.sovdee.shapes.Line(VectorConversion.toJOML(startVector), VectorConversion.toJOML(endVector))));
+                            lines.add(attachDrawData(new Line(VectorConversion.toJOML(startVector), VectorConversion.toJOML(endVector))));
                             continue;
                         } else if (startObject instanceof Vector || endObject instanceof Vector) {
                             continue;
@@ -109,7 +114,11 @@ public class ExprLine extends SimpleExpression<Shape> {
                         if (endPoint == null || startPoint == null) {
                             continue;
                         }
-                        lines.add(new DrawableShape(new DynamicLine(startPoint, endPoint)));
+                        // Use Supplier-based Line for dynamic endpoints
+                        lines.add(attachDrawData(new Line(
+                                () -> VectorConversion.toJOML(startPoint.getLocation().toVector()),
+                                () -> VectorConversion.toJOML(endPoint.getLocation().toVector())
+                        )));
                     }
                 }
             }
@@ -122,13 +131,13 @@ public class ExprLine extends SimpleExpression<Shape> {
                 if (length != null)
                     v.multiply(Math.max(length.doubleValue(), MathUtil.EPSILON));
 
-                lines.add(new DrawableShape(new com.sovdee.shapes.Line(VectorConversion.toJOML(v))));
+                lines.add(attachDrawData(new Line(VectorConversion.toJOML(v))));
             }
             case 2 -> {
                 Object[] points = this.points.getArray(event);
                 if (points instanceof Vector[] vectors) {
                     for (int i = 0; i < vectors.length - 1; i++) {
-                        lines.add(new DrawableShape(new com.sovdee.shapes.Line(VectorConversion.toJOML(vectors[i]), VectorConversion.toJOML(vectors[i + 1]))));
+                        lines.add(attachDrawData(new Line(VectorConversion.toJOML(vectors[i]), VectorConversion.toJOML(vectors[i + 1]))));
                     }
                 } else {
                     List<DynamicLocation> locations = new ArrayList<>();
@@ -141,7 +150,12 @@ public class ExprLine extends SimpleExpression<Shape> {
                         locations.add(location);
                     }
                     for (int i = 0; i < locations.size() - 1; i++) {
-                        lines.add(new DrawableShape(new DynamicLine(locations.get(i), locations.get(i + 1))));
+                        DynamicLocation startLoc = locations.get(i);
+                        DynamicLocation endLoc = locations.get(i + 1);
+                        lines.add(attachDrawData(new Line(
+                                () -> VectorConversion.toJOML(startLoc.getLocation().toVector()),
+                                () -> VectorConversion.toJOML(endLoc.getLocation().toVector())
+                        )));
                     }
                 }
             }

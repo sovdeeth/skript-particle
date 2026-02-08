@@ -10,10 +10,10 @@ import ch.njol.skript.lang.ExpressionType;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
-import com.sovdee.skriptparticles.shapes.DrawableShape;
-import com.sovdee.skriptparticles.shapes.DynamicCuboid;
-import com.sovdee.skriptparticles.shapes.Shape;
-import com.sovdee.skriptparticles.shapes.Shape.Style;
+import com.sovdee.shapes.Cuboid;
+import com.sovdee.shapes.Shape;
+import com.sovdee.shapes.Shape.Style;
+import com.sovdee.skriptparticles.shapes.DrawData;
 import com.sovdee.skriptparticles.util.DynamicLocation;
 import com.sovdee.skriptparticles.util.MathUtil;
 import com.sovdee.skriptparticles.util.VectorConversion;
@@ -80,7 +80,7 @@ public class ExprCuboid extends SimpleExpression<Shape> {
     @Override
     @Nullable
     protected Shape[] get(Event event) {
-        DrawableShape shape;
+        Shape shape;
         // from width, length, height
         if (matchedPattern == 0) {
             if (width == null || length == null || height == null) return null;
@@ -91,7 +91,7 @@ public class ExprCuboid extends SimpleExpression<Shape> {
             width = Math.max(width.doubleValue(), MathUtil.EPSILON);
             length = Math.max(length.doubleValue(), MathUtil.EPSILON);
             height = Math.max(height.doubleValue(), MathUtil.EPSILON);
-            shape = new DrawableShape(new com.sovdee.shapes.Cuboid(length.doubleValue(), width.doubleValue(), height.doubleValue()));
+            shape = new Cuboid(length.doubleValue(), width.doubleValue(), height.doubleValue());
             // from location/entity/vector to location/entity/vector
         } else {
             if (corner1 == null || corner2 == null) return null;
@@ -101,18 +101,23 @@ public class ExprCuboid extends SimpleExpression<Shape> {
 
             // vector check
             if (corner1 instanceof Vector && corner2 instanceof Vector) {
-                shape = new DrawableShape(new com.sovdee.shapes.Cuboid(VectorConversion.toJOML((Vector) corner1), VectorConversion.toJOML((Vector) corner2)));
+                shape = new Cuboid(VectorConversion.toJOML((Vector) corner1), VectorConversion.toJOML((Vector) corner2));
             } else if (corner1 instanceof Vector || corner2 instanceof Vector) {
                 return null;
             } else {
-                corner1 = DynamicLocation.fromLocationEntity(corner1);
-                corner2 = DynamicLocation.fromLocationEntity(corner2);
-                if (corner1 == null || corner2 == null)
+                DynamicLocation dl1 = DynamicLocation.fromLocationEntity(corner1);
+                DynamicLocation dl2 = DynamicLocation.fromLocationEntity(corner2);
+                if (dl1 == null || dl2 == null)
                     return null;
-                shape = new DrawableShape(new DynamicCuboid((DynamicLocation) corner1, (DynamicLocation) corner2));
+                // Use Supplier-based Cuboid for dynamic corners
+                shape = new Cuboid(
+                        () -> VectorConversion.toJOML(dl1.getLocation().toVector()),
+                        () -> VectorConversion.toJOML(dl2.getLocation().toVector())
+                );
             }
         }
         shape.setStyle(style);
+        shape.setDrawContext(new DrawData());
         return new Shape[]{shape};
     }
 

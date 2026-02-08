@@ -11,9 +11,10 @@ import ch.njol.skript.lang.Literal;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
-import com.sovdee.skriptparticles.shapes.DrawableShape;
-import com.sovdee.skriptparticles.shapes.Shape;
-import com.sovdee.skriptparticles.shapes.Shape.Style;
+import com.sovdee.shapes.Helix;
+import com.sovdee.shapes.Shape;
+import com.sovdee.shapes.Shape.Style;
+import com.sovdee.skriptparticles.shapes.DrawData;
 import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -87,8 +88,9 @@ public class ExprHelix extends SimpleExpression<Shape> {
         height = Math.max(height.doubleValue(), MathUtil.EPSILON);
         double slope = 1.0 / Math.max(windingRate.doubleValue(), MathUtil.EPSILON);
         int direction = isClockwise ? 1 : -1;
-        DrawableShape shape = new DrawableShape(new com.sovdee.shapes.Helix(radius.doubleValue(), height.doubleValue(), slope / (2 * Math.PI), direction));
+        Helix shape = new Helix(radius.doubleValue(), height.doubleValue(), slope / (2 * Math.PI), direction);
         shape.setStyle(style);
+        shape.setDrawContext(new DrawData());
         return new Shape[]{shape};
     }
 

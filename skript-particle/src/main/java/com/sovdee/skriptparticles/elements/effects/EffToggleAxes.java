@@ -9,7 +9,8 @@ import ch.njol.skript.lang.Effect;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser;
 import ch.njol.util.Kleenean;
-import com.sovdee.skriptparticles.shapes.Shape;
+import com.sovdee.shapes.Shape;
+import com.sovdee.skriptparticles.shapes.DrawData;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
 
@@ -50,10 +51,11 @@ public class EffToggleAxes extends Effect {
     protected void execute(Event event) {
         Shape[] shapes = shape.getArray(event);
         for (Shape shape : shapes) {
+            DrawData dd = DrawData.of(shape);
             if (globalFlag)
-                shape.showGlobalAxes(showFlag);
+                dd.showGlobalAxes(showFlag);
             if (localFlag)
-                shape.showLocalAxes(showFlag);
+                dd.showLocalAxes(showFlag);
         }
     }
 

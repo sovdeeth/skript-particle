@@ -11,9 +11,10 @@ import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.skript.lang.util.SimpleLiteral;
 import ch.njol.util.Kleenean;
-import com.sovdee.skriptparticles.shapes.DrawableShape;
-import com.sovdee.skriptparticles.shapes.Shape;
-import com.sovdee.skriptparticles.shapes.Shape.Style;
+import com.sovdee.shapes.RegularPolygon;
+import com.sovdee.shapes.Shape;
+import com.sovdee.shapes.Shape.Style;
+import com.sovdee.skriptparticles.shapes.DrawData;
 import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
@@ -110,8 +111,9 @@ public class ExprRegularPolygon extends SimpleExpression<Shape> {
 
         sides = Math.max(sides.intValue(), 3);
         radius = Math.max(radius.doubleValue(), MathUtil.EPSILON);
-        DrawableShape shape = new DrawableShape(new com.sovdee.shapes.RegularPolygon(sides.intValue(), radius.doubleValue()));
+        RegularPolygon shape = new RegularPolygon(sides.intValue(), radius.doubleValue());
         shape.setStyle(style);
+        shape.setDrawContext(new DrawData());
         return new Shape[]{shape};
     }
 

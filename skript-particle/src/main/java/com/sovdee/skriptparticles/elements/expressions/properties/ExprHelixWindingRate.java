@@ -7,8 +7,7 @@ import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.expressions.base.SimplePropertyExpression;
 import com.sovdee.shapes.Helix;
-import com.sovdee.skriptparticles.shapes.DrawableShape;
-import com.sovdee.skriptparticles.shapes.Shape;
+import com.sovdee.shapes.Shape;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,7 +32,7 @@ public class ExprHelixWindingRate extends SimplePropertyExpression<Shape, Number
     @Override
     @Nullable
     public Number convert(Shape shape) {
-        if (shape instanceof DrawableShape ds && ds.getShape() instanceof Helix helix)
+        if (shape instanceof Helix helix)
             return 1 / (2 * Math.PI * helix.getSlope());
         return null;
     }
@@ -57,7 +56,7 @@ public class ExprHelixWindingRate extends SimplePropertyExpression<Shape, Number
                 deltaValue = -deltaValue;
             case ADD:
                 for (Shape shape : helices) {
-                    if (shape instanceof DrawableShape ds && ds.getShape() instanceof Helix helix)
+                    if (shape instanceof Helix helix)
                         helix.setSlope(helix.getSlope() / (1 + helix.getSlope() * deltaValue * 2 * Math.PI));
                 }
                 break;
@@ -65,7 +64,7 @@ public class ExprHelixWindingRate extends SimplePropertyExpression<Shape, Number
             case RESET:
             case SET:
                 for (Shape shape : helices) {
-                    if (shape instanceof DrawableShape ds && ds.getShape() instanceof Helix helix)
+                    if (shape instanceof Helix helix)
                         helix.setSlope(1 / (2 * Math.PI * deltaValue));
                 }
                 break;

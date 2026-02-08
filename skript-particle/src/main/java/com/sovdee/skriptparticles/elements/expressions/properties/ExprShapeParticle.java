@@ -7,8 +7,9 @@ import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.expressions.base.PropertyExpression;
 import ch.njol.skript.expressions.base.SimplePropertyExpression;
+import com.sovdee.shapes.Shape;
 import com.sovdee.skriptparticles.particles.Particle;
-import com.sovdee.skriptparticles.shapes.Shape;
+import com.sovdee.skriptparticles.shapes.DrawData;
 import com.sovdee.skriptparticles.util.ParticleUtil;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
@@ -40,7 +41,7 @@ public class ExprShapeParticle extends SimplePropertyExpression<Shape, Particle>
     @Override
     @Nullable
     public Particle convert(Shape shape) {
-        return shape.getParticle();
+        return DrawData.of(shape).getParticle();
     }
 
     @Override
@@ -58,12 +59,12 @@ public class ExprShapeParticle extends SimplePropertyExpression<Shape, Particle>
             case SET:
                 if (delta == null || delta.length == 0) return;
                 for (Shape shape : getExpr().getArray(event))
-                    shape.setParticle((Particle) delta[0]);
+                    DrawData.of(shape).setParticle((Particle) delta[0]);
                 break;
             case RESET:
             case DELETE:
                 for (Shape shape : getExpr().getArray(event))
-                    shape.setParticle(ParticleUtil.getDefaultParticle());
+                    DrawData.of(shape).setParticle(ParticleUtil.getDefaultParticle());
                 break;
             case ADD:
             case REMOVE:

@@ -9,10 +9,10 @@ import ch.njol.skript.lang.Effect;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.util.Kleenean;
-import com.sovdee.skriptparticles.shapes.Shape;
+import com.sovdee.shapes.Shape;
 import org.bukkit.event.Event;
-import org.bukkit.util.Vector;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.joml.Vector3d;
 
 import java.util.Comparator;
 
@@ -44,15 +44,15 @@ public class EffSetOrdering extends Effect {
 
     @Override
     protected void execute(Event event) {
-        @Nullable Comparator<Vector> order = switch (this.order) {
+        @Nullable Comparator<Vector3d> order = switch (this.order) {
             case 1 -> (o1, o2) -> {
-                double value1 = o1.getX() + o1.getY() + o1.getZ();
-                double value2 = o2.getX() + o2.getY() + o2.getZ();
+                double value1 = o1.x + o1.y + o1.z;
+                double value2 = o2.x + o2.y + o2.z;
                 return Double.compare(value1, value2);
             };
             case 2 -> (o1, o2) -> {
-                double value1 = o1.getX() + o1.getY() + o1.getZ();
-                double value2 = o2.getX() + o2.getY() + o2.getZ();
+                double value1 = o1.x + o1.y + o1.z;
+                double value2 = o2.x + o2.y + o2.z;
                 return -1 * Double.compare(value1, value2);
             };
             default -> null;
