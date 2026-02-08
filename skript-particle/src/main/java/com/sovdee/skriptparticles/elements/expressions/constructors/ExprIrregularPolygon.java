@@ -87,7 +87,7 @@ public class ExprIrregularPolygon extends SimpleExpression<Shape> {
         } else {
             shape = new IrregularPolygon(vertices);
         }
-        shape.setDrawContext(new DrawData());
+        shape.getPointSampler().setDrawContext(new DrawData());
         if (locationOffset != null) {
             DrawData.of(shape).setLocation(new DynamicLocation((Location) points[0]));
         }

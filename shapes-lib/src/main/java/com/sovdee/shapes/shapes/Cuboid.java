@@ -1,5 +1,6 @@
 package com.sovdee.shapes.shapes;
 
+import com.sovdee.shapes.sampling.SamplingStyle;
 import org.joml.Vector3d;
 
 import java.util.Set;
@@ -22,7 +23,6 @@ public class Cuboid extends AbstractShape implements LWHShape {
         this.halfWidth = Math.max(width / 2, Shape.EPSILON);
         this.halfLength = Math.max(length / 2, Shape.EPSILON);
         this.halfHeight = Math.max(height / 2, Shape.EPSILON);
-        calculateSteps();
     }
 
     public Cuboid(Vector3d cornerA, Vector3d cornerB) {
@@ -33,7 +33,6 @@ public class Cuboid extends AbstractShape implements LWHShape {
         this.halfWidth = Math.abs(cornerB.z - cornerA.z) / 2;
         this.halfHeight = Math.abs(cornerB.y - cornerA.y) / 2;
         centerOffset = new Vector3d(cornerB).add(cornerA).mul(0.5);
-        calculateSteps();
     }
 
     public Cuboid(Supplier<Vector3d> cornerA, Supplier<Vector3d> cornerB) {
@@ -45,18 +44,34 @@ public class Cuboid extends AbstractShape implements LWHShape {
         this.halfLength = Math.max(Math.abs(b.x - a.x) / 2, Shape.EPSILON);
         this.halfWidth = Math.max(Math.abs(b.z - a.z) / 2, Shape.EPSILON);
         this.halfHeight = Math.max(Math.abs(b.y - a.y) / 2, Shape.EPSILON);
-        calculateSteps();
         setDynamic(true);
     }
 
-    private void calculateSteps() {
-        widthStep = 2 * halfWidth / Math.round(2 * halfWidth / this.getParticleDensity());
-        lengthStep = 2 * halfLength / Math.round(2 * halfLength / this.getParticleDensity());
-        heightStep = 2 * halfHeight / Math.round(2 * halfHeight / this.getParticleDensity());
+    private void calculateSteps(double density) {
+        widthStep = 2 * halfWidth / Math.round(2 * halfWidth / density);
+        lengthStep = 2 * halfLength / Math.round(2 * halfLength / density);
+        heightStep = 2 * halfHeight / Math.round(2 * halfHeight / density);
     }
 
     @Override
-    public void generateOutline(Set<Vector3d> points) {
+    public void beforeSampling(double density) {
+        if (cornerASupplier != null && cornerBSupplier != null) {
+            Vector3d a = cornerASupplier.get();
+            Vector3d b = cornerBSupplier.get();
+            this.halfLength = Math.max(Math.abs(b.x - a.x) / 2, Shape.EPSILON);
+            this.halfWidth = Math.max(Math.abs(b.z - a.z) / 2, Shape.EPSILON);
+            this.halfHeight = Math.max(Math.abs(b.y - a.y) / 2, Shape.EPSILON);
+        }
+        calculateSteps(density);
+    }
+
+    @Override
+    public void afterSampling(Set<Vector3d> points) {
+        points.forEach(vector -> vector.add(centerOffset));
+    }
+
+    @Override
+    public void generateOutline(Set<Vector3d> points, double density) {
         for (double x = -halfLength; x <= halfLength; x += lengthStep) {
             points.add(new Vector3d(x, -halfHeight, -halfWidth));
             points.add(new Vector3d(x, -halfHeight, halfWidth));
@@ -78,7 +93,7 @@ public class Cuboid extends AbstractShape implements LWHShape {
     }
 
     @Override
-    public void generateSurface(Set<Vector3d> points) {
+    public void generateSurface(Set<Vector3d> points, double density) {
         for (double x = -halfLength; x <= halfLength; x += lengthStep) {
             for (double z = -halfWidth; z <= halfWidth; z += widthStep) {
                 points.add(new Vector3d(x, -halfHeight, z));
@@ -100,7 +115,7 @@ public class Cuboid extends AbstractShape implements LWHShape {
     }
 
     @Override
-    public void generateFilled(Set<Vector3d> points) {
+    public void generateFilled(Set<Vector3d> points, double density) {
         for (double x = -halfLength; x <= halfLength; x += lengthStep) {
             for (double y = -halfHeight; y <= halfHeight; y += heightStep) {
                 for (double z = -halfWidth; z <= halfWidth; z += widthStep) {
@@ -111,30 +126,20 @@ public class Cuboid extends AbstractShape implements LWHShape {
     }
 
     @Override
-    public void generatePoints(Set<Vector3d> points) {
-        if (cornerASupplier != null && cornerBSupplier != null) {
-            Vector3d a = cornerASupplier.get();
-            Vector3d b = cornerBSupplier.get();
-            this.halfLength = Math.max(Math.abs(b.x - a.x) / 2, Shape.EPSILON);
-            this.halfWidth = Math.max(Math.abs(b.z - a.z) / 2, Shape.EPSILON);
-            this.halfHeight = Math.max(Math.abs(b.y - a.y) / 2, Shape.EPSILON);
-        }
-        calculateSteps();
-        super.generatePoints(points);
-        points.forEach(vector -> vector.add(centerOffset));
+    public double computeDensity(SamplingStyle style, int targetPointCount) {
+        int count = Math.max(1, targetPointCount);
+        return switch (style) {
+            case OUTLINE -> 8 * (halfLength + halfHeight + halfWidth) / count;
+            case SURFACE -> Math.sqrt(8 * (halfLength * halfHeight + halfLength * halfWidth + halfHeight * halfWidth) / count);
+            case FILL -> Math.cbrt(8 * halfLength * halfHeight * halfWidth / count);
+        };
     }
 
     @Override
-    public void setParticleCount(int particleCount) {
-        particleCount = Math.max(1, particleCount);
-        this.setParticleDensity(switch (this.getStyle()) {
-            case OUTLINE -> 8 * (halfLength + halfHeight + halfWidth) / particleCount;
-            case SURFACE ->
-                    Math.sqrt(8 * (halfLength * halfHeight + halfLength * halfWidth + halfHeight * halfWidth) / particleCount);
-            case FILL -> Math.cbrt(8 * halfLength * halfHeight * halfWidth / particleCount);
-        });
-        calculateSteps();
-        this.setNeedsUpdate(true);
+    public boolean contains(Vector3d point) {
+        return Math.abs(point.x) <= halfLength &&
+               Math.abs(point.y) <= halfHeight &&
+               Math.abs(point.z) <= halfWidth;
     }
 
     @Override
@@ -143,7 +148,7 @@ public class Cuboid extends AbstractShape implements LWHShape {
     @Override
     public void setLength(double length) {
         this.halfLength = Math.max(length / 2, Shape.EPSILON);
-        this.setNeedsUpdate(true);
+        invalidate();
     }
 
     @Override
@@ -152,7 +157,7 @@ public class Cuboid extends AbstractShape implements LWHShape {
     @Override
     public void setWidth(double width) {
         this.halfWidth = Math.max(width / 2, Shape.EPSILON);
-        this.setNeedsUpdate(true);
+        invalidate();
     }
 
     @Override
@@ -161,7 +166,7 @@ public class Cuboid extends AbstractShape implements LWHShape {
     @Override
     public void setHeight(double height) {
         this.halfHeight = Math.max(height / 2, Shape.EPSILON);
-        this.setNeedsUpdate(true);
+        invalidate();
     }
 
     public Supplier<Vector3d> getCornerASupplier() { return cornerASupplier; }

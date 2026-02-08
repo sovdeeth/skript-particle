@@ -1,5 +1,6 @@
 package com.sovdee.shapes.shapes;
 
+import com.sovdee.shapes.sampling.SamplingStyle;
 import org.joml.Vector3d;
 
 import java.util.ArrayList;
@@ -35,11 +36,11 @@ public class Ellipse extends AbstractShape implements LWHShape {
         return Math.PI * (a + b) * (1 + 3 * h / (10 + Math.sqrt(4 - 3 * h)));
     }
 
-    public static List<Vector3d> calculateEllipse(double r1, double r2, double particleDensity, double cutoffAngle) {
+    public static List<Vector3d> calculateEllipse(double r1, double r2, double density, double cutoffAngle) {
         List<Vector3d> points = new ArrayList<>();
         double circumference = ellipseCircumference(r1, r2);
 
-        int steps = (int) Math.round(circumference / particleDensity);
+        int steps = (int) Math.round(circumference / density);
         double theta = 0;
         double angleStep = 0;
         for (int i = 0; i < steps; i++) {
@@ -49,25 +50,25 @@ public class Ellipse extends AbstractShape implements LWHShape {
             points.add(new Vector3d(r1 * Math.cos(theta), 0, r2 * Math.sin(theta)));
             double dx = r1 * Math.sin(theta + 0.5 * angleStep);
             double dy = r2 * Math.cos(theta + 0.5 * angleStep);
-            angleStep = particleDensity / Math.sqrt(dx * dx + dy * dy);
+            angleStep = density / Math.sqrt(dx * dx + dy * dy);
             theta += angleStep;
         }
         return points;
     }
 
-    public static Set<Vector3d> calculateEllipticalDisc(double r1, double r2, double particleDensity, double cutoffAngle) {
+    public static Set<Vector3d> calculateEllipticalDisc(double r1, double r2, double density, double cutoffAngle) {
         Set<Vector3d> points = new LinkedHashSet<>();
-        int steps = (int) Math.round(Math.max(r1, r2) / particleDensity);
+        int steps = (int) Math.round(Math.max(r1, r2) / density);
         double r;
         for (double i = 1; i <= steps; i += 1) {
             r = i / steps;
-            points.addAll(calculateEllipse(r1 * r, r2 * r, particleDensity, cutoffAngle));
+            points.addAll(calculateEllipse(r1 * r, r2 * r, density, cutoffAngle));
         }
         return points;
     }
 
-    public static Set<Vector3d> calculateCylinder(double r1, double r2, double height, double particleDensity, double cutoffAngle) {
-        Set<Vector3d> points = calculateEllipticalDisc(r1, r2, particleDensity, cutoffAngle);
+    public static Set<Vector3d> calculateCylinder(double r1, double r2, double height, double density, double cutoffAngle) {
+        Set<Vector3d> points = calculateEllipticalDisc(r1, r2, density, cutoffAngle);
         // Top disc via direct loop
         Set<Vector3d> top = new LinkedHashSet<>();
         for (Vector3d v : points) {
@@ -75,8 +76,8 @@ public class Ellipse extends AbstractShape implements LWHShape {
         }
         points.addAll(top);
         // Wall
-        Set<Vector3d> wall = new LinkedHashSet<>(calculateEllipse(r1, r2, particleDensity, cutoffAngle));
-        fillVertically(wall, height, particleDensity);
+        Set<Vector3d> wall = new LinkedHashSet<>(calculateEllipse(r1, r2, density, cutoffAngle));
+        fillVertically(wall, height, density);
         points.addAll(wall);
         return points;
     }
@@ -84,10 +85,10 @@ public class Ellipse extends AbstractShape implements LWHShape {
     // --- Generation methods ---
 
     @Override
-    public void generateOutline(Set<Vector3d> points) {
-        Set<Vector3d> ellipse = new LinkedHashSet<>(calculateEllipse(xRadius, zRadius, this.getParticleDensity(), cutoffAngle));
+    public void generateOutline(Set<Vector3d> points, double density) {
+        Set<Vector3d> ellipse = new LinkedHashSet<>(calculateEllipse(xRadius, zRadius, density, cutoffAngle));
         if (height != 0) {
-            fillVertically(ellipse, height, this.getParticleDensity());
+            fillVertically(ellipse, height, density);
             points.addAll(ellipse);
         } else {
             points.addAll(ellipse);
@@ -95,18 +96,18 @@ public class Ellipse extends AbstractShape implements LWHShape {
     }
 
     @Override
-    public void generateSurface(Set<Vector3d> points) {
+    public void generateSurface(Set<Vector3d> points, double density) {
         if (height != 0)
-            points.addAll(calculateCylinder(xRadius, zRadius, height, this.getParticleDensity(), cutoffAngle));
+            points.addAll(calculateCylinder(xRadius, zRadius, height, density, cutoffAngle));
         else
-            points.addAll(calculateEllipticalDisc(xRadius, zRadius, this.getParticleDensity(), cutoffAngle));
+            points.addAll(calculateEllipticalDisc(xRadius, zRadius, density, cutoffAngle));
     }
 
     @Override
-    public void generateFilled(Set<Vector3d> points) {
-        Set<Vector3d> disc = calculateEllipticalDisc(xRadius, zRadius, this.getParticleDensity(), cutoffAngle);
+    public void generateFilled(Set<Vector3d> points, double density) {
+        Set<Vector3d> disc = calculateEllipticalDisc(xRadius, zRadius, density, cutoffAngle);
         if (height != 0) {
-            fillVertically(disc, height, this.getParticleDensity());
+            fillVertically(disc, height, density);
             points.addAll(disc);
         } else {
             points.addAll(disc);
@@ -114,16 +115,25 @@ public class Ellipse extends AbstractShape implements LWHShape {
     }
 
     @Override
-    public void setParticleCount(int particleCount) {
-        particleCount = Math.max(particleCount, 1);
-        switch (this.getStyle()) {
+    public double computeDensity(SamplingStyle style, int targetPointCount) {
+        int count = Math.max(targetPointCount, 1);
+        return switch (style) {
             case OUTLINE -> {
                 double h = (xRadius - zRadius) * (xRadius - zRadius) / ((xRadius + zRadius) + (xRadius + zRadius));
-                double circumferenceXY = Math.PI * (xRadius + zRadius) * (1 + (3 * h / (10 + Math.sqrt(4 - 3 * h))));
-                this.setParticleDensity(circumferenceXY / particleCount);
+                double circumference = Math.PI * (xRadius + zRadius) * (1 + (3 * h / (10 + Math.sqrt(4 - 3 * h))));
+                yield circumference / count;
             }
-            case SURFACE, FILL -> this.setParticleDensity(Math.sqrt((Math.PI * xRadius * zRadius) / particleCount));
-        }
+            case SURFACE, FILL -> Math.sqrt((Math.PI * xRadius * zRadius) / count);
+        };
+    }
+
+    @Override
+    public boolean contains(Vector3d point) {
+        double nx = point.x / xRadius;
+        double nz = point.z / zRadius;
+        if (nx * nx + nz * nz > 1) return false;
+        if (height > 0) return point.y >= 0 && point.y <= height;
+        return Math.abs(point.y) < EPSILON;
     }
 
     @Override
@@ -132,7 +142,7 @@ public class Ellipse extends AbstractShape implements LWHShape {
     @Override
     public void setLength(double length) {
         xRadius = Math.max(length / 2, Shape.EPSILON);
-        this.setNeedsUpdate(true);
+        invalidate();
     }
 
     @Override
@@ -141,7 +151,7 @@ public class Ellipse extends AbstractShape implements LWHShape {
     @Override
     public void setWidth(double width) {
         zRadius = Math.max(width / 2, Shape.EPSILON);
-        this.setNeedsUpdate(true);
+        invalidate();
     }
 
     @Override
@@ -150,7 +160,7 @@ public class Ellipse extends AbstractShape implements LWHShape {
     @Override
     public void setHeight(double height) {
         this.height = Math.max(height, 0);
-        this.setNeedsUpdate(true);
+        invalidate();
     }
 
     @Override

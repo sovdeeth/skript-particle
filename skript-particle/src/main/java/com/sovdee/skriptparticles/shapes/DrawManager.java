@@ -72,7 +72,7 @@ public class DrawManager {
 
         // Get points from library shape using the last orientation
         Quaterniond lastOrientationD = new Quaterniond(dd.getLastOrientation().x, dd.getLastOrientation().y, dd.getLastOrientation().z, dd.getLastOrientation().w);
-        Set<Vector3d> jomlPoints = shape.getPoints(lastOrientationD);
+        Set<Vector3d> jomlPoints = shape.getPointSampler().getPoints(shape, lastOrientationD);
         Collection<Vector> toDraw = VectorConversion.toBukkit(jomlPoints);
 
         long animationDuration = dd.getAnimationDuration();

@@ -13,7 +13,7 @@ import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
 import com.sovdee.shapes.shapes.Ellipsoid;
 import com.sovdee.shapes.shapes.Shape;
-import com.sovdee.shapes.shapes.Shape.Style;
+import com.sovdee.shapes.sampling.SamplingStyle;
 import com.sovdee.skriptparticles.shapes.DrawData;
 import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
@@ -44,7 +44,7 @@ public class ExprEllipsoid extends SimpleExpression<Shape> {
     private Expression<Number> xRadius;
     private Expression<Number> yRadius;
     private Expression<Number> zRadius;
-    private Style style;
+    private SamplingStyle style;
 
     @Override
     public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, ParseResult parseResult) {
@@ -70,7 +70,7 @@ public class ExprEllipsoid extends SimpleExpression<Shape> {
             return false;
         }
 
-        style = (parseResult.hasTag("hollow") ? Style.SURFACE : (parseResult.hasTag("fill") ? Style.FILL : Style.OUTLINE));
+        style = (parseResult.hasTag("hollow") ? SamplingStyle.SURFACE : (parseResult.hasTag("fill") ? SamplingStyle.FILL : SamplingStyle.OUTLINE));
         return true;
     }
 
@@ -88,8 +88,8 @@ public class ExprEllipsoid extends SimpleExpression<Shape> {
         zRadius = Math.max(zRadius.doubleValue(), MathUtil.EPSILON);
 
         Ellipsoid shape = new Ellipsoid(xRadius.doubleValue(), yRadius.doubleValue(), zRadius.doubleValue());
-        shape.setStyle(style);
-        shape.setDrawContext(new DrawData());
+        shape.getPointSampler().setStyle(style);
+        shape.getPointSampler().setDrawContext(new DrawData());
         return new Shape[]{shape};
     }
 

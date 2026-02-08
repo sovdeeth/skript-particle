@@ -10,6 +10,7 @@ import ch.njol.skript.expressions.base.SimplePropertyExpression;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser;
 import ch.njol.util.Kleenean;
+import com.sovdee.shapes.sampling.PointSampler;
 import com.sovdee.shapes.shapes.Shape;
 import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
@@ -54,10 +55,13 @@ public class ExprShapeParticleDensity extends SimplePropertyExpression<Shape, Nu
 
     @Override
     public @Nullable Number convert(Shape shape) {
+        PointSampler sampler = shape.getPointSampler();
         if (isDensity)
-            return 1 / shape.getParticleDensity();
-        else
-            return shape.getParticleCount();
+            return 1 / sampler.getDensity();
+        else {
+            // Return approximate point count based on current density
+            return (int) Math.round(1 / sampler.getDensity());
+        }
     }
 
     @Override
@@ -80,12 +84,13 @@ public class ExprShapeParticleDensity extends SimplePropertyExpression<Shape, Nu
                 change = -change;
             case ADD:
                 for (Shape shape : shapes) {
+                    PointSampler sampler = shape.getPointSampler();
                     if (isDensity) {
                         // clamp to 0.001 and 1000, enough to kill the client but not enough to cause an actual error
-                        shape.setParticleDensity(MathUtil.clamp(1 / (1 / shape.getParticleDensity() + change), 0.001, 1000));
+                        sampler.setDensity(MathUtil.clamp(1 / (1 / sampler.getDensity() + change), 0.001, 1000));
                     } else
                         // clamp to 1, the minimum amount of particles
-                        shape.setParticleCount(Math.max(1, shape.getParticleCount() + (int) change));
+                        sampler.setParticleCount(shape, Math.max(1, (int) (1 / sampler.getDensity()) + (int) change));
                 }
                 break;
             case DELETE:
@@ -93,10 +98,11 @@ public class ExprShapeParticleDensity extends SimplePropertyExpression<Shape, Nu
             case SET:
                 change = isDensity ? MathUtil.clamp(1 / change, 0.001, 1000) : Math.max(1, (int) change);
                 for (Shape shape : shapes) {
+                    PointSampler sampler = shape.getPointSampler();
                     if (isDensity) {
-                        shape.setParticleDensity(change);
+                        sampler.setDensity(change);
                     } else {
-                        shape.setParticleCount((int) change);
+                        sampler.setParticleCount(shape, (int) change);
                     }
                 }
                 break;

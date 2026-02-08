@@ -45,9 +45,9 @@ public class ExprShapeRelativeAxis extends SimplePropertyExpression<Shape, Vecto
     @Override
     public @Nullable Vector convert(Shape shape) {
         return switch (axis) {
-            case 0 -> VectorConversion.toBukkit(shape.getRelativeXAxis(false));
-            case 1 -> VectorConversion.toBukkit(shape.getRelativeYAxis(false));
-            case 2 -> VectorConversion.toBukkit(shape.getRelativeZAxis(false));
+            case 0 -> VectorConversion.toBukkit(shape.getRelativeXAxis());
+            case 1 -> VectorConversion.toBukkit(shape.getRelativeYAxis());
+            case 2 -> VectorConversion.toBukkit(shape.getRelativeZAxis());
             default -> null;
         };
     }

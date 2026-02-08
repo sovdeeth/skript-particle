@@ -13,7 +13,7 @@ import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
 import com.sovdee.shapes.shapes.Ellipse;
 import com.sovdee.shapes.shapes.Shape;
-import com.sovdee.shapes.shapes.Shape.Style;
+import com.sovdee.shapes.sampling.SamplingStyle;
 import com.sovdee.skriptparticles.shapes.DrawData;
 import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
@@ -43,22 +43,22 @@ public class ExprEllipse extends SimpleExpression<Shape> {
     private Expression<Number> xRadius;
     private Expression<Number> zRadius;
     private Expression<Number> height;
-    private Style style;
+    private SamplingStyle style;
 
     @Override
     public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, ParseResult parseResult) {
         xRadius = (Expression<Number>) exprs[0];
         zRadius = (Expression<Number>) exprs[1];
-        style = Style.OUTLINE;
+        style = SamplingStyle.OUTLINE;
         if (parseResult.hasTag("surface")) {
-            style = Style.SURFACE;
+            style = SamplingStyle.SURFACE;
         }
         if (matchedPattern == 1) {
             height = (Expression<Number>) exprs[2];
             style = switch (parseResult.mark) {
-                case 0 -> Style.SURFACE;
-                case 1 -> Style.OUTLINE;
-                default -> Style.FILL;
+                case 0 -> SamplingStyle.SURFACE;
+                case 1 -> SamplingStyle.OUTLINE;
+                default -> SamplingStyle.FILL;
             };
         }
 
@@ -97,8 +97,8 @@ public class ExprEllipse extends SimpleExpression<Shape> {
         height = Math.max(height.doubleValue(), 0);
 
         Ellipse shape = new Ellipse(xRadius.doubleValue(), zRadius.doubleValue(), height.doubleValue());
-        shape.setStyle(style);
-        shape.setDrawContext(new DrawData());
+        shape.getPointSampler().setStyle(style);
+        shape.getPointSampler().setDrawContext(new DrawData());
         return new Shape[]{shape};
     }
 

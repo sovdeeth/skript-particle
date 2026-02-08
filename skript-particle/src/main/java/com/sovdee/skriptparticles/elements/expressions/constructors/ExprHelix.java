@@ -13,7 +13,7 @@ import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
 import com.sovdee.shapes.shapes.Helix;
 import com.sovdee.shapes.shapes.Shape;
-import com.sovdee.shapes.shapes.Shape.Style;
+import com.sovdee.shapes.sampling.SamplingStyle;
 import com.sovdee.skriptparticles.shapes.DrawData;
 import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
@@ -43,7 +43,7 @@ public class ExprHelix extends SimpleExpression<Shape> {
     @Nullable
     private Expression<Number> windingRate;
     private boolean isClockwise = true;
-    private Style style;
+    private SamplingStyle style;
 
     @Override
     public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, ParseResult parseResult) {
@@ -52,7 +52,7 @@ public class ExprHelix extends SimpleExpression<Shape> {
         if (exprs.length > 2)
             windingRate = (Expression<Number>) exprs[2];
         isClockwise = parseResult.mark == 0;
-        style = parseResult.hasTag("solid") ? Style.SURFACE : Style.OUTLINE;
+        style = parseResult.hasTag("solid") ? SamplingStyle.SURFACE : SamplingStyle.OUTLINE;
 
         if (radius instanceof Literal<Number> literal && literal.getSingle().doubleValue() <= 0) {
             Skript.error("The radius of a helix must be greater than 0. (radius: " +
@@ -89,8 +89,8 @@ public class ExprHelix extends SimpleExpression<Shape> {
         double slope = 1.0 / Math.max(windingRate.doubleValue(), MathUtil.EPSILON);
         int direction = isClockwise ? 1 : -1;
         Helix shape = new Helix(radius.doubleValue(), height.doubleValue(), slope / (2 * Math.PI), direction);
-        shape.setStyle(style);
-        shape.setDrawContext(new DrawData());
+        shape.getPointSampler().setStyle(style);
+        shape.getPointSampler().setDrawContext(new DrawData());
         return new Shape[]{shape};
     }
 

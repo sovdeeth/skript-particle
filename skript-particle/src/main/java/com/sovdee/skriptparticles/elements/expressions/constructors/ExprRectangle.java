@@ -13,7 +13,7 @@ import ch.njol.util.Kleenean;
 import com.sovdee.shapes.shapes.Rectangle;
 import com.sovdee.shapes.shapes.Rectangle.Plane;
 import com.sovdee.shapes.shapes.Shape;
-import com.sovdee.shapes.shapes.Shape.Style;
+import com.sovdee.shapes.sampling.SamplingStyle;
 import com.sovdee.skriptparticles.shapes.DrawData;
 import com.sovdee.skriptparticles.util.DynamicLocation;
 import com.sovdee.skriptparticles.util.MathUtil;
@@ -51,7 +51,7 @@ public class ExprRectangle extends SimpleExpression<Shape> {
 
     private Expression<Number> lengthExpr;
     private Expression<Number> widthExpr;
-    private Style style;
+    private SamplingStyle style;
     private Expression<?> corner1Expr;
     private Expression<?> corner2Expr;
     private int matchedPattern;
@@ -59,7 +59,7 @@ public class ExprRectangle extends SimpleExpression<Shape> {
 
     @Override
     public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, SkriptParser.ParseResult parseResult) {
-        style = parseResult.hasTag("solid") ? Style.SURFACE : Style.OUTLINE;
+        style = parseResult.hasTag("solid") ? SamplingStyle.SURFACE : SamplingStyle.OUTLINE;
         this.matchedPattern = matchedPattern;
         if (matchedPattern == 0) {
             lengthExpr = (Expression<Number>) exprs[0];
@@ -108,8 +108,8 @@ public class ExprRectangle extends SimpleExpression<Shape> {
                 );
             }
         }
-        shape.setStyle(style);
-        shape.setDrawContext(new DrawData());
+        shape.getPointSampler().setStyle(style);
+        shape.getPointSampler().setDrawContext(new DrawData());
         return new Shape[]{shape};
     }
 
@@ -125,7 +125,7 @@ public class ExprRectangle extends SimpleExpression<Shape> {
 
     @Override
     public String toString(@Nullable Event event, boolean debug) {
-        return (style == Style.SURFACE ? "solid " : "") +
+        return (style == SamplingStyle.SURFACE ? "solid " : "") +
                 switch (plane) {
                     case XZ -> " xz ";
                     case XY -> " xy ";

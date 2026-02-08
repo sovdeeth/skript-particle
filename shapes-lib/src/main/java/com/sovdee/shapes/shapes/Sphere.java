@@ -1,5 +1,6 @@
 package com.sovdee.shapes.shapes;
 
+import com.sovdee.shapes.sampling.SamplingStyle;
 import org.joml.Vector3d;
 
 import java.util.LinkedHashSet;
@@ -27,7 +28,7 @@ public class Sphere extends AbstractShape implements RadialShape {
         this.radius = Math.max(radius, Shape.EPSILON);
         this.cutoffAngle = Math.PI;
         this.cutoffAngleCos = -1.0;
-        this.setStyle(Style.SURFACE);
+        this.getPointSampler().setStyle(SamplingStyle.SURFACE);
     }
 
     // --- Static calculation methods ---
@@ -69,38 +70,39 @@ public class Sphere extends AbstractShape implements RadialShape {
     // --- Generation methods ---
 
     @Override
-    public void generateOutline(Set<Vector3d> points) {
-        this.generateSurface(points);
+    public void generateOutline(Set<Vector3d> points, double density) {
+        this.generateSurface(points, density);
     }
 
     @Override
-    public void generateSurface(Set<Vector3d> points) {
-        double particleDensity = this.getParticleDensity();
-        int pointCount = 4 * (int) (Math.PI * radius * radius / (particleDensity * particleDensity));
+    public void generateSurface(Set<Vector3d> points, double density) {
+        int pointCount = 4 * (int) (Math.PI * radius * radius / (density * density));
         points.addAll(calculateFibonacciSphere(pointCount, radius, cutoffAngle));
     }
 
     @Override
-    public void generateFilled(Set<Vector3d> points) {
-        double particleDensity = this.getParticleDensity();
-        int subSpheres = (int) (radius / particleDensity) - 1;
+    public void generateFilled(Set<Vector3d> points, double density) {
+        int subSpheres = (int) (radius / density) - 1;
         double radiusStep = radius / subSpheres;
         for (int i = 1; i < subSpheres; i++) {
             double subRadius = i * radiusStep;
-            int pointCount = 4 * (int) (Math.PI * subRadius * subRadius / (particleDensity * particleDensity));
+            int pointCount = 4 * (int) (Math.PI * subRadius * subRadius / (density * density));
             points.addAll(calculateFibonacciSphere(pointCount, subRadius, cutoffAngle));
         }
     }
 
     @Override
-    public void setParticleCount(int particleCount) {
-        particleCount = Math.max(particleCount, 1);
-        this.setParticleDensity(switch (this.getStyle()) {
-            case OUTLINE, SURFACE -> Math.sqrt(2 * Math.PI * radius * radius * (1 - cutoffAngleCos) / particleCount);
-            case FILL ->
-                    Math.cbrt(Math.PI / 3 * radius * radius * radius * (2 + cutoffAngleCos) * (1 - cutoffAngleCos) * (1 - cutoffAngleCos) / particleCount);
-        });
-        this.setNeedsUpdate(true);
+    public double computeDensity(SamplingStyle style, int targetPointCount) {
+        int count = Math.max(targetPointCount, 1);
+        return switch (style) {
+            case OUTLINE, SURFACE -> Math.sqrt(2 * Math.PI * radius * radius * (1 - cutoffAngleCos) / count);
+            case FILL -> Math.cbrt(Math.PI / 3 * radius * radius * radius * (2 + cutoffAngleCos) * (1 - cutoffAngleCos) * (1 - cutoffAngleCos) / count);
+        };
+    }
+
+    @Override
+    public boolean contains(Vector3d point) {
+        return point.x * point.x + point.y * point.y + point.z * point.z <= radius * radius;
     }
 
     @Override
@@ -109,7 +111,7 @@ public class Sphere extends AbstractShape implements RadialShape {
     @Override
     public void setRadius(double radius) {
         this.radius = Math.max(radius, Shape.EPSILON);
-        this.setNeedsUpdate(true);
+        invalidate();
     }
 
     @Override
@@ -118,6 +120,6 @@ public class Sphere extends AbstractShape implements RadialShape {
     }
 
     public String toString() {
-        return this.getStyle() + " sphere with radius " + this.radius;
+        return this.getPointSampler().getStyle() + " sphere with radius " + this.radius;
     }
 }

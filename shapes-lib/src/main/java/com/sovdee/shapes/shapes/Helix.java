@@ -1,5 +1,6 @@
 package com.sovdee.shapes.shapes;
 
+import com.sovdee.shapes.sampling.SamplingStyle;
 import org.joml.Vector3d;
 
 import java.util.LinkedHashSet;
@@ -29,14 +30,14 @@ public class Helix extends AbstractShape implements RadialShape, LWHShape {
         this.direction = direction;
     }
 
-    private static Set<Vector3d> calculateHelix(double radius, double height, double slope, int direction, double particleDensity) {
+    private static Set<Vector3d> calculateHelix(double radius, double height, double slope, int direction, double density) {
         Set<Vector3d> points = new LinkedHashSet<>();
         if (radius <= 0 || height <= 0) {
             return points;
         }
         double loops = Math.abs(height / slope);
         double length = slope * slope + radius * radius;
-        double stepSize = particleDensity / length;
+        double stepSize = density / length;
         for (double t = 0; t < loops; t += stepSize) {
             double x = radius * Math.cos(direction * t);
             double z = radius * Math.sin(direction * t);
@@ -46,32 +47,42 @@ public class Helix extends AbstractShape implements RadialShape, LWHShape {
     }
 
     @Override
-    public void generateOutline(Set<Vector3d> points) {
-        points.addAll(calculateHelix(radius, height, slope, direction, this.getParticleDensity()));
+    public void generateOutline(Set<Vector3d> points, double density) {
+        points.addAll(calculateHelix(radius, height, slope, direction, density));
     }
 
     @Override
-    public void generateSurface(Set<Vector3d> points) {
-        double particleDensity = this.getParticleDensity();
-        for (double r = radius; r > 0; r -= particleDensity) {
-            points.addAll(calculateHelix(r, height, slope, direction, particleDensity));
+    public void generateSurface(Set<Vector3d> points, double density) {
+        for (double r = radius; r > 0; r -= density) {
+            points.addAll(calculateHelix(r, height, slope, direction, density));
         }
     }
 
     @Override
-    public void setParticleCount(int particleCount) {
-        particleCount = Math.max(particleCount, 1);
-        this.setParticleDensity(switch (this.getStyle()) {
-            case OUTLINE -> (Math.sqrt(slope * slope + radius * radius) * (height / slope) / particleCount);
-            case FILL, SURFACE -> Math.sqrt(slope * slope + radius * radius * (height / slope) / particleCount);
-        });
+    public double computeDensity(SamplingStyle style, int targetPointCount) {
+        int count = Math.max(targetPointCount, 1);
+        return switch (style) {
+            case OUTLINE -> Math.sqrt(slope * slope + radius * radius) * (height / slope) / count;
+            case FILL, SURFACE -> Math.sqrt(slope * slope + radius * radius * (height / slope) / count);
+        };
+    }
+
+    @Override
+    public boolean contains(Vector3d point) {
+        // Approximate: check distance to nearest helix point
+        if (point.y < 0 || point.y > height) return false;
+        double t = point.y / slope;
+        double helixX = radius * Math.cos(direction * t);
+        double helixZ = radius * Math.sin(direction * t);
+        double dist = Math.sqrt((point.x - helixX) * (point.x - helixX) + (point.z - helixZ) * (point.z - helixZ));
+        return dist <= EPSILON;
     }
 
     public double getSlope() { return slope; }
 
     public void setSlope(double slope) {
         this.slope = Math.max(slope, Shape.EPSILON);
-        this.setNeedsUpdate(true);
+        invalidate();
     }
 
     public int getDirection() { return direction; }
@@ -80,7 +91,7 @@ public class Helix extends AbstractShape implements RadialShape, LWHShape {
         if (direction != 1 && direction != -1)
             throw new IllegalArgumentException("Direction must be 1 or -1");
         this.direction = direction;
-        this.setNeedsUpdate(true);
+        invalidate();
     }
 
     @Override
@@ -89,7 +100,7 @@ public class Helix extends AbstractShape implements RadialShape, LWHShape {
     @Override
     public void setLength(double length) {
         height = Math.max(length, Shape.EPSILON);
-        this.setNeedsUpdate(true);
+        invalidate();
     }
 
     @Override
@@ -104,7 +115,7 @@ public class Helix extends AbstractShape implements RadialShape, LWHShape {
     @Override
     public void setHeight(double height) {
         this.height = Math.max(height, Shape.EPSILON);
-        this.setNeedsUpdate(true);
+        invalidate();
     }
 
     @Override
@@ -113,7 +124,7 @@ public class Helix extends AbstractShape implements RadialShape, LWHShape {
     @Override
     public void setRadius(double radius) {
         this.radius = Math.max(radius, Shape.EPSILON);
-        this.setNeedsUpdate(true);
+        invalidate();
     }
 
     @Override

@@ -35,7 +35,7 @@ public class ExprShapeNormal extends SimplePropertyExpression<Shape, Vector> {
 
     @Override
     public Vector convert(Shape shape) {
-        return VectorConversion.toBukkit(shape.getRelativeYAxis(false));
+        return VectorConversion.toBukkit(shape.getRelativeYAxis());
     }
 
     @Override

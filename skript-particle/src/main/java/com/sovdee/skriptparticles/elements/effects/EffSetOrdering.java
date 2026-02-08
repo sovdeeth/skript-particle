@@ -58,7 +58,7 @@ public class EffSetOrdering extends Effect {
             default -> null;
         };
         for (Shape shape : shapes.getArray(event)) {
-            shape.setOrdering(order);
+            shape.getPointSampler().setOrdering(order);
         }
     }
 

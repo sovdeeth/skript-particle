@@ -12,7 +12,7 @@ import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
 import com.sovdee.shapes.shapes.Shape;
-import com.sovdee.shapes.shapes.Shape.Style;
+import com.sovdee.shapes.sampling.SamplingStyle;
 import com.sovdee.shapes.shapes.SphericalCap;
 import com.sovdee.skriptparticles.shapes.DrawData;
 import com.sovdee.skriptparticles.util.MathUtil;
@@ -79,8 +79,8 @@ public class ExprSphericalCap extends SimpleExpression<Shape> {
 
         SphericalCap shape = new SphericalCap(radius.doubleValue(), angle.doubleValue());
         if (isSector)
-            shape.setStyle(Style.FILL);
-        shape.setDrawContext(new DrawData());
+            shape.getPointSampler().setStyle(SamplingStyle.FILL);
+        shape.getPointSampler().setDrawContext(new DrawData());
 
         return new Shape[]{shape};
     }

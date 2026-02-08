@@ -62,7 +62,7 @@ public class ExprShapeLocations extends SimpleExpression<Location> {
 
         ArrayList<Location> locations = new ArrayList<>();
         for (Shape shape : shapes) {
-            locations.addAll(VectorConversion.toBukkit(shape.getPoints()).stream().map(point -> center.clone().add(point)).toList());
+            locations.addAll(VectorConversion.toBukkit(shape.getPointSampler().getPoints(shape)).stream().map(point -> center.clone().add(point)).toList());
         }
         return locations.toArray(new Location[0]);
     }

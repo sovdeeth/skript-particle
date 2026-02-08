@@ -1,6 +1,6 @@
 package com.sovdee.skriptparticles.shapes;
 
-import com.sovdee.shapes.DrawContext;
+import com.sovdee.shapes.sampling.DrawContext;
 import com.sovdee.shapes.shapes.Shape;
 import com.sovdee.skriptparticles.particles.Particle;
 import com.sovdee.skriptparticles.util.DynamicLocation;
@@ -27,13 +27,13 @@ public class DrawData implements DrawContext {
     }
 
     /**
-     * Gets the DrawData attached to a shape, creating and attaching one if missing.
+     * Gets the DrawData attached to a shape's PointSampler, creating and attaching one if missing.
      */
     public static DrawData of(Shape shape) {
-        DrawContext ctx = shape.getDrawContext();
+        DrawContext ctx = shape.getPointSampler().getDrawContext();
         if (ctx instanceof DrawData dd) return dd;
         DrawData dd = new DrawData();
-        shape.setDrawContext(dd);
+        shape.getPointSampler().setDrawContext(dd);
         return dd;
     }
 

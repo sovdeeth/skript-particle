@@ -1,5 +1,6 @@
 package com.sovdee.shapes.shapes;
 
+import com.sovdee.shapes.sampling.SamplingStyle;
 import com.sovdee.shapes.util.VectorUtil;
 import org.joml.Vector3d;
 
@@ -33,12 +34,12 @@ public class RegularPolygon extends AbstractShape implements PolyShape, RadialSh
 
     // --- Static calculation methods ---
 
-    public static Set<Vector3d> calculateRegularPolygon(double radius, double angle, double particleDensity, boolean wireframe) {
+    public static Set<Vector3d> calculateRegularPolygon(double radius, double angle, double density, boolean wireframe) {
         angle = Math.max(angle, Shape.EPSILON);
 
         Set<Vector3d> points = new LinkedHashSet<>();
         double apothem = radius * Math.cos(angle / 2);
-        double radiusStep = radius / Math.round(apothem / particleDensity);
+        double radiusStep = radius / Math.round(apothem / density);
         if (wireframe) {
             radiusStep = 2 * radius;
         } else {
@@ -50,27 +51,27 @@ public class RegularPolygon extends AbstractShape implements PolyShape, RadialSh
                 points.addAll(Line.calculateLine(
                         VectorUtil.rotateAroundY(new Vector3d(vertex), i),
                         VectorUtil.rotateAroundY(new Vector3d(vertex), i + angle),
-                        particleDensity));
+                        density));
             }
         }
         return points;
     }
 
-    public static Set<Vector3d> calculateRegularPrism(double radius, double angle, double height, double particleDensity, boolean wireframe) {
+    public static Set<Vector3d> calculateRegularPrism(double radius, double angle, double height, double density, boolean wireframe) {
         Set<Vector3d> points = new LinkedHashSet<>();
         Vector3d vertex = new Vector3d(radius, 0, 0);
         for (double i = 0; i < 2 * Math.PI; i += angle) {
             Vector3d currentVertex = VectorUtil.rotateAroundY(new Vector3d(vertex), i);
-            for (Vector3d vector : Line.calculateLine(currentVertex, VectorUtil.rotateAroundY(new Vector3d(vertex), i + angle), particleDensity)) {
+            for (Vector3d vector : Line.calculateLine(currentVertex, VectorUtil.rotateAroundY(new Vector3d(vertex), i + angle), density)) {
                 points.add(vector);
                 if (wireframe) {
                     points.add(new Vector3d(vector.x, height, vector.z));
                 } else {
-                    points.addAll(Line.calculateLine(vector, new Vector3d(vector.x, height, vector.z), particleDensity));
+                    points.addAll(Line.calculateLine(vector, new Vector3d(vector.x, height, vector.z), density));
                 }
             }
             if (wireframe)
-                points.addAll(Line.calculateLine(currentVertex, new Vector3d(currentVertex.x, height, currentVertex.z), particleDensity));
+                points.addAll(Line.calculateLine(currentVertex, new Vector3d(currentVertex.x, height, currentVertex.z), density));
         }
         return points;
     }
@@ -78,51 +79,59 @@ public class RegularPolygon extends AbstractShape implements PolyShape, RadialSh
     // --- Generation methods ---
 
     @Override
-    public void generateOutline(Set<Vector3d> points) {
+    public void generateOutline(Set<Vector3d> points, double density) {
         if (height == 0)
-            points.addAll(calculateRegularPolygon(this.radius, this.angle, this.getParticleDensity(), true));
+            points.addAll(calculateRegularPolygon(this.radius, this.angle, density, true));
         else
-            points.addAll(calculateRegularPrism(this.radius, this.angle, this.height, this.getParticleDensity(), true));
+            points.addAll(calculateRegularPrism(this.radius, this.angle, this.height, density, true));
     }
 
     @Override
-    public void generateSurface(Set<Vector3d> points) {
+    public void generateSurface(Set<Vector3d> points, double density) {
         if (height == 0)
-            points.addAll(calculateRegularPolygon(this.radius, this.angle, this.getParticleDensity(), false));
+            points.addAll(calculateRegularPolygon(this.radius, this.angle, density, false));
         else
-            points.addAll(calculateRegularPrism(this.radius, this.angle, this.height, this.getParticleDensity(), false));
+            points.addAll(calculateRegularPrism(this.radius, this.angle, this.height, density, false));
     }
 
     @Override
-    public void generateFilled(Set<Vector3d> points) {
+    public void generateFilled(Set<Vector3d> points, double density) {
         if (height == 0)
-            generateSurface(points);
+            generateSurface(points, density);
         else {
-            double particleDensity = this.getParticleDensity();
-            Set<Vector3d> polygon = calculateRegularPolygon(this.radius, this.angle, particleDensity, false);
-            fillVertically(polygon, height, particleDensity);
+            Set<Vector3d> polygon = calculateRegularPolygon(this.radius, this.angle, density, false);
+            fillVertically(polygon, height, density);
             points.addAll(polygon);
         }
     }
 
     @Override
-    public void setParticleCount(int particleCount) {
-        particleCount = Math.max(particleCount, 1);
+    public double computeDensity(SamplingStyle style, int targetPointCount) {
+        int count = Math.max(targetPointCount, 1);
         int sides = getSides();
-        this.setParticleDensity(switch (this.getStyle()) {
+        return switch (style) {
             case OUTLINE -> {
                 if (height == 0)
-                    yield 2 * sides * radius * Math.sin(angle / 2) / particleCount;
-                yield (4 * sides * radius * Math.sin(angle / 2) + height * sides) / particleCount;
+                    yield 2 * sides * radius * Math.sin(angle / 2) / count;
+                yield (4 * sides * radius * Math.sin(angle / 2) + height * sides) / count;
             }
             case SURFACE -> {
                 if (height == 0)
-                    yield Math.sqrt(sides * radius * radius * Math.sin(angle) / 2 / particleCount);
-                yield (sides * radius * radius * Math.sin(angle) + getSideLength() * sides * height) / particleCount;
+                    yield Math.sqrt(sides * radius * radius * Math.sin(angle) / 2 / count);
+                yield (sides * radius * radius * Math.sin(angle) + getSideLength() * sides * height) / count;
             }
-            case FILL -> (sides * radius * radius * Math.sin(angle) * height) / particleCount;
-        });
-        this.setNeedsUpdate(true);
+            case FILL -> (sides * radius * radius * Math.sin(angle) * height) / count;
+        };
+    }
+
+    @Override
+    public boolean contains(Vector3d point) {
+        if (height > 0 && (point.y < 0 || point.y > height)) return false;
+        if (height == 0 && Math.abs(point.y) > EPSILON) return false;
+        // Check if point is within the polygon on XZ plane using inscribed radius
+        double dist = Math.sqrt(point.x * point.x + point.z * point.z);
+        double apothem = radius * Math.cos(angle / 2);
+        return dist <= radius && dist <= apothem / Math.cos(Math.atan2(point.z, point.x) % angle - angle / 2);
     }
 
     @Override
@@ -131,7 +140,7 @@ public class RegularPolygon extends AbstractShape implements PolyShape, RadialSh
     @Override
     public void setSides(int sides) {
         this.angle = (Math.PI * 2) / Math.max(sides, 3);
-        this.setNeedsUpdate(true);
+        invalidate();
     }
 
     @Override
@@ -142,7 +151,7 @@ public class RegularPolygon extends AbstractShape implements PolyShape, RadialSh
         sideLength = Math.max(sideLength, Shape.EPSILON);
         this.radius = sideLength / (2 * Math.sin(this.angle / 2));
         this.radius = Math.max(radius, Shape.EPSILON);
-        this.setNeedsUpdate(true);
+        invalidate();
     }
 
     @Override
@@ -151,7 +160,7 @@ public class RegularPolygon extends AbstractShape implements PolyShape, RadialSh
     @Override
     public void setRadius(double radius) {
         this.radius = Math.max(radius, Shape.EPSILON);
-        this.setNeedsUpdate(true);
+        invalidate();
     }
 
     @Override
@@ -172,7 +181,7 @@ public class RegularPolygon extends AbstractShape implements PolyShape, RadialSh
     @Override
     public void setHeight(double height) {
         this.height = Math.max(height, 0);
-        this.setNeedsUpdate(true);
+        invalidate();
     }
 
     @Override

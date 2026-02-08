@@ -13,7 +13,7 @@ import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
 import com.sovdee.shapes.shapes.Arc;
 import com.sovdee.shapes.shapes.Shape;
-import com.sovdee.shapes.shapes.Shape.Style;
+import com.sovdee.shapes.sampling.SamplingStyle;
 import com.sovdee.skriptparticles.shapes.DrawData;
 import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
@@ -97,8 +97,8 @@ public class ExprArc extends SimpleExpression<Shape> {
 
         Arc shape = new Arc(radius.doubleValue(), height.doubleValue(), angle.doubleValue());
         if (isSector)
-            shape.setStyle(Style.FILL);
-        shape.setDrawContext(new DrawData());
+            shape.getPointSampler().setStyle(SamplingStyle.FILL);
+        shape.getPointSampler().setDrawContext(new DrawData());
 
         return new Shape[]{shape};
     }

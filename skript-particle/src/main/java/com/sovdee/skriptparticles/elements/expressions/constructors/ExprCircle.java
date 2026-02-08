@@ -13,7 +13,7 @@ import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
 import com.sovdee.shapes.shapes.Circle;
 import com.sovdee.shapes.shapes.Shape;
-import com.sovdee.shapes.shapes.Shape.Style;
+import com.sovdee.shapes.sampling.SamplingStyle;
 import com.sovdee.skriptparticles.shapes.DrawData;
 import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
@@ -40,7 +40,7 @@ public class ExprCircle extends SimpleExpression<Shape> {
 
     private Expression<Number> radius;
     private Expression<Number> height;
-    private Style style;
+    private SamplingStyle style;
     private boolean isCylinder;
 
     @Override
@@ -63,12 +63,12 @@ public class ExprCircle extends SimpleExpression<Shape> {
             }
 
             style = switch (parseResult.mark) {
-                case 0 -> Style.SURFACE;
-                case 1 -> Style.OUTLINE;
-                default -> Style.FILL;
+                case 0 -> SamplingStyle.SURFACE;
+                case 1 -> SamplingStyle.OUTLINE;
+                default -> SamplingStyle.FILL;
             };
         } else {
-            style = parseResult.hasTag("disc") ? Style.SURFACE : Style.OUTLINE;
+            style = parseResult.hasTag("disc") ? SamplingStyle.SURFACE : SamplingStyle.OUTLINE;
         }
         return true;
     }
@@ -85,8 +85,8 @@ public class ExprCircle extends SimpleExpression<Shape> {
         height = Math.max(height.doubleValue(), 0);
 
         Circle shape = new Circle(radius.doubleValue(), height.doubleValue());
-        shape.setStyle(style);
-        shape.setDrawContext(new DrawData());
+        shape.getPointSampler().setStyle(style);
+        shape.getPointSampler().setDrawContext(new DrawData());
         return new Shape[]{shape};
     }
 

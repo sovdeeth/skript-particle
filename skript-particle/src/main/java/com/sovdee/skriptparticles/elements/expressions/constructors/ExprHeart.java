@@ -13,7 +13,7 @@ import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
 import com.sovdee.shapes.shapes.Heart;
 import com.sovdee.shapes.shapes.Shape;
-import com.sovdee.shapes.shapes.Shape.Style;
+import com.sovdee.shapes.sampling.SamplingStyle;
 import com.sovdee.skriptparticles.shapes.DrawData;
 import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
@@ -86,9 +86,9 @@ public class ExprHeart extends SimpleExpression<Shape> {
 
         Heart shape = new Heart(width.doubleValue(), length.doubleValue(), eccentricity.doubleValue());
         if (isSolid) {
-            shape.setStyle(Style.SURFACE);
+            shape.getPointSampler().setStyle(SamplingStyle.SURFACE);
         }
-        shape.setDrawContext(new DrawData());
+        shape.getPointSampler().setDrawContext(new DrawData());
         return new Shape[]{shape};
     }
 

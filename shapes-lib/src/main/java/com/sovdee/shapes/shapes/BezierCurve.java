@@ -1,5 +1,6 @@
 package com.sovdee.shapes.shapes;
 
+import com.sovdee.shapes.sampling.SamplingStyle;
 import org.joml.Vector3d;
 
 import java.util.ArrayList;
@@ -16,12 +17,6 @@ public class BezierCurve extends AbstractShape {
     private List<Vector3d> controlPoints;
     private Supplier<List<Vector3d>> controlPointsSupplier;
 
-    /**
-     * Creates a bezier curve from the given control points.
-     * Must have at least 2 control points (start and end).
-     *
-     * @param controlPoints the control points, including start and end
-     */
     public BezierCurve(List<Vector3d> controlPoints) {
         super();
         if (controlPoints.size() < 2)
@@ -51,17 +46,16 @@ public class BezierCurve extends AbstractShape {
     }
 
     @Override
-    public void generateOutline(Set<Vector3d> points) {
+    public void generateOutline(Set<Vector3d> points, double density) {
         if (controlPointsSupplier != null) {
             List<Vector3d> pts = controlPointsSupplier.get();
             this.controlPoints = new ArrayList<>();
             for (Vector3d cp : pts)
                 this.controlPoints.add(new Vector3d(cp));
         }
-        int steps = (int) (estimateLength() / getParticleDensity());
+        int steps = (int) (estimateLength() / density);
         int n = controlPoints.size();
 
-        // Pre-allocate temp array for de Casteljau — reused each step
         Vector3d[] temp = new Vector3d[n];
         for (int i = 0; i < n; i++)
             temp[i] = new Vector3d();
@@ -69,10 +63,8 @@ public class BezierCurve extends AbstractShape {
         for (int step = 0; step < steps; step++) {
             double t = (double) step / steps;
             double nt = 1 - t;
-            // Copy control points into temp
             for (int i = 0; i < n; i++)
                 temp[i].set(controlPoints.get(i));
-            // Reduce in-place
             for (int level = n - 1; level > 0; level--) {
                 for (int i = 0; i < level; i++) {
                     temp[i].mul(nt).add(new Vector3d(temp[i + 1]).mul(t));
@@ -91,10 +83,31 @@ public class BezierCurve extends AbstractShape {
     }
 
     @Override
-    public void setParticleCount(int particleCount) {
-        particleCount = Math.max(particleCount, 1);
-        this.setParticleDensity(estimateLength() / particleCount);
-        this.setNeedsUpdate(true);
+    public double computeDensity(SamplingStyle style, int targetPointCount) {
+        int count = Math.max(targetPointCount, 1);
+        return estimateLength() / count;
+    }
+
+    @Override
+    public boolean contains(Vector3d point) {
+        // Approximate: check distance to nearest sampled point
+        int samples = Math.max((int) (estimateLength() / 0.1), 10);
+        int n = controlPoints.size();
+        Vector3d[] temp = new Vector3d[n];
+        for (int i = 0; i < n; i++) temp[i] = new Vector3d();
+
+        for (int step = 0; step <= samples; step++) {
+            double t = (double) step / samples;
+            double nt = 1 - t;
+            for (int i = 0; i < n; i++) temp[i].set(controlPoints.get(i));
+            for (int level = n - 1; level > 0; level--) {
+                for (int i = 0; i < level; i++) {
+                    temp[i].mul(nt).add(new Vector3d(temp[i + 1]).mul(t));
+                }
+            }
+            if (point.distance(temp[0]) <= EPSILON) return true;
+        }
+        return false;
     }
 
     public List<Vector3d> getControlPoints() {
@@ -105,7 +118,7 @@ public class BezierCurve extends AbstractShape {
         this.controlPoints = new ArrayList<>();
         for (Vector3d cp : controlPoints)
             this.controlPoints.add(new Vector3d(cp));
-        this.setNeedsUpdate(true);
+        invalidate();
     }
 
     public Supplier<List<Vector3d>> getControlPointsSupplier() {

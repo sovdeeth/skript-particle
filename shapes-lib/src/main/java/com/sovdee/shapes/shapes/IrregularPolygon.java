@@ -1,5 +1,6 @@
 package com.sovdee.shapes.shapes;
 
+import com.sovdee.shapes.sampling.SamplingStyle;
 import org.joml.Vector3d;
 
 import java.util.ArrayList;
@@ -45,10 +46,9 @@ public class IrregularPolygon extends AbstractShape implements LWHShape {
     }
 
     @Override
-    public void generateOutline(Set<Vector3d> points) {
-        double particleDensity = this.getParticleDensity();
-        points.addAll(Line.connectPoints(vertices, particleDensity));
-        points.addAll(Line.calculateLine(vertices.get(0), vertices.get(vertices.size() - 1), particleDensity));
+    public void generateOutline(Set<Vector3d> points, double density) {
+        points.addAll(Line.connectPoints(vertices, density));
+        points.addAll(Line.calculateLine(vertices.get(0), vertices.get(vertices.size() - 1), density));
         if (height != 0) {
             Set<Vector3d> upperPoints = new LinkedHashSet<>();
             for (Vector3d v : points) {
@@ -56,14 +56,14 @@ public class IrregularPolygon extends AbstractShape implements LWHShape {
             }
             points.addAll(upperPoints);
             for (Vector3d v : vertices) {
-                points.addAll(Line.calculateLine(v, new Vector3d(v.x, height, v.z), particleDensity));
+                points.addAll(Line.calculateLine(v, new Vector3d(v.x, height, v.z), density));
             }
         }
     }
 
     @Override
-    public void setParticleCount(int particleCount) {
-        particleCount = Math.max(particleCount, 1);
+    public double computeDensity(SamplingStyle style, int targetPointCount) {
+        int count = Math.max(targetPointCount, 1);
         double perimeter = 0;
         for (int i = 0; i < vertices.size() - 1; i++) {
             perimeter += vertices.get(i).distance(vertices.get(i + 1));
@@ -71,8 +71,25 @@ public class IrregularPolygon extends AbstractShape implements LWHShape {
         perimeter += vertices.get(0).distance(vertices.get(vertices.size() - 1));
         perimeter *= 2;
         perimeter += vertices.size() * height;
-        this.setParticleDensity(perimeter / particleCount);
-        this.setNeedsUpdate(true);
+        return perimeter / count;
+    }
+
+    @Override
+    public boolean contains(Vector3d point) {
+        if (height > 0 && (point.y < 0 || point.y > height)) return false;
+        if (height == 0 && Math.abs(point.y) > EPSILON) return false;
+        // Ray casting algorithm on XZ plane
+        int n = vertices.size();
+        boolean inside = false;
+        for (int i = 0, j = n - 1; i < n; j = i++) {
+            double xi = vertices.get(i).x, zi = vertices.get(i).z;
+            double xj = vertices.get(j).x, zj = vertices.get(j).z;
+            if ((zi > point.z) != (zj > point.z) &&
+                    point.x < (xj - xi) * (point.z - zi) / (zj - zi) + xi) {
+                inside = !inside;
+            }
+        }
+        return inside;
     }
 
     @Override
@@ -93,7 +110,7 @@ public class IrregularPolygon extends AbstractShape implements LWHShape {
     @Override
     public void setHeight(double height) {
         this.height = Math.max(height, 0);
-        this.setNeedsUpdate(true);
+        invalidate();
     }
 
     @Override

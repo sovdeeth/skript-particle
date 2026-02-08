@@ -78,7 +78,7 @@ public class ExprBezierCurve extends SimpleExpression<Shape> {
             result.add(VectorConversion.toJOML(endPt.getVector(origin)));
             return result;
         });
-        curve.setDrawContext(new DrawData());
+        curve.getPointSampler().setDrawContext(new DrawData());
         return curve;
     }
 

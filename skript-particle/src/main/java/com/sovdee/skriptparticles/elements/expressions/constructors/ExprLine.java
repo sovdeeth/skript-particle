@@ -89,7 +89,7 @@ public class ExprLine extends SimpleExpression<Shape> {
     }
 
     private Shape attachDrawData(Shape shape) {
-        shape.setDrawContext(new DrawData());
+        shape.getPointSampler().setDrawContext(new DrawData());
         return shape;
     }
 

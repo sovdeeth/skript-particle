@@ -45,7 +45,7 @@ public class ExprShapePoints extends PropertyExpression<Shape, Vector> {
     protected Vector[] get(Event event, Shape[] source) {
         List<Vector> points = new ArrayList<>();
         for (Shape shape : source) {
-            points.addAll(VectorConversion.toBukkit(shape.getPoints()));
+            points.addAll(VectorConversion.toBukkit(shape.getPointSampler().getPoints(shape)));
         }
         return points.toArray(new Vector[0]);
     }

@@ -13,7 +13,7 @@ import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
 import com.sovdee.shapes.shapes.EllipticalArc;
 import com.sovdee.shapes.shapes.Shape;
-import com.sovdee.shapes.shapes.Shape.Style;
+import com.sovdee.shapes.sampling.SamplingStyle;
 import com.sovdee.skriptparticles.shapes.DrawData;
 import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
@@ -44,7 +44,7 @@ public class ExprEllipticalArc extends SimpleExpression<Shape> {
     private Expression<Number> zRadius;
     private Expression<Number> height;
     private Expression<Number> angle;
-    private Style style;
+    private SamplingStyle style;
     private boolean isRadians;
 
     @Override
@@ -86,7 +86,7 @@ public class ExprEllipticalArc extends SimpleExpression<Shape> {
             }
         }
 
-        style = parseResult.hasTag("sector") ? Style.FILL : Style.OUTLINE;
+        style = parseResult.hasTag("sector") ? SamplingStyle.FILL : SamplingStyle.OUTLINE;
         isRadians = parseResult.hasTag("radians");
         return true;
     }
@@ -109,8 +109,8 @@ public class ExprEllipticalArc extends SimpleExpression<Shape> {
 
         angle = MathUtil.clamp(angle.doubleValue(), 0, Math.PI * 2);
         EllipticalArc shape = new EllipticalArc(xRadius.doubleValue(), zRadius.doubleValue(), height.doubleValue(), angle.doubleValue());
-        shape.setStyle(style);
-        shape.setDrawContext(new DrawData());
+        shape.getPointSampler().setStyle(style);
+        shape.getPointSampler().setDrawContext(new DrawData());
         return new Shape[]{shape};
     }
 
@@ -126,7 +126,7 @@ public class ExprEllipticalArc extends SimpleExpression<Shape> {
 
     @Override
     public String toString(@Nullable Event event, boolean debug) {
-        return (this.style == Style.FILL ? "sector" : "arc") +
+        return (this.style == SamplingStyle.FILL ? "sector" : "arc") +
                 " with radius " + xRadius.toString(event, debug) + " and " + zRadius.toString(event, debug) +
                 (height == null ? "" : " and height " + height.toString(event, debug)) +
                 " and angle " + angle.toString(event, debug) +

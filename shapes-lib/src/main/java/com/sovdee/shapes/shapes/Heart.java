@@ -1,5 +1,6 @@
 package com.sovdee.shapes.shapes;
 
+import com.sovdee.shapes.sampling.SamplingStyle;
 import org.joml.Vector3d;
 
 import java.util.LinkedHashSet;
@@ -18,9 +19,9 @@ public class Heart extends AbstractShape implements LWHShape {
         this.eccentricity = Math.max(eccentricity, 1);
     }
 
-    private static Set<Vector3d> calculateHeart(double length, double width, double eccentricity, double particleDensity) {
+    private static Set<Vector3d> calculateHeart(double length, double width, double eccentricity, double density) {
         Set<Vector3d> points = new LinkedHashSet<>();
-        double angleStep = 4 / 3.0 * particleDensity / (width + length);
+        double angleStep = 4 / 3.0 * density / (width + length);
         for (double theta = 0; theta < Math.PI * 2; theta += angleStep) {
             double x = width * Math.pow(Math.sin(theta), 3);
             double y = length * (Math.cos(theta) - 1 / eccentricity * Math.cos(2 * theta) - 1.0 / 6 * Math.cos(3 * theta) - 1.0 / 16 * Math.cos(4 * theta));
@@ -30,20 +31,37 @@ public class Heart extends AbstractShape implements LWHShape {
     }
 
     @Override
-    public void generateOutline(Set<Vector3d> points) {
-        points.addAll(calculateHeart(length / 2, width / 2, eccentricity, this.getParticleDensity()));
+    public void generateOutline(Set<Vector3d> points, double density) {
+        points.addAll(calculateHeart(length / 2, width / 2, eccentricity, density));
     }
 
     @Override
-    public void generateSurface(Set<Vector3d> points) {
-        double particleDensity = this.getParticleDensity();
-        for (double w = width, l = length; w > 0 && l > 0; w -= particleDensity * 1.5, l -= particleDensity * 1.5) {
-            points.addAll(calculateHeart(l / 2, w / 2, eccentricity, particleDensity));
+    public void generateSurface(Set<Vector3d> points, double density) {
+        for (double w = width, l = length; w > 0 && l > 0; w -= density * 1.5, l -= density * 1.5) {
+            points.addAll(calculateHeart(l / 2, w / 2, eccentricity, density));
         }
     }
 
     @Override
-    public void setParticleCount(int particleCount) { }
+    public double computeDensity(SamplingStyle style, int targetPointCount) {
+        return 0.25; // No good formula available
+    }
+
+    @Override
+    public boolean contains(Vector3d point) {
+        // Approximate: check if point is within parametric heart boundary
+        if (Math.abs(point.y) > EPSILON) return false;
+        double x = point.x;
+        double z = point.z;
+        double hw = width / 2;
+        double hl = length / 2;
+        if (hw < EPSILON || hl < EPSILON) return false;
+        // Normalize and check parametric distance
+        double nx = x / hw;
+        double nz = z / hl;
+        // Simple bounding check
+        return nx * nx + nz * nz <= 4;
+    }
 
     @Override
     public double getHeight() { return 0; }
@@ -57,7 +75,7 @@ public class Heart extends AbstractShape implements LWHShape {
     @Override
     public void setWidth(double width) {
         this.width = Math.max(width, Shape.EPSILON);
-        this.setNeedsUpdate(true);
+        invalidate();
     }
 
     @Override
@@ -66,14 +84,14 @@ public class Heart extends AbstractShape implements LWHShape {
     @Override
     public void setLength(double length) {
         this.length = Math.max(length, Shape.EPSILON);
-        this.setNeedsUpdate(true);
+        invalidate();
     }
 
     public double getEccentricity() { return eccentricity; }
 
     public void setEccentricity(double eccentricity) {
         this.eccentricity = Math.max(1, eccentricity);
-        this.setNeedsUpdate(true);
+        invalidate();
     }
 
     @Override

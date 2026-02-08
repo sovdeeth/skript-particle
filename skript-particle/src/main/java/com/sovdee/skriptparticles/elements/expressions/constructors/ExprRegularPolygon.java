@@ -13,7 +13,7 @@ import ch.njol.skript.lang.util.SimpleLiteral;
 import ch.njol.util.Kleenean;
 import com.sovdee.shapes.shapes.RegularPolygon;
 import com.sovdee.shapes.shapes.Shape;
-import com.sovdee.shapes.shapes.Shape.Style;
+import com.sovdee.shapes.sampling.SamplingStyle;
 import com.sovdee.skriptparticles.shapes.DrawData;
 import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
@@ -45,12 +45,12 @@ public class ExprRegularPolygon extends SimpleExpression<Shape> {
     private Expression<Number> radius;
     private Expression<Number> sideLength;
     private Expression<Number> sides;
-    private Style style;
+    private SamplingStyle style;
     private int matchedPattern;
 
     @Override
     public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, ParseResult parseResult) {
-        style = parseResult.hasTag("solid") ? Style.SURFACE : Style.OUTLINE;
+        style = parseResult.hasTag("solid") ? SamplingStyle.SURFACE : SamplingStyle.OUTLINE;
         this.matchedPattern = matchedPattern;
         switch (matchedPattern) {
             case 0 -> {
@@ -112,8 +112,8 @@ public class ExprRegularPolygon extends SimpleExpression<Shape> {
         sides = Math.max(sides.intValue(), 3);
         radius = Math.max(radius.doubleValue(), MathUtil.EPSILON);
         RegularPolygon shape = new RegularPolygon(sides.intValue(), radius.doubleValue());
-        shape.setStyle(style);
-        shape.setDrawContext(new DrawData());
+        shape.getPointSampler().setStyle(style);
+        shape.getPointSampler().setDrawContext(new DrawData());
         return new Shape[]{shape};
     }
 
@@ -129,7 +129,7 @@ public class ExprRegularPolygon extends SimpleExpression<Shape> {
 
     @Override
     public String toString(@Nullable Event event, boolean debug) {
-        return (style == Style.SURFACE ? "filled" : "outlined") +
+        return (style == SamplingStyle.SURFACE ? "filled" : "outlined") +
                 switch (matchedPattern) {
                     case 0, 2 ->
                             " regular polygon with " + sides.toString(event, debug) + " sides and radius " + radius.toString(event, debug);

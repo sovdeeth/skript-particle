@@ -1,5 +1,6 @@
 package com.sovdee.shapes.shapes;
 
+import com.sovdee.shapes.sampling.SamplingStyle;
 import org.joml.Vector3d;
 
 import java.util.LinkedHashSet;
@@ -38,14 +39,13 @@ public class Line extends AbstractShape implements LWHShape {
     }
 
     /**
-     * Calculates points along a line from start to end with the given particle density.
-     * Uses additive stepping for efficiency.
+     * Calculates points along a line from start to end with the given density.
      */
-    public static Set<Vector3d> calculateLine(Vector3d start, Vector3d end, double particleDensity) {
+    public static Set<Vector3d> calculateLine(Vector3d start, Vector3d end, double density) {
         Set<Vector3d> points = new LinkedHashSet<>();
         Vector3d direction = new Vector3d(end).sub(start);
         double length = direction.length();
-        double step = length / Math.round(length / particleDensity);
+        double step = length / Math.round(length / density);
         direction.normalize().mul(step);
 
         Vector3d current = new Vector3d(start);
@@ -60,17 +60,17 @@ public class Line extends AbstractShape implements LWHShape {
     /**
      * Connects a list of points with lines, returning all intermediate points.
      */
-    public static Set<Vector3d> connectPoints(List<Vector3d> points, double particleDensity) {
+    public static Set<Vector3d> connectPoints(List<Vector3d> points, double density) {
         Set<Vector3d> connectedPoints = new LinkedHashSet<>();
         for (int i = 0; i < points.size() - 1; i++) {
-            connectedPoints.addAll(calculateLine(points.get(i), points.get(i + 1), particleDensity));
+            connectedPoints.addAll(calculateLine(points.get(i), points.get(i + 1), density));
         }
         return connectedPoints;
     }
 
     @Override
-    public void generateOutline(Set<Vector3d> points) {
-        points.addAll(calculateLine(getStart(), getEnd(), this.getParticleDensity()));
+    public void generateOutline(Set<Vector3d> points, double density) {
+        points.addAll(calculateLine(getStart(), getEnd(), density));
     }
 
     public Vector3d getStart() {
@@ -80,7 +80,7 @@ public class Line extends AbstractShape implements LWHShape {
     public void setStart(Vector3d start) {
         final Vector3d s = new Vector3d(start);
         this.startSupplier = () -> new Vector3d(s);
-        this.setNeedsUpdate(true);
+        invalidate();
     }
 
     public Vector3d getEnd() {
@@ -90,7 +90,7 @@ public class Line extends AbstractShape implements LWHShape {
     public void setEnd(Vector3d end) {
         final Vector3d e = new Vector3d(end);
         this.endSupplier = () -> new Vector3d(e);
-        this.setNeedsUpdate(true);
+        invalidate();
     }
 
     public Supplier<Vector3d> getStartSupplier() {
@@ -110,12 +110,23 @@ public class Line extends AbstractShape implements LWHShape {
     }
 
     @Override
-    public void setParticleCount(int particleCount) {
-        particleCount = Math.max(particleCount, 1);
+    public double computeDensity(SamplingStyle style, int targetPointCount) {
+        int count = Math.max(targetPointCount, 1);
+        return new Vector3d(getEnd()).sub(getStart()).length() / count;
+    }
+
+    @Override
+    public boolean contains(Vector3d point) {
         Vector3d start = getStart();
         Vector3d end = getEnd();
-        this.setParticleDensity(new Vector3d(end).sub(start).length() / particleCount);
-        this.setNeedsUpdate(true);
+        Vector3d line = new Vector3d(end).sub(start);
+        double len = line.length();
+        if (len < EPSILON) return point.distance(start) < EPSILON;
+        Vector3d toPoint = new Vector3d(point).sub(start);
+        double t = toPoint.dot(line) / (len * len);
+        if (t < 0 || t > 1) return false;
+        Vector3d closest = new Vector3d(start).add(new Vector3d(line).mul(t));
+        return point.distance(closest) <= EPSILON;
     }
 
     @Override
@@ -131,7 +142,6 @@ public class Line extends AbstractShape implements LWHShape {
         Vector3d direction = new Vector3d(end).sub(start).normalize();
         Vector3d newEnd = new Vector3d(start).add(direction.mul(length));
         setEnd(newEnd);
-        this.setNeedsUpdate(true);
     }
 
     @Override

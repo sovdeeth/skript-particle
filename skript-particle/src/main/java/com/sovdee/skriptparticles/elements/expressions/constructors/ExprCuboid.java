@@ -12,7 +12,7 @@ import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
 import com.sovdee.shapes.shapes.Cuboid;
 import com.sovdee.shapes.shapes.Shape;
-import com.sovdee.shapes.shapes.Shape.Style;
+import com.sovdee.shapes.sampling.SamplingStyle;
 import com.sovdee.skriptparticles.shapes.DrawData;
 import com.sovdee.skriptparticles.util.DynamicLocation;
 import com.sovdee.skriptparticles.util.MathUtil;
@@ -51,7 +51,7 @@ public class ExprCuboid extends SimpleExpression<Shape> {
     private Expression<?> corner2;
     private int matchedPattern = 0;
 
-    private Style style;
+    private SamplingStyle style;
 
     @Override
     public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, ParseResult parseResult) {
@@ -68,11 +68,11 @@ public class ExprCuboid extends SimpleExpression<Shape> {
         }
         this.matchedPattern = matchedPattern;
         if (parseResult.hasTag("hollow")) {
-            style = Style.SURFACE;
+            style = SamplingStyle.SURFACE;
         } else if (parseResult.hasTag("solid")) {
-            style = Style.FILL;
+            style = SamplingStyle.FILL;
         } else {
-            style = Style.OUTLINE;
+            style = SamplingStyle.OUTLINE;
         }
         return true;
     }
@@ -116,8 +116,8 @@ public class ExprCuboid extends SimpleExpression<Shape> {
                 );
             }
         }
-        shape.setStyle(style);
-        shape.setDrawContext(new DrawData());
+        shape.getPointSampler().setStyle(style);
+        shape.getPointSampler().setDrawContext(new DrawData());
         return new Shape[]{shape};
     }
 

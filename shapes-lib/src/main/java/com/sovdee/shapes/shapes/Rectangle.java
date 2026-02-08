@@ -1,5 +1,6 @@
 package com.sovdee.shapes.shapes;
 
+import com.sovdee.shapes.sampling.SamplingStyle;
 import org.joml.Vector3d;
 
 import java.util.Set;
@@ -25,7 +26,6 @@ public class Rectangle extends AbstractShape implements LWHShape {
         this.plane = plane;
         this.halfLength = Math.max(length / 2, Shape.EPSILON);
         this.halfWidth = Math.max(width / 2, Shape.EPSILON);
-        calculateSteps();
     }
 
     public Rectangle(Vector3d cornerA, Vector3d cornerB, Plane plane) {
@@ -40,7 +40,6 @@ public class Rectangle extends AbstractShape implements LWHShape {
             case XY -> centerOffset.z = 0;
             case YZ -> centerOffset.x = 0;
         }
-        calculateSteps();
     }
 
     public Rectangle(Supplier<Vector3d> cornerA, Supplier<Vector3d> cornerB, Plane plane) {
@@ -51,7 +50,6 @@ public class Rectangle extends AbstractShape implements LWHShape {
         Vector3d a = cornerA.get();
         Vector3d b = cornerB.get();
         setLengthWidth(a, b);
-        calculateSteps();
         setDynamic(true);
     }
 
@@ -76,14 +74,28 @@ public class Rectangle extends AbstractShape implements LWHShape {
         };
     }
 
-    private void calculateSteps() {
-        double particleDensity = this.getParticleDensity();
-        lengthStep = 2 * halfWidth / Math.round(2 * halfWidth / particleDensity);
-        widthStep = 2 * halfLength / Math.round(2 * halfLength / particleDensity);
+    private void calculateSteps(double density) {
+        lengthStep = 2 * halfWidth / Math.round(2 * halfWidth / density);
+        widthStep = 2 * halfLength / Math.round(2 * halfLength / density);
     }
 
     @Override
-    public void generateOutline(Set<Vector3d> points) {
+    public void beforeSampling(double density) {
+        if (cornerASupplier != null && cornerBSupplier != null) {
+            Vector3d a = cornerASupplier.get();
+            Vector3d b = cornerBSupplier.get();
+            setLengthWidth(a, b);
+        }
+        calculateSteps(density);
+    }
+
+    @Override
+    public void afterSampling(Set<Vector3d> points) {
+        points.forEach(vector -> vector.add(centerOffset));
+    }
+
+    @Override
+    public void generateOutline(Set<Vector3d> points, double density) {
         for (double l = -halfLength + widthStep; l < halfLength; l += widthStep) {
             points.add(vectorFromLengthWidth(l, -halfWidth));
             points.add(vectorFromLengthWidth(l, halfWidth));
@@ -95,7 +107,7 @@ public class Rectangle extends AbstractShape implements LWHShape {
     }
 
     @Override
-    public void generateSurface(Set<Vector3d> points) {
+    public void generateSurface(Set<Vector3d> points, double density) {
         for (double w = -halfWidth; w <= halfWidth; w += lengthStep) {
             for (double l = -halfLength; l <= halfLength; l += widthStep) {
                 points.add(vectorFromLengthWidth(l, w));
@@ -104,25 +116,21 @@ public class Rectangle extends AbstractShape implements LWHShape {
     }
 
     @Override
-    public void generatePoints(Set<Vector3d> points) {
-        if (cornerASupplier != null && cornerBSupplier != null) {
-            Vector3d a = cornerASupplier.get();
-            Vector3d b = cornerBSupplier.get();
-            setLengthWidth(a, b);
-        }
-        calculateSteps();
-        super.generatePoints(points);
-        points.forEach(vector -> vector.add(centerOffset));
+    public double computeDensity(SamplingStyle style, int targetPointCount) {
+        int count = Math.max(targetPointCount, 1);
+        return switch (style) {
+            case FILL, SURFACE -> Math.sqrt(4 * halfWidth * halfLength / count);
+            case OUTLINE -> 4 * (halfWidth + halfLength) / count;
+        };
     }
 
     @Override
-    public void setParticleCount(int particleCount) {
-        particleCount = Math.max(particleCount, 1);
-        switch (this.getStyle()) {
-            case FILL, SURFACE -> this.setParticleDensity(Math.sqrt(4 * halfWidth * halfLength / particleCount));
-            case OUTLINE -> this.setParticleDensity(4 * (halfWidth + halfLength) / particleCount);
-        }
-        this.setNeedsUpdate(true);
+    public boolean contains(Vector3d point) {
+        return switch (plane) {
+            case XZ -> Math.abs(point.x) <= halfLength && Math.abs(point.z) <= halfWidth && Math.abs(point.y) < EPSILON;
+            case XY -> Math.abs(point.x) <= halfLength && Math.abs(point.y) <= halfWidth && Math.abs(point.z) < EPSILON;
+            case YZ -> Math.abs(point.y) <= halfLength && Math.abs(point.z) <= halfWidth && Math.abs(point.x) < EPSILON;
+        };
     }
 
     @Override
@@ -131,7 +139,7 @@ public class Rectangle extends AbstractShape implements LWHShape {
     @Override
     public void setLength(double length) {
         this.halfLength = Math.max(length / 2, Shape.EPSILON);
-        this.setNeedsUpdate(true);
+        invalidate();
     }
 
     @Override
@@ -140,7 +148,7 @@ public class Rectangle extends AbstractShape implements LWHShape {
     @Override
     public void setWidth(double width) {
         this.halfWidth = Math.max(width / 2, Shape.EPSILON);
-        this.setNeedsUpdate(true);
+        invalidate();
     }
 
     @Override
@@ -153,7 +161,7 @@ public class Rectangle extends AbstractShape implements LWHShape {
 
     public void setPlane(Plane plane) {
         this.plane = plane;
-        this.setNeedsUpdate(true);
+        invalidate();
     }
 
     public Supplier<Vector3d> getCornerASupplier() { return cornerASupplier; }

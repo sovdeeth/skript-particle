@@ -12,7 +12,7 @@ import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
 import com.sovdee.shapes.shapes.Shape;
-import com.sovdee.shapes.shapes.Shape.Style;
+import com.sovdee.shapes.sampling.SamplingStyle;
 import com.sovdee.shapes.shapes.Sphere;
 import com.sovdee.skriptparticles.shapes.DrawData;
 import com.sovdee.skriptparticles.util.MathUtil;
@@ -59,8 +59,8 @@ public class ExprSphere extends SimpleExpression<Shape> {
         radius = Math.max(radius.doubleValue(), MathUtil.EPSILON);
 
         Sphere shape = new Sphere(radius.doubleValue());
-        if (isSolid) shape.setStyle(Style.FILL);
-        shape.setDrawContext(new DrawData());
+        if (isSolid) shape.getPointSampler().setStyle(SamplingStyle.FILL);
+        shape.getPointSampler().setDrawContext(new DrawData());
         return new Shape[]{shape};
     }
 

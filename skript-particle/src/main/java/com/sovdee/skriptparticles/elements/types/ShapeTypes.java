@@ -4,6 +4,7 @@ import ch.njol.skript.classes.ClassInfo;
 import ch.njol.skript.classes.Parser;
 import ch.njol.skript.lang.ParseContext;
 import ch.njol.skript.registrations.Classes;
+import com.sovdee.shapes.sampling.SamplingStyle;
 import com.sovdee.shapes.shapes.Shape;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,27 +34,27 @@ public class ShapeTypes {
 
                     @Override
                     public String toVariableNameString(Shape shape) {
-                        return "shape:" + shape.getUUID();
+                        return "shape:" + shape.getPointSampler().getUUID();
                     }
                 })
                 .cloner(Shape::clone)
         );
 
-        // Style — use library Style directly (no duplicate enum)
-        Classes.registerClass(new ClassInfo<>(Shape.Style.class, "shapestyle")
+        // Style — use standalone SamplingStyle enum
+        Classes.registerClass(new ClassInfo<>(SamplingStyle.class, "shapestyle")
                 .user("shape ?styles?")
                 .name("Shape Style")
                 .description("Represents the way the shape is drawn. Outlined is a wireframe representation, Surface is filling in all the surfaces of the shape, and Filled is filling in the entire shape.")
                 .parser(new Parser<>() {
                     @Override
-                    public @Nullable Shape.Style parse(String s, ParseContext context) {
+                    public @Nullable SamplingStyle parse(String s, ParseContext context) {
                         s = s.toUpperCase();
                         if (s.matches("OUTLINE(D)?") || s.matches("WIREFRAME")) {
-                            return Shape.Style.OUTLINE;
+                            return SamplingStyle.OUTLINE;
                         } else if (s.matches("SURFACE") || s.matches("HOLLOW")) {
-                            return Shape.Style.SURFACE;
+                            return SamplingStyle.SURFACE;
                         } else if (s.matches("FILL(ED)?") || s.matches("SOLID")) {
-                            return Shape.Style.FILL;
+                            return SamplingStyle.FILL;
                         }
                         return null;
                     }
@@ -64,12 +65,12 @@ public class ShapeTypes {
                     }
 
                     @Override
-                    public String toString(Shape.Style style, int i) {
+                    public String toString(SamplingStyle style, int i) {
                         return style.toString();
                     }
 
                     @Override
-                    public String toVariableNameString(Shape.Style style) {
+                    public String toVariableNameString(SamplingStyle style) {
                         return "shapestyle:" + style;
                     }
                 }));

@@ -16,8 +16,8 @@ public class EllipticalArc extends Ellipse implements CutoffShape {
     }
 
     @Override
-    public void generateSurface(Set<Vector3d> points) {
-        generateFilled(points);
+    public void generateSurface(Set<Vector3d> points, double density) {
+        generateFilled(points, density);
     }
 
     @Override
@@ -28,11 +28,19 @@ public class EllipticalArc extends Ellipse implements CutoffShape {
     @Override
     public void setCutoffAngle(double cutoffAngle) {
         this.cutoffAngle = Math.clamp(cutoffAngle, 0, Math.PI * 2);
-        this.setNeedsUpdate(true);
+        invalidate();
+    }
+
+    @Override
+    public boolean contains(Vector3d point) {
+        if (!super.contains(point)) return false;
+        double angle = Math.atan2(point.z, point.x);
+        if (angle < 0) angle += 2 * Math.PI;
+        return angle <= cutoffAngle;
     }
 
     @Override
     public Shape clone() {
-        return this.copyTo(new EllipticalArc(this.getLength(), this.getWidth(), this.getHeight(), cutoffAngle));
+        return this.copyTo(new EllipticalArc(this.getLength() / 2, this.getWidth() / 2, this.getHeight(), cutoffAngle));
     }
 }
