@@ -1,12 +1,10 @@
-package com.sovdee.shapes;
-
-import com.sovdee.shapes.util.MathUtil;
+package com.sovdee.shapes.shapes;
 
 public class SphericalCap extends Sphere implements CutoffShape {
 
     public SphericalCap(double radius, double cutoffAngle) {
         super(radius);
-        this.cutoffAngle = MathUtil.clamp(cutoffAngle, 0, Math.PI);
+        this.cutoffAngle = Math.clamp(cutoffAngle, 0, Math.PI);
         this.cutoffAngleCos = Math.cos(this.cutoffAngle);
     }
 
@@ -17,7 +15,7 @@ public class SphericalCap extends Sphere implements CutoffShape {
 
     @Override
     public void setCutoffAngle(double cutoffAngle) {
-        this.cutoffAngle = MathUtil.clamp(cutoffAngle, 0, Math.PI);
+        this.cutoffAngle = Math.clamp(cutoffAngle, 0, Math.PI);
         this.cutoffAngleCos = Math.cos(this.cutoffAngle);
         this.setNeedsUpdate(true);
     }

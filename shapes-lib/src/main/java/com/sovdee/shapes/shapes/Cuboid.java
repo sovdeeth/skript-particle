@@ -1,6 +1,5 @@
-package com.sovdee.shapes;
+package com.sovdee.shapes.shapes;
 
-import com.sovdee.shapes.util.MathUtil;
 import org.joml.Vector3d;
 
 import java.util.Set;
@@ -20,9 +19,9 @@ public class Cuboid extends AbstractShape implements LWHShape {
 
     public Cuboid(double length, double width, double height) {
         super();
-        this.halfWidth = Math.max(width / 2, MathUtil.EPSILON);
-        this.halfLength = Math.max(length / 2, MathUtil.EPSILON);
-        this.halfHeight = Math.max(height / 2, MathUtil.EPSILON);
+        this.halfWidth = Math.max(width / 2, Shape.EPSILON);
+        this.halfLength = Math.max(length / 2, Shape.EPSILON);
+        this.halfHeight = Math.max(height / 2, Shape.EPSILON);
         calculateSteps();
     }
 
@@ -43,9 +42,9 @@ public class Cuboid extends AbstractShape implements LWHShape {
         this.cornerBSupplier = cornerB;
         Vector3d a = cornerA.get();
         Vector3d b = cornerB.get();
-        this.halfLength = Math.max(Math.abs(b.x - a.x) / 2, MathUtil.EPSILON);
-        this.halfWidth = Math.max(Math.abs(b.z - a.z) / 2, MathUtil.EPSILON);
-        this.halfHeight = Math.max(Math.abs(b.y - a.y) / 2, MathUtil.EPSILON);
+        this.halfLength = Math.max(Math.abs(b.x - a.x) / 2, Shape.EPSILON);
+        this.halfWidth = Math.max(Math.abs(b.z - a.z) / 2, Shape.EPSILON);
+        this.halfHeight = Math.max(Math.abs(b.y - a.y) / 2, Shape.EPSILON);
         calculateSteps();
         setDynamic(true);
     }
@@ -116,9 +115,9 @@ public class Cuboid extends AbstractShape implements LWHShape {
         if (cornerASupplier != null && cornerBSupplier != null) {
             Vector3d a = cornerASupplier.get();
             Vector3d b = cornerBSupplier.get();
-            this.halfLength = Math.max(Math.abs(b.x - a.x) / 2, MathUtil.EPSILON);
-            this.halfWidth = Math.max(Math.abs(b.z - a.z) / 2, MathUtil.EPSILON);
-            this.halfHeight = Math.max(Math.abs(b.y - a.y) / 2, MathUtil.EPSILON);
+            this.halfLength = Math.max(Math.abs(b.x - a.x) / 2, Shape.EPSILON);
+            this.halfWidth = Math.max(Math.abs(b.z - a.z) / 2, Shape.EPSILON);
+            this.halfHeight = Math.max(Math.abs(b.y - a.y) / 2, Shape.EPSILON);
         }
         calculateSteps();
         super.generatePoints(points);
@@ -143,7 +142,7 @@ public class Cuboid extends AbstractShape implements LWHShape {
 
     @Override
     public void setLength(double length) {
-        this.halfLength = Math.max(length / 2, MathUtil.EPSILON);
+        this.halfLength = Math.max(length / 2, Shape.EPSILON);
         this.setNeedsUpdate(true);
     }
 
@@ -152,7 +151,7 @@ public class Cuboid extends AbstractShape implements LWHShape {
 
     @Override
     public void setWidth(double width) {
-        this.halfWidth = Math.max(width / 2, MathUtil.EPSILON);
+        this.halfWidth = Math.max(width / 2, Shape.EPSILON);
         this.setNeedsUpdate(true);
     }
 
@@ -161,7 +160,7 @@ public class Cuboid extends AbstractShape implements LWHShape {
 
     @Override
     public void setHeight(double height) {
-        this.halfHeight = Math.max(height / 2, MathUtil.EPSILON);
+        this.halfHeight = Math.max(height / 2, Shape.EPSILON);
         this.setNeedsUpdate(true);
     }
 

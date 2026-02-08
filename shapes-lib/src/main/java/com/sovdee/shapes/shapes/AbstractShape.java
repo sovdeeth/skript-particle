@@ -1,6 +1,6 @@
-package com.sovdee.shapes;
+package com.sovdee.shapes.shapes;
 
-import com.sovdee.shapes.util.MathUtil;
+import com.sovdee.shapes.DrawContext;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
 
@@ -173,7 +173,7 @@ public abstract class AbstractShape implements Shape {
 
     @Override
     public void setParticleDensity(double particleDensity) {
-        this.particleDensity = Math.max(particleDensity, MathUtil.EPSILON);
+        this.particleDensity = Math.max(particleDensity, Shape.EPSILON);
         this.setNeedsUpdate(true);
     }
 
@@ -210,6 +210,20 @@ public abstract class AbstractShape implements Shape {
     @Override
     public void setDynamic(boolean dynamic) {
         this.dynamic = dynamic;
+    }
+
+    /**
+     * Adds vertically extruded copies of the given points up to the given height.
+     * Mutates the set in-place by adding new points at each height step.
+     */
+    protected static void fillVertically(Set<Vector3d> points, double height, double particleDensity) {
+        Set<Vector3d> base = new LinkedHashSet<>(points);
+        double heightStep = height / Math.round(height / particleDensity);
+        for (double y = 0; y < height; y += heightStep) {
+            for (Vector3d v : base) {
+                points.add(new Vector3d(v.x, y, v.z));
+            }
+        }
     }
 
     public abstract Shape clone();

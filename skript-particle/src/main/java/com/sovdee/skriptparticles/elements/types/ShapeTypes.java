@@ -4,7 +4,7 @@ import ch.njol.skript.classes.ClassInfo;
 import ch.njol.skript.classes.Parser;
 import ch.njol.skript.lang.ParseContext;
 import ch.njol.skript.registrations.Classes;
-import com.sovdee.shapes.Shape;
+import com.sovdee.shapes.shapes.Shape;
 import org.jetbrains.annotations.Nullable;
 
 public class ShapeTypes {

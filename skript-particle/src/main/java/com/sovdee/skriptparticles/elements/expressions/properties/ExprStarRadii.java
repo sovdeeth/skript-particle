@@ -9,9 +9,8 @@ import ch.njol.skript.expressions.base.SimplePropertyExpression;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.util.Kleenean;
-import com.sovdee.shapes.Shape;
-import com.sovdee.shapes.Star;
-import com.sovdee.shapes.util.MathUtil;
+import com.sovdee.shapes.shapes.Shape;
+import com.sovdee.shapes.shapes.Star;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
 
@@ -71,15 +70,15 @@ public class ExprStarRadii extends SimplePropertyExpression<Shape, Number> {
                 for (Shape shape : shapes) {
                     if (shape instanceof Star star) {
                         if (isInner) {
-                            star.setInnerRadius(Math.max(star.getInnerRadius() + deltaValue, MathUtil.EPSILON));
+                            star.setInnerRadius(Math.max(star.getInnerRadius() + deltaValue, Shape.EPSILON));
                         } else {
-                            star.setOuterRadius(Math.max(star.getOuterRadius() + deltaValue, MathUtil.EPSILON));
+                            star.setOuterRadius(Math.max(star.getOuterRadius() + deltaValue, Shape.EPSILON));
                         }
                     }
                 }
                 break;
             case SET:
-                deltaValue = Math.max(deltaValue, MathUtil.EPSILON);
+                deltaValue = Math.max(deltaValue, Shape.EPSILON);
                 for (Shape shape : shapes) {
                     if (shape instanceof Star star) {
                         if (isInner) {

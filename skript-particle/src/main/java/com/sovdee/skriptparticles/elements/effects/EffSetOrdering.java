@@ -9,7 +9,7 @@ import ch.njol.skript.lang.Effect;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.util.Kleenean;
-import com.sovdee.shapes.Shape;
+import com.sovdee.shapes.shapes.Shape;
 import org.bukkit.event.Event;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.joml.Vector3d;

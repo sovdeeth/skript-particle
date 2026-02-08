@@ -1,4 +1,4 @@
-package com.sovdee.shapes;
+package com.sovdee.shapes.shapes;
 
 /**
  * Represents a shape that has a length, width, and/or height.

@@ -1,4 +1,4 @@
-package com.sovdee.shapes;
+package com.sovdee.shapes.shapes;
 
 import org.joml.Vector3d;
 
@@ -59,19 +59,26 @@ public class BezierCurve extends AbstractShape {
                 this.controlPoints.add(new Vector3d(cp));
         }
         int steps = (int) (estimateLength() / getParticleDensity());
+        int n = controlPoints.size();
 
-        for (double step = 0; step < steps; step++) {
-            double t = step / steps;
+        // Pre-allocate temp array for de Casteljau — reused each step
+        Vector3d[] temp = new Vector3d[n];
+        for (int i = 0; i < n; i++)
+            temp[i] = new Vector3d();
+
+        for (int step = 0; step < steps; step++) {
+            double t = (double) step / steps;
             double nt = 1 - t;
-            List<Vector3d> tempCP = new ArrayList<>();
-            for (Vector3d cp : controlPoints)
-                tempCP.add(new Vector3d(cp));
-            while (tempCP.size() > 1) {
-                for (int i = 0; i < tempCP.size() - 1; i++)
-                    tempCP.set(i, new Vector3d(tempCP.get(i)).mul(nt).add(new Vector3d(tempCP.get(i + 1)).mul(t)));
-                tempCP.remove(tempCP.size() - 1);
+            // Copy control points into temp
+            for (int i = 0; i < n; i++)
+                temp[i].set(controlPoints.get(i));
+            // Reduce in-place
+            for (int level = n - 1; level > 0; level--) {
+                for (int i = 0; i < level; i++) {
+                    temp[i].mul(nt).add(new Vector3d(temp[i + 1]).mul(t));
+                }
             }
-            points.add(tempCP.get(0));
+            points.add(new Vector3d(temp[0]));
         }
     }
 

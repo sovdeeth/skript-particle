@@ -1,7 +1,7 @@
 package com.sovdee.skriptparticles.shapes;
 
 import ch.njol.skript.Skript;
-import com.sovdee.shapes.Shape;
+import com.sovdee.shapes.shapes.Shape;
 import com.sovdee.skriptparticles.particles.Particle;
 import com.sovdee.skriptparticles.particles.ParticleGradient;
 import com.sovdee.skriptparticles.util.DynamicLocation;

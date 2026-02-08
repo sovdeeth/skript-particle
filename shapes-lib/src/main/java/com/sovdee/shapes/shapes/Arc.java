@@ -1,6 +1,5 @@
-package com.sovdee.shapes;
+package com.sovdee.shapes.shapes;
 
-import com.sovdee.shapes.util.MathUtil;
 import org.joml.Vector3d;
 
 import java.util.Set;
@@ -9,12 +8,12 @@ public class Arc extends Circle implements CutoffShape {
 
     public Arc(double radius, double cutoffAngle) {
         super(radius);
-        this.cutoffAngle = MathUtil.clamp(cutoffAngle, 0, Math.PI * 2);
+        this.cutoffAngle = Math.clamp(cutoffAngle, 0, Math.PI * 2);
     }
 
     public Arc(double radius, double height, double cutoffAngle) {
         super(radius, height);
-        this.cutoffAngle = MathUtil.clamp(cutoffAngle, 0, Math.PI * 2);
+        this.cutoffAngle = Math.clamp(cutoffAngle, 0, Math.PI * 2);
     }
 
     @Override
@@ -29,7 +28,7 @@ public class Arc extends Circle implements CutoffShape {
 
     @Override
     public void setCutoffAngle(double cutoffAngle) {
-        this.cutoffAngle = MathUtil.clamp(cutoffAngle, 0, Math.PI * 2);
+        this.cutoffAngle = Math.clamp(cutoffAngle, 0, Math.PI * 2);
         this.setNeedsUpdate(true);
     }
 

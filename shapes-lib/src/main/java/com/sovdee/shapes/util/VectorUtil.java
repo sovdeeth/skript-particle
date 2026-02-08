@@ -34,7 +34,7 @@ public class VectorUtil {
      * Transforms a list of vectors using a quaternion, modifying them in place.
      */
     public static List<Vector3d> transform(Quaterniond quaternion, List<Vector3d> vectors) {
-        vectors.replaceAll(v -> quaternion.transform(v));
+        vectors.replaceAll(quaternion::transform);
         return vectors;
     }
 

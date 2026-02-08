@@ -7,7 +7,7 @@ import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.expressions.base.PropertyExpression;
 import ch.njol.skript.expressions.base.SimplePropertyExpression;
-import com.sovdee.shapes.Shape;
+import com.sovdee.shapes.shapes.Shape;
 import com.sovdee.skriptparticles.particles.Particle;
 import com.sovdee.skriptparticles.shapes.DrawData;
 import com.sovdee.skriptparticles.util.ParticleUtil;

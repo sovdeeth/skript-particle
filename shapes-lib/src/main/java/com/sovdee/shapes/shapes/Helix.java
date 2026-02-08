@@ -1,8 +1,8 @@
-package com.sovdee.shapes;
+package com.sovdee.shapes.shapes;
 
-import com.sovdee.shapes.util.MathUtil;
 import org.joml.Vector3d;
 
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 public class Helix extends AbstractShape implements RadialShape, LWHShape {
@@ -14,31 +14,47 @@ public class Helix extends AbstractShape implements RadialShape, LWHShape {
 
     public Helix(double radius, double height, double slope) {
         super();
-        this.radius = Math.max(radius, MathUtil.EPSILON);
-        this.height = Math.max(height, MathUtil.EPSILON);
-        this.slope = Math.max(slope, MathUtil.EPSILON);
+        this.radius = Math.max(radius, Shape.EPSILON);
+        this.height = Math.max(height, Shape.EPSILON);
+        this.slope = Math.max(slope, Shape.EPSILON);
     }
 
     public Helix(double radius, double height, double slope, int direction) {
         super();
-        this.radius = Math.max(radius, MathUtil.EPSILON);
-        this.height = Math.max(height, MathUtil.EPSILON);
-        this.slope = Math.max(slope, MathUtil.EPSILON);
+        this.radius = Math.max(radius, Shape.EPSILON);
+        this.height = Math.max(height, Shape.EPSILON);
+        this.slope = Math.max(slope, Shape.EPSILON);
         if (direction != 1 && direction != -1)
             throw new IllegalArgumentException("Direction must be 1 or -1");
         this.direction = direction;
     }
 
+    private static Set<Vector3d> calculateHelix(double radius, double height, double slope, int direction, double particleDensity) {
+        Set<Vector3d> points = new LinkedHashSet<>();
+        if (radius <= 0 || height <= 0) {
+            return points;
+        }
+        double loops = Math.abs(height / slope);
+        double length = slope * slope + radius * radius;
+        double stepSize = particleDensity / length;
+        for (double t = 0; t < loops; t += stepSize) {
+            double x = radius * Math.cos(direction * t);
+            double z = radius * Math.sin(direction * t);
+            points.add(new Vector3d(x, t * slope, z));
+        }
+        return points;
+    }
+
     @Override
     public void generateOutline(Set<Vector3d> points) {
-        points.addAll(MathUtil.calculateHelix(radius, height, slope, direction, this.getParticleDensity()));
+        points.addAll(calculateHelix(radius, height, slope, direction, this.getParticleDensity()));
     }
 
     @Override
     public void generateSurface(Set<Vector3d> points) {
         double particleDensity = this.getParticleDensity();
         for (double r = radius; r > 0; r -= particleDensity) {
-            points.addAll(MathUtil.calculateHelix(r, height, slope, direction, particleDensity));
+            points.addAll(calculateHelix(r, height, slope, direction, particleDensity));
         }
     }
 
@@ -54,7 +70,7 @@ public class Helix extends AbstractShape implements RadialShape, LWHShape {
     public double getSlope() { return slope; }
 
     public void setSlope(double slope) {
-        this.slope = Math.max(slope, MathUtil.EPSILON);
+        this.slope = Math.max(slope, Shape.EPSILON);
         this.setNeedsUpdate(true);
     }
 
@@ -72,7 +88,7 @@ public class Helix extends AbstractShape implements RadialShape, LWHShape {
 
     @Override
     public void setLength(double length) {
-        height = Math.max(length, MathUtil.EPSILON);
+        height = Math.max(length, Shape.EPSILON);
         this.setNeedsUpdate(true);
     }
 
@@ -87,7 +103,7 @@ public class Helix extends AbstractShape implements RadialShape, LWHShape {
 
     @Override
     public void setHeight(double height) {
-        this.height = Math.max(height, MathUtil.EPSILON);
+        this.height = Math.max(height, Shape.EPSILON);
         this.setNeedsUpdate(true);
     }
 
@@ -96,7 +112,7 @@ public class Helix extends AbstractShape implements RadialShape, LWHShape {
 
     @Override
     public void setRadius(double radius) {
-        this.radius = Math.max(radius, MathUtil.EPSILON);
+        this.radius = Math.max(radius, Shape.EPSILON);
         this.setNeedsUpdate(true);
     }
 

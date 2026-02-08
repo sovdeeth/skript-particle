@@ -1,6 +1,5 @@
-package com.sovdee.shapes;
+package com.sovdee.shapes.shapes;
 
-import com.sovdee.shapes.util.MathUtil;
 import org.joml.Vector3d;
 
 import java.util.ArrayList;
@@ -48,8 +47,8 @@ public class IrregularPolygon extends AbstractShape implements LWHShape {
     @Override
     public void generateOutline(Set<Vector3d> points) {
         double particleDensity = this.getParticleDensity();
-        points.addAll(MathUtil.connectPoints(vertices, particleDensity));
-        points.addAll(MathUtil.calculateLine(vertices.get(0), vertices.get(vertices.size() - 1), particleDensity));
+        points.addAll(Line.connectPoints(vertices, particleDensity));
+        points.addAll(Line.calculateLine(vertices.get(0), vertices.get(vertices.size() - 1), particleDensity));
         if (height != 0) {
             Set<Vector3d> upperPoints = new LinkedHashSet<>();
             for (Vector3d v : points) {
@@ -57,7 +56,7 @@ public class IrregularPolygon extends AbstractShape implements LWHShape {
             }
             points.addAll(upperPoints);
             for (Vector3d v : vertices) {
-                points.addAll(MathUtil.calculateLine(v, new Vector3d(v.x, height, v.z), particleDensity));
+                points.addAll(Line.calculateLine(v, new Vector3d(v.x, height, v.z), particleDensity));
             }
         }
     }

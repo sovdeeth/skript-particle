@@ -1,6 +1,5 @@
-package com.sovdee.shapes;
+package com.sovdee.shapes.shapes;
 
-import com.sovdee.shapes.util.MathUtil;
 import org.joml.Vector3d;
 
 import java.util.Set;
@@ -13,7 +12,7 @@ public class EllipticalArc extends Ellipse implements CutoffShape {
 
     public EllipticalArc(double xRadius, double zRadius, double height, double cutoffAngle) {
         super(xRadius, zRadius, height);
-        this.cutoffAngle = MathUtil.clamp(cutoffAngle, 0, Math.PI * 2);
+        this.cutoffAngle = Math.clamp(cutoffAngle, 0, Math.PI * 2);
     }
 
     @Override
@@ -28,7 +27,7 @@ public class EllipticalArc extends Ellipse implements CutoffShape {
 
     @Override
     public void setCutoffAngle(double cutoffAngle) {
-        this.cutoffAngle = MathUtil.clamp(cutoffAngle, 0, Math.PI * 2);
+        this.cutoffAngle = Math.clamp(cutoffAngle, 0, Math.PI * 2);
         this.setNeedsUpdate(true);
     }
 

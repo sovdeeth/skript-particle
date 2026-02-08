@@ -1,5 +1,6 @@
-package com.sovdee.shapes;
+package com.sovdee.shapes.shapes;
 
+import com.sovdee.shapes.DrawContext;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
 
@@ -13,6 +14,8 @@ import java.util.function.BiConsumer;
  * Shapes have a style, orientation, scale, and offset which affect point generation.
  */
 public interface Shape extends Cloneable {
+
+    double EPSILON = 0.0001;
 
     /**
      * Gets the points for the shape using the shape's own orientation.

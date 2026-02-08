@@ -1,6 +1,5 @@
-package com.sovdee.shapes;
+package com.sovdee.shapes.shapes;
 
-import com.sovdee.shapes.util.MathUtil;
 import org.joml.Vector3d;
 
 import java.util.Set;
@@ -24,8 +23,8 @@ public class Rectangle extends AbstractShape implements LWHShape {
     public Rectangle(double length, double width, Plane plane) {
         super();
         this.plane = plane;
-        this.halfLength = Math.max(length / 2, MathUtil.EPSILON);
-        this.halfWidth = Math.max(width / 2, MathUtil.EPSILON);
+        this.halfLength = Math.max(length / 2, Shape.EPSILON);
+        this.halfWidth = Math.max(width / 2, Shape.EPSILON);
         calculateSteps();
     }
 
@@ -131,7 +130,7 @@ public class Rectangle extends AbstractShape implements LWHShape {
 
     @Override
     public void setLength(double length) {
-        this.halfLength = Math.max(length / 2, MathUtil.EPSILON);
+        this.halfLength = Math.max(length / 2, Shape.EPSILON);
         this.setNeedsUpdate(true);
     }
 
@@ -140,7 +139,7 @@ public class Rectangle extends AbstractShape implements LWHShape {
 
     @Override
     public void setWidth(double width) {
-        this.halfWidth = Math.max(width / 2, MathUtil.EPSILON);
+        this.halfWidth = Math.max(width / 2, Shape.EPSILON);
         this.setNeedsUpdate(true);
     }
 

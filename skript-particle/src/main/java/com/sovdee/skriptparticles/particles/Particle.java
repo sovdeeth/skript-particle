@@ -1,8 +1,7 @@
 package com.sovdee.skriptparticles.particles;
 
-import com.sovdee.shapes.Shape;
+import com.sovdee.shapes.shapes.Shape;
 import com.sovdee.skriptparticles.shapes.DrawData;
-import com.sovdee.skriptparticles.util.VectorConversion;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;

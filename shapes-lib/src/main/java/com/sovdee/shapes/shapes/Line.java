@@ -1,8 +1,9 @@
-package com.sovdee.shapes;
+package com.sovdee.shapes.shapes;
 
-import com.sovdee.shapes.util.MathUtil;
 import org.joml.Vector3d;
 
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 
@@ -36,9 +37,40 @@ public class Line extends AbstractShape implements LWHShape {
         setDynamic(true);
     }
 
+    /**
+     * Calculates points along a line from start to end with the given particle density.
+     * Uses additive stepping for efficiency.
+     */
+    public static Set<Vector3d> calculateLine(Vector3d start, Vector3d end, double particleDensity) {
+        Set<Vector3d> points = new LinkedHashSet<>();
+        Vector3d direction = new Vector3d(end).sub(start);
+        double length = direction.length();
+        double step = length / Math.round(length / particleDensity);
+        direction.normalize().mul(step);
+
+        Vector3d current = new Vector3d(start);
+        int count = (int) (length / step);
+        for (int i = 0; i <= count; i++) {
+            points.add(new Vector3d(current));
+            current.add(direction);
+        }
+        return points;
+    }
+
+    /**
+     * Connects a list of points with lines, returning all intermediate points.
+     */
+    public static Set<Vector3d> connectPoints(List<Vector3d> points, double particleDensity) {
+        Set<Vector3d> connectedPoints = new LinkedHashSet<>();
+        for (int i = 0; i < points.size() - 1; i++) {
+            connectedPoints.addAll(calculateLine(points.get(i), points.get(i + 1), particleDensity));
+        }
+        return connectedPoints;
+    }
+
     @Override
     public void generateOutline(Set<Vector3d> points) {
-        points.addAll(MathUtil.calculateLine(getStart(), getEnd(), this.getParticleDensity()));
+        points.addAll(calculateLine(getStart(), getEnd(), this.getParticleDensity()));
     }
 
     public Vector3d getStart() {
@@ -93,7 +125,7 @@ public class Line extends AbstractShape implements LWHShape {
 
     @Override
     public void setLength(double length) {
-        length = Math.max(length, MathUtil.EPSILON);
+        length = Math.max(length, Shape.EPSILON);
         Vector3d start = getStart();
         Vector3d end = getEnd();
         Vector3d direction = new Vector3d(end).sub(start).normalize();

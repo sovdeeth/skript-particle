@@ -1,7 +1,5 @@
-package com.sovdee.shapes;
+package com.sovdee.shapes.shapes;
 
-import com.sovdee.shapes.util.MathUtil;
-import com.sovdee.shapes.util.VectorUtil;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
 
@@ -60,12 +58,24 @@ public class RegularPolyhedron extends AbstractShape implements RadialShape, Pol
             new Quaterniond(0.5, 0.3090169943749475, -0.6881909602355868, -0.42532540417602),
             new Quaterniond(0.3090169943749475, -0.5, -0.42532540417602, 0.6881909602355868)
     };
+    // Radius-to-side-length conversion factors for each polyhedron type
+    private static final double TETRA_R2SL = 0.6123724356957945;
+    private static final double OCTA_R2SL = 0.7071067811865;
+    private static final double DODECA_R2SL = 1.401258538;
+    private static final double ICOSA_R2SL = 0.9510565162951535;
+
+    // Side-length to inscribed-radius conversion factors
+    private static final double TETRA_INSC = 1.0 / 4.89897948556;
+    private static final double OCTA_INSC = 0.408248290;
+    private static final double DODECA_INSC = 1.113516364;
+    private static final double ICOSA_INSC = 0.7557613141;
+
     private double radius;
     private int faces;
 
     public RegularPolyhedron(double radius, int faces) {
         super();
-        this.radius = Math.max(radius, MathUtil.EPSILON);
+        this.radius = Math.max(radius, Shape.EPSILON);
         this.faces = switch (faces) {
             case 4, 8, 12, 20 -> faces;
             default -> 4;
@@ -110,17 +120,17 @@ public class RegularPolyhedron extends AbstractShape implements RadialShape, Pol
         Set<Vector3d> points = new LinkedHashSet<>();
         int sides = this.faces == 12 ? 5 : 3;
         double sideLength = switch (faces) {
-            case 4 -> radius / 0.6123724356957945;
-            case 8 -> radius / 0.7071067811865;
-            case 12 -> radius / 1.401258538;
-            case 20 -> radius / 0.9510565162951535;
+            case 4 -> radius / TETRA_R2SL;
+            case 8 -> radius / OCTA_R2SL;
+            case 12 -> radius / DODECA_R2SL;
+            case 20 -> radius / ICOSA_R2SL;
             default -> 0.0;
         };
         double inscribedRadius = switch (this.faces) {
-            case 4 -> sideLength / 4.89897948556;
-            case 8 -> sideLength * 0.408248290;
-            case 12 -> sideLength * 1.113516364;
-            case 20 -> sideLength * 0.7557613141;
+            case 4 -> sideLength * TETRA_INSC;
+            case 8 -> sideLength * OCTA_INSC;
+            case 12 -> sideLength * DODECA_INSC;
+            case 20 -> sideLength * ICOSA_INSC;
             default -> 1;
         };
         Vector3d offset = new Vector3d(0, inscribedRadius, 0);
@@ -138,7 +148,7 @@ public class RegularPolyhedron extends AbstractShape implements RadialShape, Pol
     }
 
     private Set<Vector3d> generateFaceOutline(int sides, double radius) {
-        return new LinkedHashSet<>(MathUtil.calculateRegularPolygon(radius, 2 * Math.PI / sides, this.getParticleDensity(), true));
+        return new LinkedHashSet<>(RegularPolygon.calculateRegularPolygon(radius, 2 * Math.PI / sides, this.getParticleDensity(), true));
     }
 
     private Set<Vector3d> generateFaceSurface(int sides, double radius) {
@@ -147,7 +157,7 @@ public class RegularPolyhedron extends AbstractShape implements RadialShape, Pol
         double apothem = radius * Math.cos(Math.PI / sides);
         double radiusStep = radius / Math.round(apothem / particleDensity);
         for (double subRadius = radius; subRadius > 0; subRadius -= radiusStep) {
-            facePoints.addAll(MathUtil.calculateRegularPolygon(subRadius, 2 * Math.PI / sides, particleDensity, false));
+            facePoints.addAll(RegularPolygon.calculateRegularPolygon(subRadius, 2 * Math.PI / sides, particleDensity, false));
         }
         facePoints.add(new Vector3d(0, 0, 0));
         return facePoints;
@@ -176,22 +186,22 @@ public class RegularPolyhedron extends AbstractShape implements RadialShape, Pol
     @Override
     public double getSideLength() {
         return switch (faces) {
-            case 4 -> radius / 0.6123724356957945;
-            case 8 -> radius / 0.7071067811865;
-            case 12 -> radius / 1.401258538;
-            case 20 -> radius / 0.9510565162951535;
+            case 4 -> radius / TETRA_R2SL;
+            case 8 -> radius / OCTA_R2SL;
+            case 12 -> radius / DODECA_R2SL;
+            case 20 -> radius / ICOSA_R2SL;
             default -> 0.0;
         };
     }
 
     @Override
     public void setSideLength(double sideLength) {
-        sideLength = Math.max(sideLength, MathUtil.EPSILON);
+        sideLength = Math.max(sideLength, Shape.EPSILON);
         switch (faces) {
-            case 4 -> this.radius = sideLength * 0.6123724356957945;
-            case 8 -> this.radius = sideLength * 0.7071067811865;
-            case 12 -> this.radius = sideLength * 1.401258538;
-            case 20 -> this.radius = sideLength * 0.9510565162951535;
+            case 4 -> this.radius = sideLength * TETRA_R2SL;
+            case 8 -> this.radius = sideLength * OCTA_R2SL;
+            case 12 -> this.radius = sideLength * DODECA_R2SL;
+            case 20 -> this.radius = sideLength * ICOSA_R2SL;
             default -> { return; }
         }
         this.setNeedsUpdate(true);
@@ -202,7 +212,7 @@ public class RegularPolyhedron extends AbstractShape implements RadialShape, Pol
 
     @Override
     public void setRadius(double radius) {
-        this.radius = Math.max(radius, MathUtil.EPSILON);
+        this.radius = Math.max(radius, Shape.EPSILON);
         this.setNeedsUpdate(true);
     }
 }
