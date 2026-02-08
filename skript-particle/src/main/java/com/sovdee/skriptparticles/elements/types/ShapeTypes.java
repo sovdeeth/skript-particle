@@ -5,6 +5,10 @@ import ch.njol.skript.classes.Parser;
 import ch.njol.skript.lang.ParseContext;
 import ch.njol.skript.registrations.Classes;
 import com.sovdee.shapes.sampling.SamplingStyle;
+import com.sovdee.shapes.shapes.CutoffShape;
+import com.sovdee.shapes.shapes.LWHShape;
+import com.sovdee.shapes.shapes.PolyShape;
+import com.sovdee.shapes.shapes.RadialShape;
 import com.sovdee.shapes.shapes.Shape;
 import org.jetbrains.annotations.Nullable;
 
@@ -38,6 +42,77 @@ public class ShapeTypes {
                     }
                 })
                 .cloner(Shape::clone)
+        );
+
+        // RadialShape
+        Classes.registerClass(new ClassInfo<>(RadialShape.class, "radialshape")
+                .user("radial ?shapes?")
+                .name("Radial Shape")
+                .description("Represents an abstract particle shape that has a radius. E.g. circle, sphere, etc.")
+                .parser(new Parser<>() {
+                    @Override
+                    public RadialShape parse(String input, ParseContext context) { return null; }
+                    @Override
+                    public boolean canParse(ParseContext context) { return false; }
+                    @Override
+                    public String toString(RadialShape o, int flags) { return o.toString(); }
+                    @Override
+                    public String toVariableNameString(RadialShape shape) { return "shape:" + shape.getPointSampler().getUUID(); }
+                })
+        );
+
+        // LWHShape
+        Classes.registerClass(new ClassInfo<>(LWHShape.class, "lwhshape")
+                .user("lwh ?shapes?")
+                .name("Length/Width/Height Shape")
+                .description("Represents an abstract particle shape that has a length, width, and/or height. E.g. cube, cylinder, ellipse, etc.")
+                .parser(new Parser<>() {
+                    @Override
+                    public LWHShape parse(String input, ParseContext context) { return null; }
+                    @Override
+                    public boolean canParse(ParseContext context) { return false; }
+                    @Override
+                    public String toString(LWHShape o, int flags) { return o.toString(); }
+                    @Override
+                    public String toVariableNameString(LWHShape shape) { return "shape:" + shape.getPointSampler().getUUID(); }
+                })
+        );
+
+        // CutoffShape
+        Classes.registerClass(new ClassInfo<>(CutoffShape.class, "cutoffshape")
+                .user("cutoff ?shapes?")
+                .name("Cutoff Shape")
+                .description("Represents an abstract particle shape that has a cutoff angle. E.g. arc, spherical cap, etc.")
+                .parser(new Parser<>() {
+                    @Override
+                    public CutoffShape parse(String input, ParseContext context) { return null; }
+                    @Override
+                    public boolean canParse(ParseContext context) { return false; }
+                    @Override
+                    public String toString(CutoffShape o, int flags) { return o.toString(); }
+                    @Override
+                    public String toVariableNameString(CutoffShape shape) { return "shape:" + shape.getPointSampler().getUUID(); }
+                })
+        );
+
+        // PolyShape
+        Classes.registerClass(new ClassInfo<>(PolyShape.class, "polyshape")
+                .user("poly ?shapes?")
+                .name("Polygonal/Polyhedral Shape")
+                .description(
+                        "Represents an abstract particle shape that is a polygon or polyhedron, with a side length and side count.\n" +
+                                "Irregular shapes are included in this category, but do not support changing either side count or side length."
+                )
+                .parser(new Parser<>() {
+                    @Override
+                    public PolyShape parse(String input, ParseContext context) { return null; }
+                    @Override
+                    public boolean canParse(ParseContext context) { return false; }
+                    @Override
+                    public String toString(PolyShape o, int flags) { return o.toString(); }
+                    @Override
+                    public String toVariableNameString(PolyShape shape) { return "shape:" + shape.getPointSampler().getUUID(); }
+                })
         );
 
         // Style — use standalone SamplingStyle enum

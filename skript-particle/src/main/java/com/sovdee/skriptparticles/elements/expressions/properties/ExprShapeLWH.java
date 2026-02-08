@@ -10,7 +10,6 @@ import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser;
 import ch.njol.util.Kleenean;
 import com.sovdee.shapes.shapes.LWHShape;
-import com.sovdee.shapes.shapes.Shape;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,10 +26,10 @@ import org.jetbrains.annotations.Nullable;
         "add 6 to {_shape}'s shape height"
 })
 @Since("1.0.0")
-public class ExprShapeLWH extends SimplePropertyExpression<Shape, Number> {
+public class ExprShapeLWH extends SimplePropertyExpression<LWHShape, Number> {
 
     static {
-        register(ExprShapeLWH.class, Number.class, "shape (:length|:width|:height)", "shapes");
+        register(ExprShapeLWH.class, Number.class, "shape (:length|:width|:height)", "lwhshapes");
     }
 
     private int lwh;
@@ -43,13 +42,11 @@ public class ExprShapeLWH extends SimplePropertyExpression<Shape, Number> {
 
     @Override
     @Nullable
-    public Number convert(Shape shape) {
-        if (!(shape instanceof LWHShape lwhShape))
-            return null;
+    public Number convert(LWHShape shape) {
         return switch (lwh) {
-            case 0 -> lwhShape.getLength();
-            case 1 -> lwhShape.getWidth();
-            case 2 -> lwhShape.getHeight();
+            case 0 -> shape.getLength();
+            case 1 -> shape.getWidth();
+            case 2 -> shape.getHeight();
             default -> null;
         };
     }
@@ -73,26 +70,22 @@ public class ExprShapeLWH extends SimplePropertyExpression<Shape, Number> {
             case REMOVE:
                 value = -value;
             case ADD:
-                for (Shape shape : getExpr().getArray(event)) {
-                    if (shape instanceof LWHShape lwhShape) {
-                        switch (lwh) {
-                            case 0 -> lwhShape.setLength(lwhShape.getLength() + value);
-                            case 1 -> lwhShape.setWidth(lwhShape.getWidth() + value);
-                            case 2 -> lwhShape.setHeight(lwhShape.getHeight() + value);
-                        }
+                for (LWHShape shape : getExpr().getArray(event)) {
+                    switch (lwh) {
+                        case 0 -> shape.setLength(shape.getLength() + value);
+                        case 1 -> shape.setWidth(shape.getWidth() + value);
+                        case 2 -> shape.setHeight(shape.getHeight() + value);
                     }
                 }
                 break;
             case DELETE:
             case RESET:
             case SET:
-                for (Shape shape : getExpr().getArray(event)) {
-                    if (shape instanceof LWHShape lwhShape) {
-                        switch (lwh) {
-                            case 0 -> lwhShape.setLength(value);
-                            case 1 -> lwhShape.setWidth(value);
-                            case 2 -> lwhShape.setHeight(value);
-                        }
+                for (LWHShape shape : getExpr().getArray(event)) {
+                    switch (lwh) {
+                        case 0 -> shape.setLength(value);
+                        case 1 -> shape.setWidth(value);
+                        case 2 -> shape.setHeight(value);
                     }
                 }
                 break;

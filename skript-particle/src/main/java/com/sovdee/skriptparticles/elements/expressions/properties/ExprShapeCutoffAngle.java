@@ -7,7 +7,6 @@ import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.expressions.base.SimplePropertyExpression;
 import com.sovdee.shapes.shapes.CutoffShape;
-import com.sovdee.shapes.shapes.Shape;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
 
@@ -23,17 +22,15 @@ import org.jetbrains.annotations.Nullable;
         "reset {_shape}'s cutoff angle"
 })
 @Since("1.0.0")
-public class ExprShapeCutoffAngle extends SimplePropertyExpression<Shape, Number> {
+public class ExprShapeCutoffAngle extends SimplePropertyExpression<CutoffShape, Number> {
 
     static {
-        register(ExprShapeCutoffAngle.class, Number.class, "cutoff angle", "shapes");
+        register(ExprShapeCutoffAngle.class, Number.class, "cutoff angle", "cutoffshapes");
     }
 
     @Override
-    public @Nullable Number convert(Shape shape) {
-        if (shape instanceof CutoffShape cs)
-            return cs.getCutoffAngle();
-        return null;
+    public @Nullable Number convert(CutoffShape shape) {
+        return shape.getCutoffAngle();
     }
 
     @Override
@@ -55,17 +52,15 @@ public class ExprShapeCutoffAngle extends SimplePropertyExpression<Shape, Number
             case REMOVE:
                 angle = -angle;
             case ADD:
-                for (Shape shape : getExpr().getArray(event)) {
-                    if (shape instanceof CutoffShape cs)
-                        cs.setCutoffAngle(cs.getCutoffAngle() + angle);
+                for (CutoffShape shape : getExpr().getArray(event)) {
+                    shape.setCutoffAngle(shape.getCutoffAngle() + angle);
                 }
                 break;
             case DELETE:
             case RESET:
             case SET:
-                for (Shape shape : getExpr().getArray(event)) {
-                    if (shape instanceof CutoffShape cs)
-                        cs.setCutoffAngle(angle);
+                for (CutoffShape shape : getExpr().getArray(event)) {
+                    shape.setCutoffAngle(angle);
                 }
                 break;
             case REMOVE_ALL:

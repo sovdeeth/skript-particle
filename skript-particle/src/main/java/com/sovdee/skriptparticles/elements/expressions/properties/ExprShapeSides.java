@@ -7,7 +7,6 @@ import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.expressions.base.SimplePropertyExpression;
 import com.sovdee.shapes.shapes.PolyShape;
-import com.sovdee.shapes.shapes.Shape;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,18 +23,16 @@ import org.jetbrains.annotations.Nullable;
         "send sides of {_shape}"
 })
 @Since("1.0.0")
-public class ExprShapeSides extends SimplePropertyExpression<Shape, Integer> {
+public class ExprShapeSides extends SimplePropertyExpression<PolyShape, Integer> {
 
     static {
-        register(ExprShapeSides.class, Integer.class, "side(s| count)", "shapes");
+        register(ExprShapeSides.class, Integer.class, "side(s| count)", "polyshapes");
     }
 
     @Override
     @Nullable
-    public Integer convert(Shape shape) {
-        if (shape instanceof PolyShape ps)
-            return ps.getSides();
-        return null;
+    public Integer convert(PolyShape shape) {
+        return shape.getSides();
     }
 
     @Override
@@ -55,18 +52,16 @@ public class ExprShapeSides extends SimplePropertyExpression<Shape, Integer> {
             case REMOVE:
                 change = -change;
             case ADD:
-                for (Shape shape : getExpr().getArray(event)) {
-                    if (shape instanceof PolyShape ps)
-                        ps.setSides(Math.max(3, ps.getSides() + change));
+                for (PolyShape shape : getExpr().getArray(event)) {
+                    shape.setSides(Math.max(3, shape.getSides() + change));
                 }
                 break;
             case RESET:
             case DELETE:
             case SET:
                 change = Math.max(3, change);
-                for (Shape shape : getExpr().getArray(event)) {
-                    if (shape instanceof PolyShape ps)
-                        ps.setSides(change);
+                for (PolyShape shape : getExpr().getArray(event)) {
+                    shape.setSides(change);
                 }
                 break;
             case REMOVE_ALL:

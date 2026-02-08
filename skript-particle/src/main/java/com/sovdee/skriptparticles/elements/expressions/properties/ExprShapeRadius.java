@@ -8,7 +8,6 @@ import ch.njol.skript.doc.Since;
 import ch.njol.skript.expressions.base.PropertyExpression;
 import ch.njol.skript.expressions.base.SimplePropertyExpression;
 import com.sovdee.shapes.shapes.RadialShape;
-import com.sovdee.shapes.shapes.Shape;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,18 +23,16 @@ import org.jetbrains.annotations.Nullable;
         "reset {_shape}'s radius"
 })
 @Since("1.0.0")
-public class ExprShapeRadius extends SimplePropertyExpression<Shape, Number> {
+public class ExprShapeRadius extends SimplePropertyExpression<RadialShape, Number> {
 
     static {
-        PropertyExpression.register(ExprShapeRadius.class, Number.class, "radius", "shapes");
+        PropertyExpression.register(ExprShapeRadius.class, Number.class, "radius", "radialshapes");
     }
 
     @Override
     @Nullable
-    public Number convert(Shape shape) {
-        if (shape instanceof RadialShape rs)
-            return rs.getRadius();
-        return null;
+    public Number convert(RadialShape shape) {
+        return shape.getRadius();
     }
 
     @Override
@@ -49,7 +46,7 @@ public class ExprShapeRadius extends SimplePropertyExpression<Shape, Number> {
 
     @Override
     public void change(Event event, Object @Nullable [] delta, ChangeMode mode) {
-        Shape[] shapes = getExpr().getArray(event);
+        RadialShape[] shapes = getExpr().getArray(event);
         if (shapes.length == 0)
             return;
 
@@ -58,18 +55,16 @@ public class ExprShapeRadius extends SimplePropertyExpression<Shape, Number> {
             case REMOVE:
                 deltaValue = -deltaValue;
             case ADD:
-                for (Shape shape : shapes) {
-                    if (shape instanceof RadialShape rs)
-                        rs.setRadius(Math.max(0.001, rs.getRadius() + deltaValue));
+                for (RadialShape shape : shapes) {
+                    shape.setRadius(Math.max(0.001, shape.getRadius() + deltaValue));
                 }
                 break;
             case RESET:
             case DELETE:
             case SET:
                 deltaValue = Math.max(0.001, deltaValue);
-                for (Shape shape : shapes) {
-                    if (shape instanceof RadialShape rs)
-                        rs.setRadius(deltaValue);
+                for (RadialShape shape : shapes) {
+                    shape.setRadius(deltaValue);
                 }
                 break;
             case REMOVE_ALL:

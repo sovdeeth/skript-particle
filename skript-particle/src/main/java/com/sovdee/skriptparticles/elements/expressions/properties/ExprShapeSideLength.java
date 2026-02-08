@@ -7,7 +7,6 @@ import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.expressions.base.SimplePropertyExpression;
 import com.sovdee.shapes.shapes.PolyShape;
-import com.sovdee.shapes.shapes.Shape;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,18 +23,16 @@ import org.jetbrains.annotations.Nullable;
         "send side length of {_shape}"
 })
 @Since("1.0.0")
-public class ExprShapeSideLength extends SimplePropertyExpression<Shape, Number> {
+public class ExprShapeSideLength extends SimplePropertyExpression<PolyShape, Number> {
 
     static {
-        register(ExprShapeSideLength.class, Number.class, "side length", "shapes");
+        register(ExprShapeSideLength.class, Number.class, "side length", "polyshapes");
     }
 
     @Override
     @Nullable
-    public Number convert(Shape shape) {
-        if (shape instanceof PolyShape ps)
-            return ps.getSideLength();
-        return null;
+    public Number convert(PolyShape shape) {
+        return shape.getSideLength();
     }
 
     @Override
@@ -55,18 +52,16 @@ public class ExprShapeSideLength extends SimplePropertyExpression<Shape, Number>
             case REMOVE:
                 change = -change;
             case ADD:
-                for (Shape shape : getExpr().getArray(event)) {
-                    if (shape instanceof PolyShape ps)
-                        ps.setSideLength(Math.max(0.001, ps.getSideLength() + change));
+                for (PolyShape shape : getExpr().getArray(event)) {
+                    shape.setSideLength(Math.max(0.001, shape.getSideLength() + change));
                 }
                 break;
             case RESET:
             case DELETE:
             case SET:
                 change = Math.max(0.001, change);
-                for (Shape shape : getExpr().getArray(event)) {
-                    if (shape instanceof PolyShape ps)
-                        ps.setSideLength(change);
+                for (PolyShape shape : getExpr().getArray(event)) {
+                    shape.setSideLength(change);
                 }
                 break;
             case REMOVE_ALL:
