@@ -1,7 +1,7 @@
 # skript-particle
  Skript addon for creating complex particle effects with minimal hassle.
  
- **Requires Skript 2.10+, Java 17, Paper 1.19.4+**
+ **Requires Skript 2.14+, Java 21, Paper 1.21.1+**
  
  Download at the [releases page.](https://github.com/sovdeeth/skript-particle/releases) 
 
