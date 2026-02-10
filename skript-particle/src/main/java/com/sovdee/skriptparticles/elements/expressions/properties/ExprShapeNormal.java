@@ -1,0 +1,84 @@
+package com.sovdee.skriptparticles.elements.expressions.properties;
+
+import ch.njol.skript.classes.Changer.ChangeMode;
+import ch.njol.skript.doc.Description;
+import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Name;
+import ch.njol.skript.doc.Since;
+import ch.njol.skript.expressions.base.PropertyExpression;
+import ch.njol.skript.expressions.base.SimplePropertyExpression;
+import com.sovdee.shapes.shapes.Shape;
+import com.sovdee.skriptparticles.util.Quaternion;
+import com.sovdee.skriptparticles.util.VectorConversion;
+import org.joml.Quaterniond;
+import org.bukkit.event.Event;
+import org.bukkit.util.Vector;
+import org.jetbrains.annotations.Nullable;
+
+@Name("Normal Vector of Shape")
+@Description({
+        "Returns the normal vector of a shape. This, by default, is the vector (0, 1, 0) which points directly up." +
+                "If the shape is rotated, this will be the vector that is pointing up after the rotation. Treat it as what the shape thinks is \"up\".",
+        "Changing this will rotate the shape accordingly. Resetting or deleting it will set it back to the default orientation.",
+})
+@Examples({
+        "set {_shape}'s normal vector to vector(1, 0, 0)",
+        "set {_v} to {_shape}'s normal",
+        "reset {_shape}'s normal vector"
+})
+@Since("1.0.0")
+public class ExprShapeNormal extends SimplePropertyExpression<Shape, Vector> {
+
+    static {
+        PropertyExpression.register(ExprShapeNormal.class, Vector.class, "normal [vector]", "shapes");
+    }
+
+    @Override
+    public Vector convert(Shape shape) {
+        return VectorConversion.toBukkit(shape.getRelativeYAxis());
+    }
+
+    @Override
+    @Nullable
+    public Class<?>[] acceptChange(ChangeMode mode) {
+        return switch (mode) {
+            case SET, RESET, DELETE -> new Class[]{Vector.class};
+            case ADD, REMOVE, REMOVE_ALL -> new Class[0];
+        };
+    }
+
+    @Override
+    public void change(Event event, Object @Nullable [] delta, ChangeMode mode) {
+        switch (mode) {
+            case SET:
+                if (delta == null || delta.length == 0) return;
+                Quaternion q = new Quaternion().rotationTo((Vector) delta[0]);
+                for (Shape shape : getExpr().getArray(event)) {
+                    shape.setOrientation(new Quaterniond(q.x, q.y, q.z, q.w));
+                }
+                break;
+            case RESET:
+            case DELETE:
+                for (Shape shape : getExpr().getArray(event)) {
+                    shape.setOrientation(new Quaterniond());
+                }
+                break;
+            case ADD:
+            case REMOVE:
+            case REMOVE_ALL:
+            default:
+                assert false;
+        }
+    }
+
+    @Override
+    public Class<? extends Vector> getReturnType() {
+        return Vector.class;
+    }
+
+    @Override
+    protected String getPropertyName() {
+        return "normal vector or relative y-axis";
+    }
+
+}

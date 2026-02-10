@@ -1,0 +1,64 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
+plugins {
+    id 'java'
+    id 'com.gradleup.shadow' version '8.3.5'
+}
+
+group 'com.sovdee'
+
+configurations.configureEach {
+    resolutionStrategy.cacheChangingModulesFor 1, 'minutes'
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        url 'https://repo.papermc.io/repository/maven-public/'
+    }
+    maven {
+        url 'https://repo.skriptlang.org/releases'
+    }
+}
+
+dependencies {
+    implementation project(':shapes-lib')
+    compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
+    compileOnly("com.github.SkriptLang:Skript:2.14.0-pre1")
+    compileOnly "org.joml:joml:${jomlVersion}"
+}
+
+processResources {
+    filter ReplaceTokens, tokens: ["version": project.property("version")]
+}
+
+javadoc {
+    source = sourceSets.main.allJava
+    classpath = configurations.compileClasspath
+    options.encoding = 'UTF-8'
+}
+
+java {
+    toolchain.languageVersion.set(JavaLanguageVersion.of(21))
+}
+
+shadowJar {
+    archiveClassifier.set('')
+    configurations = [project.configurations.runtimeClasspath]
+    exclude 'org/joml/**'
+    exclude 'META-INF/maven/org.joml/**'
+}
+
+tasks.named('jar') {
+    enabled = false
+}
+
+tasks.named('build') {
+    dependsOn shadowJar
+}
+
+tasks.register('copyJar', Copy) {
+    dependsOn shadowJar
+    from shadowJar.archiveFile
+    into "e:/PaperServer/plugins"
+}
