@@ -5,9 +5,8 @@ import com.sovdee.shapes.util.VectorUtil;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
 
-import java.util.LinkedHashSet;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public class Ellipsoid extends AbstractShape implements LWHShape {
 
@@ -25,51 +24,65 @@ public class Ellipsoid extends AbstractShape implements LWHShape {
     }
 
     @Override
-    public void generateOutline(Set<Vector3d> points, double density) {
-        points.addAll(Ellipse.calculateEllipse(xRadius, zRadius, density, 2 * Math.PI));
-        points.addAll(VectorUtil.transform(XY_ROTATION, Ellipse.calculateEllipse(xRadius, yRadius, density, 2 * Math.PI)));
-        points.addAll(VectorUtil.transform(ZY_ROTATION, Ellipse.calculateEllipse(yRadius, zRadius, density, 2 * Math.PI)));
+    public void generateOutline(List<Vector3d> points, double density) {
+        Ellipse.calculateEllipse(points, xRadius, zRadius, density, 2 * Math.PI);
+        int start = points.size();
+        Ellipse.calculateEllipse(points, xRadius, yRadius, density, 2 * Math.PI);
+        VectorUtil.transform(XY_ROTATION, points, start);
+        start = points.size();
+        Ellipse.calculateEllipse(points, yRadius, zRadius, density, 2 * Math.PI);
+        VectorUtil.transform(ZY_ROTATION, points, start);
     }
 
     @Override
-    public void generateSurface(Set<Vector3d> points, double density) {
-        List<Vector3d> ellipse;
+    public void generateSurface(List<Vector3d> points, double density) {
+        List<Vector3d> ellipse = new ArrayList<>();
         if (xRadius > zRadius) {
-            ellipse = VectorUtil.transform(XY_ROTATION, Ellipse.calculateEllipse(xRadius, yRadius, density, 2 * Math.PI));
+            Ellipse.calculateEllipse(ellipse, xRadius, yRadius, density, 2 * Math.PI);
+            VectorUtil.transform(XY_ROTATION, ellipse);
         } else {
-            ellipse = VectorUtil.transform(ZY_ROTATION, Ellipse.calculateEllipse(yRadius, zRadius, density, 2 * Math.PI));
+            Ellipse.calculateEllipse(ellipse, yRadius, zRadius, density, 2 * Math.PI);
+            VectorUtil.transform(ZY_ROTATION, ellipse);
         }
-        points.addAll(generateEllipsoid(ellipse, 1, density));
+        generateEllipsoid(points, ellipse, 1, density);
     }
 
     @Override
-    public void generateFilled(Set<Vector3d> points, double density) {
-        List<Vector3d> ellipse;
+    public void generateFilled(List<Vector3d> points, double density) {
         double radius = Math.max(xRadius, zRadius);
         int steps = (int) Math.round(radius / density);
+        List<Vector3d> ellipse = new ArrayList<>();
         for (int i = steps; i > 0; i--) {
             double r = (i / (double) steps);
+            ellipse.clear();
             if (xRadius > zRadius) {
-                ellipse = VectorUtil.transform(XY_ROTATION, Ellipse.calculateEllipse(xRadius * r, yRadius * r, density, 2 * Math.PI));
+                Ellipse.calculateEllipse(ellipse, xRadius * r, yRadius * r, density, 2 * Math.PI);
+                VectorUtil.transform(XY_ROTATION, ellipse);
             } else {
-                ellipse = VectorUtil.transform(ZY_ROTATION, Ellipse.calculateEllipse(yRadius * r, zRadius * r, density, 2 * Math.PI));
+                Ellipse.calculateEllipse(ellipse, yRadius * r, zRadius * r, density, 2 * Math.PI);
+                VectorUtil.transform(ZY_ROTATION, ellipse);
             }
-            points.addAll(generateEllipsoid(ellipse, r, density));
+            generateEllipsoid(points, ellipse, r, density);
         }
     }
 
-    private Set<Vector3d> generateEllipsoid(List<Vector3d> ellipse, double radius, double density) {
-        Set<Vector3d> points = new LinkedHashSet<>();
+    private void generateEllipsoid(List<Vector3d> points, List<Vector3d> ellipse, double radius, double density) {
         for (int i = 0; i < Math.ceil(ellipse.size() / 4.0); i++) {
             double y = ellipse.get(i).y;
             double theta = Math.asin(y / (yRadius * radius));
-            for (Vector3d v2 : Ellipse.calculateEllipse(radius * xRadius * Math.cos(theta), radius * zRadius * Math.cos(theta), density, 2 * Math.PI)) {
-                points.add(new Vector3d(v2.x, y, v2.z));
-                points.add(new Vector3d(v2.x, -y, v2.z));
+            // Add ring points, setting y in-place and adding mirrored copies
+            int ringStart = points.size();
+            Ellipse.calculateEllipse(points, radius * xRadius * Math.cos(theta), radius * zRadius * Math.cos(theta), density, 2 * Math.PI);
+            int ringEnd = points.size();
+            for (int j = ringStart; j < ringEnd; j++) {
+                Vector3d v = points.get(j);
+                v.y = y;
+                if (Math.abs(y) > EPSILON) {
+                    points.add(new Vector3d(v.x, -y, v.z));
+                }
             }
         }
-        points.addAll(Ellipse.calculateEllipse(radius * xRadius, radius * zRadius, density, 2 * Math.PI));
-        return points;
+        Ellipse.calculateEllipse(points, radius * xRadius, radius * zRadius, density, 2 * Math.PI);
     }
 
     @Override

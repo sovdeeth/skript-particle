@@ -10,6 +10,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 /**
  * Plugin-side rendering metadata attached to library shapes via {@link DrawContext}.
  * Holds particle, location, animation, and debug axis state.
+ * Render modifiers live on the shape's {@link com.sovdee.shapes.sampling.PointSampler}.
  */
 public class DrawData implements DrawContext {
 
@@ -20,9 +21,11 @@ public class DrawData implements DrawContext {
     private long animationDuration = 0;
     private boolean drawLocalAxes = false;
     private boolean drawGlobalAxes = false;
+    /** Set to true after a large-point-count warning has been emitted for this shape. */
+    private boolean largeSizeWarned = false;
 
     public DrawData() {
-        this.particle = (Particle) new Particle(org.bukkit.Particle.FLAME).extra(0);
+        this.particle = new Particle(org.bukkit.Particle.FLAME).extra(0);
         this.lastOrientation = Quaternion.IDENTITY.clone();
     }
 
@@ -81,6 +84,12 @@ public class DrawData implements DrawContext {
     public boolean showGlobalAxes() { return drawGlobalAxes; }
 
     public void showGlobalAxes(boolean show) { this.drawGlobalAxes = show; }
+
+    // ---- Warning flag ----
+
+    public boolean isLargeSizeWarned() { return largeSizeWarned; }
+
+    public void setLargeSizeWarned(boolean warned) { this.largeSizeWarned = warned; }
 
     // ---- DrawContext ----
 

@@ -4,9 +4,7 @@ import com.sovdee.shapes.sampling.SamplingStyle;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
 
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.List;
 
 public class RegularPolyhedron extends AbstractShape implements RadialShape, PolyShape {
 
@@ -82,44 +80,40 @@ public class RegularPolyhedron extends AbstractShape implements RadialShape, Pol
     }
 
     @Override
-    public void generateOutline(Set<Vector3d> points, double density) {
-        points.addAll(switch (faces) {
-            case 4 -> generatePolyhedron(TETRAHEDRON_FACES, radius, density, SamplingStyle.OUTLINE);
-            case 8 -> generatePolyhedron(OCTAHEDRON_FACES, radius, density, SamplingStyle.OUTLINE);
-            case 20 -> generatePolyhedron(ICOSAHEDRON_FACES, radius, density, SamplingStyle.OUTLINE);
-            case 12 -> generatePolyhedron(DODECAHEDRON_FACES, radius, density, SamplingStyle.OUTLINE);
-            default -> new HashSet<>();
-        });
+    public void generateOutline(List<Vector3d> points, double density) {
+        Quaterniond[] rotations = getFaceRotations();
+        if (rotations != null)
+            generatePolyhedron(points, rotations, radius, density, SamplingStyle.OUTLINE);
     }
 
     @Override
-    public void generateSurface(Set<Vector3d> points, double density) {
-        points.addAll(switch (faces) {
-            case 4 -> generatePolyhedron(TETRAHEDRON_FACES, radius, density, SamplingStyle.SURFACE);
-            case 8 -> generatePolyhedron(OCTAHEDRON_FACES, radius, density, SamplingStyle.SURFACE);
-            case 20 -> generatePolyhedron(ICOSAHEDRON_FACES, radius, density, SamplingStyle.SURFACE);
-            case 12 -> generatePolyhedron(DODECAHEDRON_FACES, radius, density, SamplingStyle.SURFACE);
-            default -> new HashSet<>();
-        });
+    public void generateSurface(List<Vector3d> points, double density) {
+        Quaterniond[] rotations = getFaceRotations();
+        if (rotations != null)
+            generatePolyhedron(points, rotations, radius, density, SamplingStyle.SURFACE);
     }
 
     @Override
-    public void generateFilled(Set<Vector3d> points, double density) {
+    public void generateFilled(List<Vector3d> points, double density) {
         double step = radius / Math.round(radius / density);
-        Quaterniond[] rotations = switch (faces) {
+        Quaterniond[] rotations = getFaceRotations();
+        if (rotations == null) return;
+        for (double i = radius; i > 0; i -= step) {
+            generatePolyhedron(points, rotations, i, density, SamplingStyle.SURFACE);
+        }
+    }
+
+    private Quaterniond[] getFaceRotations() {
+        return switch (faces) {
             case 4 -> TETRAHEDRON_FACES;
             case 8 -> OCTAHEDRON_FACES;
             case 12 -> DODECAHEDRON_FACES;
             case 20 -> ICOSAHEDRON_FACES;
-            default -> new Quaterniond[0];
+            default -> null;
         };
-        for (double i = radius; i > 0; i -= step) {
-            points.addAll(generatePolyhedron(rotations, i, density, SamplingStyle.SURFACE));
-        }
     }
 
-    private Set<Vector3d> generatePolyhedron(Quaterniond[] rotations, double radius, double density, SamplingStyle style) {
-        Set<Vector3d> points = new LinkedHashSet<>();
+    private void generatePolyhedron(List<Vector3d> points, Quaterniond[] rotations, double radius, double density, SamplingStyle style) {
         int sides = this.faces == 12 ? 5 : 3;
         double sideLength = switch (faces) {
             case 4 -> radius / TETRA_R2SL;
@@ -138,29 +132,24 @@ public class RegularPolyhedron extends AbstractShape implements RadialShape, Pol
         Vector3d offset = new Vector3d(0, inscribedRadius, 0);
         double faceRadius = sideLength / (2 * Math.sin(Math.PI / sides));
         for (Quaterniond rotation : rotations) {
-            Set<Vector3d> facePoints = new LinkedHashSet<>(switch (style) {
-                case OUTLINE -> generateFaceOutline(sides, faceRadius, density);
-                case FILL, SURFACE -> generateFaceSurface(sides, faceRadius, density);
-            });
-            facePoints.forEach(point -> rotation.transform(point.add(offset)));
-            points.addAll(facePoints);
+            int faceStart = points.size();
+            switch (style) {
+                case OUTLINE -> RegularPolygon.calculateRegularPolygon(points, faceRadius, 2 * Math.PI / sides, density, true);
+                case FILL, SURFACE -> generateFaceSurface(points, sides, faceRadius, density);
+            }
+            for (int i = faceStart; i < points.size(); i++) {
+                rotation.transform(points.get(i).add(offset));
+            }
         }
-        return points;
     }
 
-    private Set<Vector3d> generateFaceOutline(int sides, double radius, double density) {
-        return new LinkedHashSet<>(RegularPolygon.calculateRegularPolygon(radius, 2 * Math.PI / sides, density, true));
-    }
-
-    private Set<Vector3d> generateFaceSurface(int sides, double radius, double density) {
-        Set<Vector3d> facePoints = new LinkedHashSet<>();
+    private void generateFaceSurface(List<Vector3d> points, int sides, double radius, double density) {
         double apothem = radius * Math.cos(Math.PI / sides);
         double radiusStep = radius / Math.round(apothem / density);
         for (double subRadius = radius; subRadius > 0; subRadius -= radiusStep) {
-            facePoints.addAll(RegularPolygon.calculateRegularPolygon(subRadius, 2 * Math.PI / sides, density, false));
+            RegularPolygon.calculateRegularPolygon(points, subRadius, 2 * Math.PI / sides, density, false);
         }
-        facePoints.add(new Vector3d(0, 0, 0));
-        return facePoints;
+        points.add(new Vector3d(0, 0, 0));
     }
 
     @Override

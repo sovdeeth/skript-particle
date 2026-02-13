@@ -5,7 +5,6 @@ import org.joml.Vector3d;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Supplier;
 
 /**
@@ -21,7 +20,7 @@ public class BezierCurve extends AbstractShape {
         super();
         if (controlPoints.size() < 2)
             throw new IllegalArgumentException("A bezier curve must have at least 2 control points.");
-        this.controlPoints = new ArrayList<>();
+        this.controlPoints = new ArrayList<>(controlPoints.size());
         for (Vector3d cp : controlPoints)
             this.controlPoints.add(new Vector3d(cp));
     }
@@ -32,26 +31,22 @@ public class BezierCurve extends AbstractShape {
         List<Vector3d> pts = controlPointsSupplier.get();
         if (pts.size() < 2)
             throw new IllegalArgumentException("A bezier curve must have at least 2 control points.");
-        this.controlPoints = new ArrayList<>();
-        for (Vector3d cp : pts)
-            this.controlPoints.add(new Vector3d(cp));
+        this.controlPoints = new ArrayList<>(pts);
         setDynamic(true);
     }
 
     public BezierCurve(BezierCurve curve) {
         super();
-        this.controlPoints = new ArrayList<>();
+        this.controlPoints = new ArrayList<>(curve.controlPoints.size());
         for (Vector3d cp : curve.controlPoints)
             this.controlPoints.add(new Vector3d(cp));
     }
 
     @Override
-    public void generateOutline(Set<Vector3d> points, double density) {
+    public void generateOutline(List<Vector3d> points, double density) {
         if (controlPointsSupplier != null) {
             List<Vector3d> pts = controlPointsSupplier.get();
-            this.controlPoints = new ArrayList<>();
-            for (Vector3d cp : pts)
-                this.controlPoints.add(new Vector3d(cp));
+            this.controlPoints = new ArrayList<>(pts);
         }
         int steps = (int) (estimateLength() / density);
         int n = controlPoints.size();
@@ -115,7 +110,7 @@ public class BezierCurve extends AbstractShape {
     }
 
     public void setControlPoints(List<Vector3d> controlPoints) {
-        this.controlPoints = new ArrayList<>();
+        this.controlPoints = new ArrayList<>(controlPoints.size());
         for (Vector3d cp : controlPoints)
             this.controlPoints.add(new Vector3d(cp));
         invalidate();

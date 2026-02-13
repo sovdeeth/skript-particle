@@ -3,8 +3,8 @@ package com.sovdee.shapes.shapes;
 import com.sovdee.shapes.sampling.SamplingStyle;
 import org.joml.Vector3d;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Sphere extends AbstractShape implements RadialShape {
 
@@ -33,12 +33,11 @@ public class Sphere extends AbstractShape implements RadialShape {
 
     // --- Static calculation methods ---
 
-    private static Set<Vector3d> calculateFibonacciSphere(int pointCount, double radius) {
-        return calculateFibonacciSphere(pointCount, radius, Math.PI);
+    private static void calculateFibonacciSphere(List<Vector3d> points, int pointCount, double radius) {
+        calculateFibonacciSphere(points, pointCount, radius, Math.PI);
     }
 
-    private static Set<Vector3d> calculateFibonacciSphere(int pointCount, double radius, double angleCutoff) {
-        Set<Vector3d> points = new LinkedHashSet<>();
+    private static void calculateFibonacciSphere(List<Vector3d> points, int pointCount, double radius, double angleCutoff) {
         double y = 1;
         if (angleCutoff > Math.PI) angleCutoff = Math.PI;
         double yLimit = Math.cos(angleCutoff);
@@ -50,7 +49,7 @@ public class Sphere extends AbstractShape implements RadialShape {
             points.add(new Vector3d(r * SPHERE_THETA_COS[i], y * radius, r * SPHERE_THETA_SIN[i]));
             y -= yStep;
             if (y <= yLimit) {
-                return points;
+                return;
             }
         }
         if (pointCount > preCompPoints) {
@@ -60,34 +59,37 @@ public class Sphere extends AbstractShape implements RadialShape {
                 points.add(new Vector3d(r * Math.cos(theta), y * radius, r * Math.sin(theta)));
                 y -= yStep;
                 if (y <= yLimit) {
-                    return points;
+                    return;
                 }
             }
         }
-        return points;
     }
 
     // --- Generation methods ---
 
     @Override
-    public void generateOutline(Set<Vector3d> points, double density) {
+    public void generateOutline(List<Vector3d> points, double density) {
         this.generateSurface(points, density);
     }
 
     @Override
-    public void generateSurface(Set<Vector3d> points, double density) {
+    public void generateSurface(List<Vector3d> points, double density) {
         int pointCount = 4 * (int) (Math.PI * radius * radius / (density * density));
-        points.addAll(calculateFibonacciSphere(pointCount, radius, cutoffAngle));
+        if (points instanceof ArrayList<?> arrayList)
+            arrayList.ensureCapacity(points.size() + pointCount);
+        calculateFibonacciSphere(points, pointCount, radius, cutoffAngle);
     }
 
     @Override
-    public void generateFilled(Set<Vector3d> points, double density) {
+    public void generateFilled(List<Vector3d> points, double density) {
+        if (points instanceof ArrayList<?> arrayList)
+            arrayList.ensureCapacity(points.size() + (int) (1.333 * Math.PI * radius * radius * radius / (density * density * density)));
         int subSpheres = (int) (radius / density) - 1;
         double radiusStep = radius / subSpheres;
         for (int i = 1; i < subSpheres; i++) {
             double subRadius = i * radiusStep;
             int pointCount = 4 * (int) (Math.PI * subRadius * subRadius / (density * density));
-            points.addAll(calculateFibonacciSphere(pointCount, subRadius, cutoffAngle));
+            calculateFibonacciSphere(points, pointCount, subRadius, cutoffAngle);
         }
     }
 

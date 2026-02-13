@@ -5,7 +5,6 @@ import com.sovdee.skriptparticles.shapes.DrawData;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
-import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 import org.skriptlang.skript.bukkit.particles.particleeffects.ParticleEffect;
@@ -15,8 +14,6 @@ import java.util.List;
 
 public class Particle extends ParticleEffect {
 
-    private @Nullable ParticleMotion motion;
-    private @Nullable ParticleGradient gradient;
     private @Nullable Shape parent;
     private boolean override = false;
 
@@ -42,36 +39,42 @@ public class Particle extends ParticleEffect {
         super(particle);
     }
 
-    public Particle(org.bukkit.Particle particle, ParticleMotion motion) {
-        super(particle);
-        this.motion = motion;
-    }
-
-    public void spawn(Vector delta) {
+    public void spawn(org.bukkit.util.Vector delta) {
         if (parent == null) return;
         DrawData dd = DrawData.of(parent);
         if (dd.getLastLocation() == null) return;
-        if (motion != null) {
-            Vector yAxis = dd.getLastOrientation().transform(new Vector(0, 1, 0));
-            Vector motionVector = motion.getMotionVector(yAxis, delta);
-            this.offset(motionVector.getX(), motionVector.getY(), motionVector.getZ());
-            this.count(0);
-        }
-        if (gradient != null) {
-            color(gradient.calculateColour(delta));
-        }
         location(dd.getLastLocation().getLocation().add(delta));
         super.spawn();
     }
 
-    @Nullable
-    public ParticleMotion motion() {
-        return motion;
+    /**
+     * Prepares this particle's location for a given point delta without spawning it.
+     * Call this before using {@link #spawnToPlayers(Collection)} to send to pre-filtered recipients.
+     */
+    public void prepareForPoint(DrawData dd, org.bukkit.util.Vector delta) {
+        location(dd.getLastLocation().getLocation().add(delta));
     }
 
-    public Particle motion(@Nullable ParticleMotion motion) {
-        this.motion = motion;
-        return this;
+    /**
+     * Spawns the particle to each player individually, bypassing per-player distance/vanish
+     * checks. Assumes the caller has already pre-filtered the recipient list.
+     */
+    public void spawnToPlayers(Collection<Player> players) {
+        Location loc = location();
+        if (loc == null || loc.getWorld() == null) return;
+        for (Player player : players) {
+            player.spawnParticle(particle(), loc, count(), offsetX(), offsetY(), offsetZ(), extra(), data());
+        }
+    }
+
+    /**
+     * Calls the given consumer with the particle type and prepared data for NMS packet construction.
+     * This allows external code to build packets without going through the Bukkit API.
+     *
+     * @param consumer receives the Bukkit particle type and the particle-specific data (may be null)
+     */
+    public void forPacketData(java.util.function.BiConsumer<org.bukkit.Particle, @Nullable Object> consumer) {
+        consumer.accept(particle(), data());
     }
 
     @Nullable
@@ -81,16 +84,6 @@ public class Particle extends ParticleEffect {
 
     public Particle parent(@Nullable Shape parent) {
         this.parent = parent;
-        return this;
-    }
-
-    @Nullable
-    public ParticleGradient gradient() {
-        return gradient;
-    }
-
-    public Particle gradient(@Nullable ParticleGradient gradient) {
-        this.gradient = gradient;
         return this;
     }
 
@@ -117,9 +110,7 @@ public class Particle extends ParticleEffect {
         if (location != null)
             particle.location(location);
 
-        return particle.motion(this.motion())
-                .parent(this.parent())
-                .gradient(this.gradient())
+        return particle.parent(this.parent())
                 .override(this.override());
     }
 
@@ -127,8 +118,6 @@ public class Particle extends ParticleEffect {
     public String toString() {
         return "Particle{" +
                 "particle=" + this.particle() +
-                (motion != null ? ", motion=" + motion : "") +
-                (gradient != null ? ", gradient=" + gradient : "") +
                 (parent != null ? ", parent=" + parent : "") +
                 ", override=" + override +
                 '}';
@@ -212,8 +201,8 @@ public class Particle extends ParticleEffect {
     }
 
     @Override
-    public ParticleEffect extra(double extra) {
-        return (ParticleEffect) super.extra(extra);
+    public Particle extra(double extra) {
+        return (Particle) super.extra(extra);
     }
 
     @Override

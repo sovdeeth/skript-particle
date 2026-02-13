@@ -6,8 +6,8 @@ import com.sovdee.shapes.sampling.SamplingStyle;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Base implementation of {@link Shape} providing spatial transform, versioning,
@@ -100,12 +100,12 @@ public abstract class AbstractShape implements Shape {
     // --- Point generation defaults ---
 
     @Override
-    public void generateSurface(Set<Vector3d> points, double density) {
+    public void generateSurface(List<Vector3d> points, double density) {
         generateOutline(points, density);
     }
 
     @Override
-    public void generateFilled(Set<Vector3d> points, double density) {
+    public void generateFilled(List<Vector3d> points, double density) {
         generateSurface(points, density);
     }
 
@@ -130,11 +130,15 @@ public abstract class AbstractShape implements Shape {
 
     // --- Vertical fill helper ---
 
-    protected static void fillVertically(Set<Vector3d> points, double height, double density) {
-        Set<Vector3d> base = new LinkedHashSet<>(points);
+    protected static void fillVertically(List<Vector3d> points, int startIndex, double height, double density) {
+        int baseSize = points.size() - startIndex;
         double heightStep = height / Math.round(height / density);
-        for (double y = 0; y < height; y += heightStep) {
-            for (Vector3d v : base) {
+        if (points instanceof ArrayList<?> pointList) {
+            pointList.ensureCapacity(points.size() + baseSize * (int) ((height - heightStep) / heightStep + 1));
+        }
+        for (double y = heightStep; y < height; y += heightStep) {
+            for (int i = startIndex; i < startIndex + baseSize; i++) {
+                Vector3d v = points.get(i);
                 points.add(new Vector3d(v.x, y, v.z));
             }
         }
@@ -152,14 +156,7 @@ public abstract class AbstractShape implements Shape {
         shape.setOffset(new Vector3d(this.offset));
         shape.setDynamic(this.dynamic);
 
-        // Clone sampler config
-        PointSampler srcSampler = this.pointSampler;
-        PointSampler destSampler = shape.getPointSampler();
-        destSampler.setStyle(srcSampler.getStyle());
-        destSampler.setDensity(srcSampler.getDensity());
-        destSampler.setOrdering(srcSampler.getOrdering());
-        if (srcSampler.getDrawContext() != null)
-            destSampler.setDrawContext(srcSampler.getDrawContext().copy());
+        shape.setPointSampler(this.pointSampler.clone());
 
         return shape;
     }

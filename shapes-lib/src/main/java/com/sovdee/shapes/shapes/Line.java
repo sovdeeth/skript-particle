@@ -3,9 +3,8 @@ package com.sovdee.shapes.shapes;
 import com.sovdee.shapes.sampling.SamplingStyle;
 import org.joml.Vector3d;
 
-import java.util.LinkedHashSet;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Supplier;
 
 /**
@@ -39,10 +38,10 @@ public class Line extends AbstractShape implements LWHShape {
     }
 
     /**
-     * Calculates points along a line from start to end with the given density.
+     * Calculates points along a line from start to end with the given density,
+     * adding them directly to the provided list.
      */
-    public static Set<Vector3d> calculateLine(Vector3d start, Vector3d end, double density) {
-        Set<Vector3d> points = new LinkedHashSet<>();
+    public static void calculateLine(List<Vector3d> points, Vector3d start, Vector3d end, double density) {
         Vector3d direction = new Vector3d(end).sub(start);
         double length = direction.length();
         double step = length / Math.round(length / density);
@@ -50,27 +49,32 @@ public class Line extends AbstractShape implements LWHShape {
 
         Vector3d current = new Vector3d(start);
         int count = (int) (length / step);
+        if (points instanceof ArrayList<?> al)
+            al.ensureCapacity(points.size() + count + 1);
         for (int i = 0; i <= count; i++) {
             points.add(new Vector3d(current));
             current.add(direction);
         }
-        return points;
     }
 
     /**
-     * Connects a list of points with lines, returning all intermediate points.
+     * Connects a list of control points with lines, adding all intermediate points
+     * directly to the provided list. Duplicate points at junctions are removed.
      */
-    public static Set<Vector3d> connectPoints(List<Vector3d> points, double density) {
-        Set<Vector3d> connectedPoints = new LinkedHashSet<>();
-        for (int i = 0; i < points.size() - 1; i++) {
-            connectedPoints.addAll(calculateLine(points.get(i), points.get(i + 1), density));
+    public static void connectPoints(List<Vector3d> result, List<Vector3d> controlPoints, double density) {
+        for (int i = 0; i < controlPoints.size() - 1; i++) {
+            int before = result.size();
+            calculateLine(result, controlPoints.get(i), controlPoints.get(i + 1), density);
+            // Remove duplicate junction point (first point of non-first segments)
+            if (i > 0 && result.size() > before) {
+                result.remove(before);
+            }
         }
-        return connectedPoints;
     }
 
     @Override
-    public void generateOutline(Set<Vector3d> points, double density) {
-        points.addAll(calculateLine(getStart(), getEnd(), density));
+    public void generateOutline(List<Vector3d> points, double density) {
+        calculateLine(points, getStart(), getEnd(), density);
     }
 
     public Vector3d getStart() {

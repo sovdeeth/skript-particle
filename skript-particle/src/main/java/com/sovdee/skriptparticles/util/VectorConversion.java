@@ -3,8 +3,8 @@ package com.sovdee.skriptparticles.util;
 import org.bukkit.util.Vector;
 import org.joml.Vector3d;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Utility class for converting between Bukkit Vectors and JOML Vector3d.
@@ -19,16 +19,16 @@ public class VectorConversion {
         return new Vector3d(v.getX(), v.getY(), v.getZ());
     }
 
-    public static Set<Vector> toBukkit(Set<Vector3d> points) {
-        Set<Vector> result = new LinkedHashSet<>();
+    public static List<Vector> toBukkit(List<Vector3d> points) {
+        List<Vector> result = new ArrayList<>();
         for (Vector3d v : points) {
             result.add(toBukkit(v));
         }
         return result;
     }
 
-    public static Set<Vector3d> toJOML(Set<Vector> points) {
-        Set<Vector3d> result = new LinkedHashSet<>();
+    public static List<Vector3d> toJOML(List<Vector> points) {
+        List<Vector3d> result = new ArrayList<>();
         for (Vector v : points) {
             result.add(toJOML(v));
         }

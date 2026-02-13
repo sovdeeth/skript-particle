@@ -1,11 +1,13 @@
 package com.sovdee.shapes.shapes;
 
+import com.sovdee.shapes.modifiers.PointContext;
 import com.sovdee.shapes.sampling.PointSampler;
 import com.sovdee.shapes.sampling.SamplingStyle;
+import com.sovdee.shapes.sampling.ShapeRenderer;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
 
-import java.util.Set;
+import java.util.List;
 
 /**
  * Represents a geometric shape. Pure geometry interface — sampling/caching/drawing
@@ -47,9 +49,9 @@ public interface Shape extends Cloneable {
 
     // --- Point generation (density as parameter) ---
 
-    void generateOutline(Set<Vector3d> points, double density);
-    void generateSurface(Set<Vector3d> points, double density);
-    void generateFilled(Set<Vector3d> points, double density);
+    void generateOutline(List<Vector3d> points, double density);
+    void generateSurface(List<Vector3d> points, double density);
+    void generateFilled(List<Vector3d> points, double density);
 
     /**
      * Called by PointSampler before point generation. Override for supplier refresh, step recalc, etc.
@@ -59,7 +61,7 @@ public interface Shape extends Cloneable {
     /**
      * Called by PointSampler after point generation. Override for centerOffset adjustment, etc.
      */
-    default void afterSampling(Set<Vector3d> points) {}
+    default void afterSampling(List<Vector3d> points) {}
 
     /**
      * Computes the density needed to achieve approximately the given number of points.
@@ -70,6 +72,13 @@ public interface Shape extends Cloneable {
 
     PointSampler getPointSampler();
     void setPointSampler(PointSampler sampler);
+
+    /**
+     * Convenience default: drives the full render loop using the shape's own orientation.
+     */
+    default void render(Quaterniond orientation, ShapeRenderer<?> renderer) {
+        getPointSampler().render(this, orientation, renderer);
+    }
 
     // --- Replication ---
 

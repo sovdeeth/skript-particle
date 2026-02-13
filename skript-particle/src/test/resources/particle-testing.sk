@@ -1,0 +1,364 @@
+command /full-test:
+    trigger:
+        set {_loc} to player's location
+
+        # --- Shape construction ---
+        set {_shapes::circle} to a circle with radius 1
+        set {_shapes::arc} to a arc with radius 1 and angle 60 degrees
+        set offset vector of {_shapes::arc} to vector(3, 0, 0)
+        set {_shapes::cylinder} to a tube with radius 1 and height 1
+        set offset vector of {_shapes::cylinder} to vector(6, 0, 0)
+        set {_shapes::cylarc} to a arc with radius 1, height 1, and angle 60 degrees
+        set offset vector of {_shapes::cylarc} to vector(9, 0, 0)
+        set {_shapes::helix} to a helix with radius 1, height 1, and winding rate of 1
+        set offset vector of {_shapes::helix} to vector(12, 0, 0)
+
+        set {_shapes::ellipse} to an ellipse with radius 0.5 and 1
+        set offset vector of {_shapes::ellipse} to vector(0, 0, 3)
+        set {_shapes::elliptical-arc} to an elliptical arc with radius 0.5, 1 and angle 60 degrees
+        set offset vector of {_shapes::elliptical-arc} to vector(3, 0, 3)
+        set {_shapes::elliptical-cylinder} to an elliptical tube with radius 0.5, 1 and height 1
+        set offset vector of {_shapes::elliptical-cylinder} to vector(6, 0, 3)
+        set {_shapes::elliptical-cylarc} to an elliptical arc with radius 0.5, 1, height 1 and angle 60 degrees
+        set offset vector of {_shapes::elliptical-cylarc} to vector(9, 0, 3)
+
+        set {_shapes::sphere} to a sphere with radius 1
+        set offset vector of {_shapes::sphere} to vector(0, 0, 6)
+        set {_shapes::cap} to a spherical cap with radius 1 and cutoff angle 60 degrees
+        set offset vector of {_shapes::cap} to vector(3, 0, 6)
+        set {_shapes::ellipsoid} to an ellipsoid with radius 1, 0.5, and 0.8
+        set offset vector of {_shapes::ellipsoid} to vector(6, 0, 6)
+        set {_shapes::ellipsoid-2} to a hollow ellipsoid with radius 1, 0.5, and 0.8
+        set offset vector of {_shapes::ellipsoid-2} to vector(9, 0, 6)
+
+        set {_shapes::rectangle} to a rectangle with length 1 and width 1
+        set offset vector of {_shapes::rectangle} to vector(0, 0, 9)
+        set {_shapes::cuboid} to a cuboid with length 1, width 1 and height 1
+        set offset vector of {_shapes::cuboid} to vector(3, 0, 9)
+
+        set {_shapes::line-1} to a line from vector(0, 0, 0) to vector(1, 0, 0)
+        set {_shapes::line-2} to a line from {_loc} to {_loc} offset by vector(0, 1, 0)
+        set {_shapes::line-3} to a line in direction vector(0, 0, 1) with length 1
+        set offset vector of {_shapes::line-1}, {_shapes::line-2}, {_shapes::line-3} to vector(0, 0, -3)
+        set {_shapes::bezier} to a curve from vector(0, 0, 0) to vector(2, 0, 0) using control points vector(1, 1, 0)
+        set offset vector of {_shapes::bezier} to vector(6, 0, -3)
+        set {_shapes::heart} to a solid heart with width 2 and length 2
+        set offset vector of {_shapes::heart} to vector(3, 0, -3)
+        set {_shapes::star} to a solid star with 5 points, inner radius 0.5, and outer radius 1
+        set offset vector of {_shapes::star} to vector(9, 0, -3)
+
+        set {_shapes::polygon-1} to a triangle with radius 1
+        set offset vector of {_shapes::polygon-1} to vector(0, 0, -6)
+        set {_shapes::polygon-2} to a square with side length 1
+        set offset vector of {_shapes::polygon-2} to vector(3, 0, -6)
+        set {_shapes::polygon-3} to a regular polygon with 5 sides and side length 0.6
+        set offset vector of {_shapes::polygon-3} to vector(6, 0, -6)
+        set {_shapes::polygon-4} to a regular polygon with 12 sides and radius 1
+        set offset vector of {_shapes::polygon-4} to vector(9, 0, -6)
+
+        set {_shapes::ir-polygon} to a polygon with points vector(0, 0, 0), vector(1, 0, 0), vector(1, 1, 1)
+        set offset vector of {_shapes::ir-polygon} to vector(0, 0, -9)
+        set {_shapes::polyhedron} to an icosahedron with radius 1
+        set offset vector of {_shapes::polyhedron} to vector(3, 0, -9)
+
+        set particle of {_shapes::*} to electric spark particle with extra value 0
+        show local and global axes of {_shapes::*}
+
+        # --- Draw section body: counts per-shape callbacks ---
+        set {_drawCount} to 0
+        loop 40 times:
+            draw shapes {_shapes::*} at {_loc}:
+                add 1 to {_drawCount}
+            wait 1 tick
+        broadcast "Drawn shapes: %({_drawCount} / 40)%"
+
+        # --- Radius / inner+outer radius ---
+        loop 20 times:
+            add 0.1 to radius of {_shapes::*}
+            add 0.1 to inner radius of {_shapes::*}
+            add 0.1 to outer radius of {_shapes::*}
+            draw shapes {_shapes::*} at {_loc}
+            wait 1 tick
+        loop 20 times:
+            add -0.1 to radius of {_shapes::*}
+            add -0.1 to inner radius of {_shapes::*}
+            add -0.1 to outer radius of {_shapes::*}
+            draw shapes {_shapes::*} at {_loc}
+            wait 1 tick
+
+        # --- Scale ---
+        loop 20 times:
+            add 0.1 to shape scale of {_shapes::*}
+            draw shapes {_shapes::*} at {_loc}
+            wait 1 tick
+        loop 20 times:
+            add -0.1 to shape scale of {_shapes::*}
+            draw shapes {_shapes::*} at {_loc}
+            wait 1 tick
+
+        # --- Rotation: global axes ---
+        loop 40 times:
+            rotate shapes {_shapes::*} around vector(0, 1, 0) by 9 degrees
+            draw shapes {_shapes::*} at {_loc}
+            wait 1 tick
+        loop 40 times:
+            rotate shapes {_shapes::*} around vector(1, 0, 0) by 9 degrees
+            draw shapes {_shapes::*} at {_loc}
+            wait 1 tick
+        loop 40 times:
+            rotate shapes {_shapes::*} around vector(0, 0, 1) by 9 degrees
+            draw shapes {_shapes::*} at {_loc}
+            wait 1 tick
+
+        # --- Rotation: quaternion ---
+        set {_rotation} to rotation around vector(1, 1, 1) by 9 degrees
+        loop 40 times:
+            rotate shapes {_shapes::*} by {_rotation}
+            draw shapes {_shapes::*} at {_loc}
+            wait 1 tick
+
+        # --- Rotation: local axis ---
+        rotate shapes {_shapes::*} around vector(1, 0, 0) by 45 degrees
+        loop 40 times:
+            rotate shapes {_shapes::*} around local z axis by 9 degrees
+            draw shapes {_shapes::*} at {_loc}
+            wait 1 tick
+        reset normal vector of {_shapes::*}
+
+        # --- Cutoff angle / winding rate ---
+        loop 40 times:
+            add 7.5 to the cutoff angle of {_shapes::*}
+            add 0.1 to the winding rate of {_shapes::*}
+            draw shapes {_shapes::*} at {_loc}
+            wait 1 tick
+        loop 40 times:
+            add -7.5 to the cutoff angle of {_shapes::*}
+            remove 0.1 from the winding rate of {_shapes::*}
+            draw shapes {_shapes::*} at {_loc}
+            wait 1 tick
+
+        # --- Length / side length / outer radius ---
+        loop 40 times:
+            add 0.1 to the shape length of {_shapes::*}
+            add 0.01 to the side length of {_shapes::*}
+            add 0.1 to the outer radius of {_shapes::*}
+            draw shapes {_shapes::*} at {_loc}
+            wait 1 tick
+        loop 40 times:
+            add -0.1 to the shape length of {_shapes::*}
+            add -0.01 to the side length of {_shapes::*}
+            add -0.1 to the outer radius of {_shapes::*}
+            draw shapes {_shapes::*} at {_loc}
+            wait 1 tick
+
+        # --- Width / inner radius ---
+        loop 40 times:
+            add 0.1 to the shape width of {_shapes::*}
+            add 0.1 to the inner radius of {_shapes::*}
+            draw shapes {_shapes::*} at {_loc}
+            wait 1 tick
+        loop 40 times:
+            add -0.1 to the shape width of {_shapes::*}
+            add -0.1 to the inner radius of {_shapes::*}
+            draw shapes {_shapes::*} at {_loc}
+            wait 1 tick
+
+        # --- Height ---
+        loop 40 times:
+            add 0.05 to the shape height of {_shapes::*}
+            draw shapes {_shapes::*} at {_loc}
+            wait 1 tick
+        loop 40 times:
+            add -0.05 to the shape height of {_shapes::*}
+            draw shapes {_shapes::*} at {_loc}
+            wait 1 tick
+
+        # --- Sides / star points ---
+        loop 4 times:
+            add 1 to the sides of {_shapes::*}
+            add 1 to the star points of {_shapes::*}
+            loop 10 times:
+                draw shapes {_shapes::*} at {_loc}
+                wait 1 tick
+        loop 4 times:
+            remove 1 from the sides of {_shapes::*}
+            remove 1 from the star points of {_shapes::*}
+            loop 10 times:
+                draw shapes {_shapes::*} at {_loc}
+                wait 1 tick
+
+        # --- Style cycling ---
+        set style of {_shapes::*} to surface
+        loop 10 times:
+            draw shapes {_shapes::*} at {_loc}
+            wait 1 tick
+        set style of {_shapes::*} to filled
+        loop 10 times:
+            draw shapes {_shapes::*} at {_loc}
+            wait 1 tick
+        set style of {_shapes::*} to outline
+
+        # --- Particle density ---
+        set particle count of {_shapes::*} to 50
+        loop 10 times:
+            draw shapes {_shapes::*} at {_loc}
+            wait 1 tick
+        reset particle count of {_shapes::*}
+
+        # --- Timed draw + animation ordering ---
+        set the animation order of {_shapes::*} to lowest-to-highest
+        draw shapes {_shapes::*} at {_loc} for 3 seconds with refresh 1 tick
+        wait 4 ticks
+        set the animation order of {_shapes::*} to highest-to-lowest
+        draw shapes {_shapes::*} at {_loc} for 3 seconds with refresh 1 tick
+        wait 4 ticks
+        set the animation order of {_shapes::*} to default
+
+        hide local and global axes of {_shapes::*}
+
+command /magic:
+    trigger:
+        set {_shapes::outer-circle} to a circle of radius 2.225
+        set {_shapes::inner-circle} to a circle of radius 2
+        set {_shapes::tiny-circle} to a circle of radius 0.875
+
+        set {_shapes::triangle-1} to a triangle with radius 2
+        set {_shapes::triangle-2} to a triangle with radius 2
+        rotate shapes {_shapes::triangle-2} around y axis by 60 degrees
+
+        set particle of {_shapes::*} to electric spark particle
+
+        loop 200 times:
+            set {_view} to vector from yaw player's yaw and pitch player's pitch
+            set {_yaw} to yaw of {_view}
+            # figure out the rotation needed to rotate the shape
+            set {_rotation} to rotation from vector(0, 1, 0) to {_view}
+            draw shapes {_shapes::*} at player's eye location ~ {_view}:
+                # only happens for this draw call, the original shape is not modified
+                # note that this is called once for each shape, hence `drawn shape` and not `drawn shapes`
+                rotate drawn shape by {_rotation}
+                # the shape takes the shortest path to rotate to the desired rotation, but we don't want that here
+                # (we want the shape to be the same, no matter where we look)
+                # so we'll correct for it by rotating the shape around the y axis by the yaw of the view
+                rotate shape drawn shape around relative y axis by -1 * {_yaw}
+
+            wait 1 tick
+
+command /star:
+    trigger:
+        set {_star} to a star with 5 points, inner radius 1, and outer radius 2
+        set particle of {_star} to electric spark particle
+        loop 40 times:
+            draw shape {_star} at player
+            rotate shape {_star} around y axis by 9 degrees
+            wait 2 ticks
+
+command /modifier-test:
+    trigger:
+        set {_loc} to player's location
+
+        # 1. Taper modifier on a sphere (along Y: scales XZ)
+        set {_sphere} to a sphere with radius 1
+        set particle of {_sphere} to electric spark particle with extra value 0
+        add taper from 0.0 to 1.0 along the y axis to modifiers of {_sphere}
+        draw shape {_sphere} at {_loc} for 5 seconds with refresh 2 ticks
+        wait 1 tick
+
+        # 1b. Taper along X axis (scales YZ)
+        set {_sphere1b} to a sphere with radius 1
+        set particle of {_sphere1b} to electric spark particle with extra value 0
+        add taper from 0.0 to 1.0 along the x axis to modifiers of {_sphere1b}
+        draw shape {_sphere1b} at {_loc} ~ vector(0, 0, -4) for 5 seconds with refresh 2 ticks
+        wait 1 tick
+
+        # 2. Twist modifier on a cylinder along Y (rotates XZ plane)
+        set {_cyl} to a hollow cuboid with length 1, width 1, and height 2
+        set particle of {_cyl} to electric spark particle with extra value 0
+        add a twist of 180 degrees along the y axis to modifiers of {_cyl}
+        draw shape {_cyl} at {_loc} ~ vector(4, 0, 0) for 5 seconds with refresh 2 ticks
+        wait 1 tick
+
+        # 2b. Twist along X axis (rotates YZ plane)
+        set {_cyl2b} to a hollow cuboid with length 2, width 1, and height 1
+        set particle of {_cyl2b} to electric spark particle with extra value 0
+        add a twist of 180 degrees along the x axis to modifiers of {_cyl2b}
+        draw shape {_cyl2b} at {_loc} ~ vector(4, 0, -4) for 5 seconds with refresh 2 ticks
+        wait 1 tick
+
+        # 3. Wave modifier on a rectangle
+        set {_rect} to a solid rectangle with length 2 and width 2
+        set particle of {_rect} to electric spark particle with extra value 0
+        add a wave with amplitude 0.5 and frequency 4 displacing y by x to modifiers of {_rect}
+        add a wave with amplitude 0.5 and frequency 4 displacing y by z to modifiers of {_rect}
+        draw shape {_rect} at {_loc} ~ vector(8, 0, 0) for 5 seconds with refresh 2 ticks
+        wait 1 tick
+
+        # stop
+
+        # 4. Axis gradient (red→blue along Y) on a cuboid
+        set {_cuboid} to a cuboid with length 1, width 1 and height 2
+        set particle of {_cuboid} to white dust particle
+        add gradient from red to blue along the y axis to modifiers of {_cuboid}
+        draw shape {_cuboid} at {_loc} ~ vector(0, 0, 4) for 5 seconds with refresh 2 ticks
+        wait 1 tick
+
+        # 5. Radial gradient (yellow→green) on a disc
+        set {_disc} to a disc with radius 1.5
+        set particle of {_disc} to white dust particle
+        add radial gradient from yellow to green to modifiers of {_disc}
+        draw shape {_disc} at {_loc} ~ vector(4, 0, 4) for 5 seconds with refresh 2 ticks
+        wait 1 tick
+
+        # 6. Angular gradient (cyan→magenta) on a circle
+        set {_circle} to a circle with radius 1.5
+        set particle of {_circle} to white dust particle
+        add angular gradient from cyan to magenta to modifiers of {_circle}
+        draw shape {_circle} at {_loc} ~ vector(8, 0, 4) for 5 seconds with refresh 2 ticks
+        wait 1 tick
+
+        # 7. Spherical gradient (white→black) on a sphere
+        set {_sphere2} to a solid sphere with radius 1
+        set particle of {_sphere2} to white dust particle
+        add spherical gradient from white to black to modifiers of {_sphere2}
+        draw shape {_sphere2} at {_loc} ~ vector(0, 0, 8) for 5 seconds with refresh 2 ticks
+        wait 1 tick
+
+        # 8. Multi-stop gradient (red→orange→yellow→white) on a cylinder
+        set {_gradcyl} to a tube with radius 1 and height 2
+        set particle of {_gradcyl} to white dust particle
+        set {_grad} to gradient from red, orange, yellow, white along the y axis
+        add {_grad} to modifiers of {_gradcyl}
+        draw shape {_gradcyl} at {_loc} ~ vector(4, 0, 8) for 5 seconds with refresh 2 ticks
+        wait 1 tick
+
+        # 9. Motion modifier (outwards) on a sphere
+        set {_sphere3} to a sphere with radius 1
+        set particle of {_sphere3} to electric spark particle with extra value 0.3
+        add motion modifier outwards to modifiers of {_sphere3}
+        draw shape {_sphere3} at {_loc} ~ vector(8, 0, 8) for 5 seconds with refresh 2 ticks
+        wait 1 tick
+
+        # 11. Combined modifiers: taper + wave + axis gradient on one shape
+        set {_combined} to a tube with radius 1 and height 2
+        set particle of {_combined} to white dust particle
+        add taper from 0.2 to 1.0 along the y axis to modifiers of {_combined}
+        add a wave with amplitude 0.3 and frequency 3 displacing y by t to modifiers of {_combined}
+        add gradient from orange to cyan along the y axis to modifiers of {_combined}
+        draw shape {_combined} at {_loc} ~ vector(4, 0, 12) for 5 seconds with refresh 2 ticks
+
+        # 10. Modifier management: add, remove, delete
+        set {_managed} to a circle with radius 1
+        set particle of {_managed} to white dust particle
+        set {_taper} to a taper from 0 to 1
+        add {_taper} to modifiers of {_managed}
+        draw shape {_managed} at {_loc} ~ vector(0, 0, 12)
+        wait 1 second
+        remove {_taper} from modifiers of {_managed}
+        add gradient from red to blue along the y axis to modifiers of {_managed}
+        draw shape {_managed} at {_loc} ~ vector(0, 0, 12)
+        wait 1 second
+        delete modifiers of {_managed}
+        draw shape {_managed} at {_loc} ~ vector(0, 0, 12)
+        wait 1 second
+
+        broadcast "Modifier test complete!"

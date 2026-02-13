@@ -3,9 +3,7 @@ package com.sovdee.shapes.util;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Helper methods for JOML Vector3d operations that mirror Bukkit Vector convenience methods.
@@ -33,19 +31,17 @@ public class VectorUtil {
     /**
      * Transforms a list of vectors using a quaternion, modifying them in place.
      */
-    public static List<Vector3d> transform(Quaterniond quaternion, List<Vector3d> vectors) {
-        vectors.replaceAll(quaternion::transform);
-        return vectors;
+    public static void transform(Quaterniond quaternion, List<Vector3d> vectors) {
+        transform(quaternion, vectors, 0);
     }
 
     /**
-     * Transforms a set of vectors using a quaternion, returning a new set.
+     * Transforms vectors in a list from the given start index, modifying them in place.
      */
-    public static Set<Vector3d> transform(Quaterniond quaternion, Set<Vector3d> vectors) {
-        Set<Vector3d> newVectors = new HashSet<>();
-        for (Vector3d vector : vectors) {
-            newVectors.add(quaternion.transform(new Vector3d(vector)));
+    public static void transform(Quaterniond quaternion, List<Vector3d> vectors, int fromIndex) {
+        for (int i = fromIndex; i < vectors.size(); i++) {
+            quaternion.transform(vectors.get(i));
         }
-        return newVectors;
     }
+
 }

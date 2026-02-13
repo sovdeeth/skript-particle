@@ -3,6 +3,7 @@ import org.apache.tools.ant.filters.ReplaceTokens
 plugins {
     id 'java'
     id 'com.gradleup.shadow' version '8.3.5'
+    id 'io.papermc.paperweight.userdev' version '2.0.0-beta.19'
 }
 
 group 'com.sovdee'
@@ -23,8 +24,8 @@ repositories {
 
 dependencies {
     implementation project(':shapes-lib')
-    compileOnly("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
-    compileOnly("com.github.SkriptLang:Skript:2.14.0-pre1")
+    paperweight.paperDevBundle("1.21.11-R0.1-SNAPSHOT")
+    compileOnly("com.github.SkriptLang:Skript:2.14.0")
     compileOnly "org.joml:joml:${jomlVersion}"
 }
 

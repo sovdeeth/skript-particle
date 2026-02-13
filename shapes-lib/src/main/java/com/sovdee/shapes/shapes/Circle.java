@@ -3,8 +3,8 @@ package com.sovdee.shapes.shapes;
 import com.sovdee.shapes.sampling.SamplingStyle;
 import org.joml.Vector3d;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Circle extends AbstractShape implements RadialShape, LWHShape {
 
@@ -25,68 +25,65 @@ public class Circle extends AbstractShape implements RadialShape, LWHShape {
 
     // --- Static calculation methods ---
 
-    public static Set<Vector3d> calculateCircle(double radius, double density, double cutoffAngle) {
-        Set<Vector3d> points = new LinkedHashSet<>();
+    public static void calculateCircle(List<Vector3d> points, double radius, double density, double cutoffAngle) {
         double stepSize = density / radius;
+        if (points instanceof ArrayList<?> al)
+            al.ensureCapacity(points.size() + (int) (cutoffAngle / stepSize) + 1);
         for (double theta = 0; theta < cutoffAngle; theta += stepSize) {
             points.add(new Vector3d(Math.cos(theta) * radius, 0, Math.sin(theta) * radius));
         }
-        return points;
     }
 
-    public static Set<Vector3d> calculateDisc(double radius, double density, double cutoffAngle) {
-        Set<Vector3d> points = new LinkedHashSet<>();
+    public static void calculateDisc(List<Vector3d> points, double radius, double density, double cutoffAngle) {
+        if (points instanceof ArrayList<?> al)
+            al.ensureCapacity(points.size() + (int) (cutoffAngle * radius * radius / (density * density * Math.PI)));
         for (double subRadius = density; subRadius < radius; subRadius += density) {
-            points.addAll(calculateCircle(subRadius, density, cutoffAngle));
+            calculateCircle(points, subRadius, density, cutoffAngle);
         }
-        points.addAll(calculateCircle(radius, density, cutoffAngle));
-        return points;
+        calculateCircle(points, radius, density, cutoffAngle);
     }
 
-    public static Set<Vector3d> calculateCylinder(double radius, double height, double density, double cutoffAngle) {
-        Set<Vector3d> points = calculateDisc(radius, density, cutoffAngle);
-        // Top disc via direct loop
-        Set<Vector3d> top = new LinkedHashSet<>();
-        for (Vector3d v : points) {
-            top.add(new Vector3d(v.x, height, v.z));
+    public static void calculateCylinder(List<Vector3d> points, double radius, double height, double density, double cutoffAngle) {
+        // Bottom disc
+        int discStart = points.size();
+        calculateDisc(points, radius, density, cutoffAngle);
+        int discEnd = points.size();
+        // Top disc - copy bottom disc at height
+        for (int i = discStart; i < discEnd; i++) {
+            Vector3d v = points.get(i);
+            points.add(new Vector3d(v.x, height, v.z));
         }
-        points.addAll(top);
         // Wall
-        Set<Vector3d> wall = calculateCircle(radius, density, cutoffAngle);
-        fillVertically(wall, height, density);
-        points.addAll(wall);
-        return points;
+        int wallStart = points.size();
+        calculateCircle(points, radius, density, cutoffAngle);
+        fillVertically(points, wallStart, height, density);
     }
 
     // --- Generation methods ---
 
     @Override
-    public void generateOutline(Set<Vector3d> points, double density) {
-        Set<Vector3d> circle = calculateCircle(radius, density, cutoffAngle);
+    public void generateOutline(List<Vector3d> points, double density) {
+        int start = points.size();
+        calculateCircle(points, radius, density, cutoffAngle);
         if (height != 0) {
-            fillVertically(circle, height, density);
-            points.addAll(circle);
-        } else {
-            points.addAll(circle);
+            fillVertically(points, start, height, density);
         }
     }
 
     @Override
-    public void generateSurface(Set<Vector3d> points, double density) {
+    public void generateSurface(List<Vector3d> points, double density) {
         if (height != 0)
-            points.addAll(calculateCylinder(radius, height, density, cutoffAngle));
+            calculateCylinder(points, radius, height, density, cutoffAngle);
         else
-            points.addAll(calculateDisc(radius, density, cutoffAngle));
+            calculateDisc(points, radius, density, cutoffAngle);
     }
 
     @Override
-    public void generateFilled(Set<Vector3d> points, double density) {
-        Set<Vector3d> disc = calculateDisc(radius, density, cutoffAngle);
+    public void generateFilled(List<Vector3d> points, double density) {
+        int start = points.size();
+        calculateDisc(points, radius, density, cutoffAngle);
         if (height != 0) {
-            fillVertically(disc, height, density);
-            points.addAll(disc);
-        } else {
-            points.addAll(disc);
+            fillVertically(points, start, height, density);
         }
     }
 

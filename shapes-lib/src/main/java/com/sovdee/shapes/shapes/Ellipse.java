@@ -4,9 +4,7 @@ import com.sovdee.shapes.sampling.SamplingStyle;
 import org.joml.Vector3d;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 public class Ellipse extends AbstractShape implements LWHShape {
 
@@ -36,11 +34,12 @@ public class Ellipse extends AbstractShape implements LWHShape {
         return Math.PI * (a + b) * (1 + 3 * h / (10 + Math.sqrt(4 - 3 * h)));
     }
 
-    public static List<Vector3d> calculateEllipse(double r1, double r2, double density, double cutoffAngle) {
-        List<Vector3d> points = new ArrayList<>();
+    public static void calculateEllipse(List<Vector3d> points, double r1, double r2, double density, double cutoffAngle) {
         double circumference = ellipseCircumference(r1, r2);
 
         int steps = (int) Math.round(circumference / density);
+        if (points instanceof ArrayList<?> al)
+            al.ensureCapacity(points.size() + (int) (steps * cutoffAngle / (2 * Math.PI)) + 1);
         double theta = 0;
         double angleStep = 0;
         for (int i = 0; i < steps; i++) {
@@ -53,64 +52,60 @@ public class Ellipse extends AbstractShape implements LWHShape {
             angleStep = density / Math.sqrt(dx * dx + dy * dy);
             theta += angleStep;
         }
-        return points;
     }
 
-    public static Set<Vector3d> calculateEllipticalDisc(double r1, double r2, double density, double cutoffAngle) {
-        Set<Vector3d> points = new LinkedHashSet<>();
+    public static void calculateEllipticalDisc(List<Vector3d> points, double r1, double r2, double density, double cutoffAngle) {
+        if (points instanceof ArrayList<?> al)
+            al.ensureCapacity(points.size() + (int) (cutoffAngle * r1 * r2 / (density * density)));
         int steps = (int) Math.round(Math.max(r1, r2) / density);
         double r;
         for (double i = 1; i <= steps; i += 1) {
             r = i / steps;
-            points.addAll(calculateEllipse(r1 * r, r2 * r, density, cutoffAngle));
+            calculateEllipse(points, r1 * r, r2 * r, density, cutoffAngle);
         }
-        return points;
     }
 
-    public static Set<Vector3d> calculateCylinder(double r1, double r2, double height, double density, double cutoffAngle) {
-        Set<Vector3d> points = calculateEllipticalDisc(r1, r2, density, cutoffAngle);
-        // Top disc via direct loop
-        Set<Vector3d> top = new LinkedHashSet<>();
-        for (Vector3d v : points) {
-            top.add(new Vector3d(v.x, height, v.z));
+    public static void calculateCylinder(List<Vector3d> points, double r1, double r2, double height, double density, double cutoffAngle) {
+        // Bottom disc
+        int discStart = points.size();
+        calculateEllipticalDisc(points, r1, r2, density, cutoffAngle);
+        int discEnd = points.size();
+        // Top disc - copy bottom disc at height
+        for (int i = discStart; i < discEnd; i++) {
+            Vector3d v = points.get(i);
+            points.add(new Vector3d(v.x, height, v.z));
         }
-        points.addAll(top);
         // Wall
-        Set<Vector3d> wall = new LinkedHashSet<>(calculateEllipse(r1, r2, density, cutoffAngle));
-        fillVertically(wall, height, density);
-        points.addAll(wall);
-        return points;
+        int wallStart = points.size();
+        calculateEllipse(points, r1, r2, density, cutoffAngle);
+        fillVertically(points, wallStart, height, density);
     }
 
     // --- Generation methods ---
 
     @Override
-    public void generateOutline(Set<Vector3d> points, double density) {
-        Set<Vector3d> ellipse = new LinkedHashSet<>(calculateEllipse(xRadius, zRadius, density, cutoffAngle));
+    public void generateOutline(List<Vector3d> points, double density) {
+        int start = points.size();
+        calculateEllipse(points, xRadius, zRadius, density, cutoffAngle);
         if (height != 0) {
-            fillVertically(ellipse, height, density);
-            points.addAll(ellipse);
-        } else {
-            points.addAll(ellipse);
+            fillVertically(points, start, height, density);
         }
     }
 
     @Override
-    public void generateSurface(Set<Vector3d> points, double density) {
+    public void generateSurface(List<Vector3d> points, double density) {
         if (height != 0)
-            points.addAll(calculateCylinder(xRadius, zRadius, height, density, cutoffAngle));
+            calculateCylinder(points, xRadius, zRadius, height, density, cutoffAngle);
         else
-            points.addAll(calculateEllipticalDisc(xRadius, zRadius, density, cutoffAngle));
+            calculateEllipticalDisc(points, xRadius, zRadius, density, cutoffAngle);
     }
 
     @Override
-    public void generateFilled(Set<Vector3d> points, double density) {
-        Set<Vector3d> disc = calculateEllipticalDisc(xRadius, zRadius, density, cutoffAngle);
+    public void generateFilled(List<Vector3d> points, double density) {
+        int start = points.size();
+        calculateEllipticalDisc(points, xRadius, zRadius, density, cutoffAngle);
         if (height != 0) {
-            fillVertically(disc, height, density);
-            points.addAll(disc);
-        } else {
-            points.addAll(disc);
+            fillVertically(points, start, height, density);
         }
     }
 

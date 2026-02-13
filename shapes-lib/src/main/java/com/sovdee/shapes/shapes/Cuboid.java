@@ -3,7 +3,7 @@ package com.sovdee.shapes.shapes;
 import com.sovdee.shapes.sampling.SamplingStyle;
 import org.joml.Vector3d;
 
-import java.util.Set;
+import java.util.List;
 import java.util.function.Supplier;
 
 /**
@@ -66,12 +66,12 @@ public class Cuboid extends AbstractShape implements LWHShape {
     }
 
     @Override
-    public void afterSampling(Set<Vector3d> points) {
+    public void afterSampling(List<Vector3d> points) {
         points.forEach(vector -> vector.add(centerOffset));
     }
 
     @Override
-    public void generateOutline(Set<Vector3d> points, double density) {
+    public void generateOutline(List<Vector3d> points, double density) {
         for (double x = -halfLength; x <= halfLength; x += lengthStep) {
             points.add(new Vector3d(x, -halfHeight, -halfWidth));
             points.add(new Vector3d(x, -halfHeight, halfWidth));
@@ -93,7 +93,7 @@ public class Cuboid extends AbstractShape implements LWHShape {
     }
 
     @Override
-    public void generateSurface(Set<Vector3d> points, double density) {
+    public void generateSurface(List<Vector3d> points, double density) {
         for (double x = -halfLength; x <= halfLength; x += lengthStep) {
             for (double z = -halfWidth; z <= halfWidth; z += widthStep) {
                 points.add(new Vector3d(x, -halfHeight, z));
@@ -115,7 +115,7 @@ public class Cuboid extends AbstractShape implements LWHShape {
     }
 
     @Override
-    public void generateFilled(Set<Vector3d> points, double density) {
+    public void generateFilled(List<Vector3d> points, double density) {
         for (double x = -halfLength; x <= halfLength; x += lengthStep) {
             for (double y = -halfHeight; y <= halfHeight; y += heightStep) {
                 for (double z = -halfWidth; z <= halfWidth; z += widthStep) {

@@ -4,8 +4,8 @@ import com.sovdee.shapes.sampling.SamplingStyle;
 import com.sovdee.shapes.util.VectorUtil;
 import org.joml.Vector3d;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 public class RegularPolygon extends AbstractShape implements PolyShape, RadialShape, LWHShape {
 
@@ -34,10 +34,9 @@ public class RegularPolygon extends AbstractShape implements PolyShape, RadialSh
 
     // --- Static calculation methods ---
 
-    public static Set<Vector3d> calculateRegularPolygon(double radius, double angle, double density, boolean wireframe) {
+    public static void calculateRegularPolygon(List<Vector3d> points, double radius, double angle, double density, boolean wireframe) {
         angle = Math.max(angle, Shape.EPSILON);
 
-        Set<Vector3d> points = new LinkedHashSet<>();
         double apothem = radius * Math.cos(angle / 2);
         double radiusStep = radius / Math.round(apothem / density);
         if (wireframe) {
@@ -48,60 +47,61 @@ public class RegularPolygon extends AbstractShape implements PolyShape, RadialSh
         for (double subRadius = radius; subRadius >= 0; subRadius -= radiusStep) {
             Vector3d vertex = new Vector3d(subRadius, 0, 0);
             for (double i = 0; i < 2 * Math.PI; i += angle) {
-                points.addAll(Line.calculateLine(
+                Line.calculateLine(points,
                         VectorUtil.rotateAroundY(new Vector3d(vertex), i),
                         VectorUtil.rotateAroundY(new Vector3d(vertex), i + angle),
-                        density));
+                        density);
             }
         }
-        return points;
     }
 
-    public static Set<Vector3d> calculateRegularPrism(double radius, double angle, double height, double density, boolean wireframe) {
-        Set<Vector3d> points = new LinkedHashSet<>();
+    public static void calculateRegularPrism(List<Vector3d> points, double radius, double angle, double height, double density, boolean wireframe) {
         Vector3d vertex = new Vector3d(radius, 0, 0);
+        // Need a temp list for the edge points since each spawns vertical points
+        List<Vector3d> edgePoints = new ArrayList<>();
         for (double i = 0; i < 2 * Math.PI; i += angle) {
             Vector3d currentVertex = VectorUtil.rotateAroundY(new Vector3d(vertex), i);
-            for (Vector3d vector : Line.calculateLine(currentVertex, VectorUtil.rotateAroundY(new Vector3d(vertex), i + angle), density)) {
+            edgePoints.clear();
+            Line.calculateLine(edgePoints, currentVertex, VectorUtil.rotateAroundY(new Vector3d(vertex), i + angle), density);
+            for (Vector3d vector : edgePoints) {
                 points.add(vector);
                 if (wireframe) {
                     points.add(new Vector3d(vector.x, height, vector.z));
                 } else {
-                    points.addAll(Line.calculateLine(vector, new Vector3d(vector.x, height, vector.z), density));
+                    Line.calculateLine(points, vector, new Vector3d(vector.x, height, vector.z), density);
                 }
             }
             if (wireframe)
-                points.addAll(Line.calculateLine(currentVertex, new Vector3d(currentVertex.x, height, currentVertex.z), density));
+                Line.calculateLine(points, currentVertex, new Vector3d(currentVertex.x, height, currentVertex.z), density);
         }
-        return points;
     }
 
     // --- Generation methods ---
 
     @Override
-    public void generateOutline(Set<Vector3d> points, double density) {
+    public void generateOutline(List<Vector3d> points, double density) {
         if (height == 0)
-            points.addAll(calculateRegularPolygon(this.radius, this.angle, density, true));
+            calculateRegularPolygon(points, this.radius, this.angle, density, true);
         else
-            points.addAll(calculateRegularPrism(this.radius, this.angle, this.height, density, true));
+            calculateRegularPrism(points, this.radius, this.angle, this.height, density, true);
     }
 
     @Override
-    public void generateSurface(Set<Vector3d> points, double density) {
+    public void generateSurface(List<Vector3d> points, double density) {
         if (height == 0)
-            points.addAll(calculateRegularPolygon(this.radius, this.angle, density, false));
+            calculateRegularPolygon(points, this.radius, this.angle, density, false);
         else
-            points.addAll(calculateRegularPrism(this.radius, this.angle, this.height, density, false));
+            calculateRegularPrism(points, this.radius, this.angle, this.height, density, false);
     }
 
     @Override
-    public void generateFilled(Set<Vector3d> points, double density) {
+    public void generateFilled(List<Vector3d> points, double density) {
         if (height == 0)
             generateSurface(points, density);
         else {
-            Set<Vector3d> polygon = calculateRegularPolygon(this.radius, this.angle, density, false);
-            fillVertically(polygon, height, density);
-            points.addAll(polygon);
+            int start = points.size();
+            calculateRegularPolygon(points, this.radius, this.angle, density, false);
+            fillVertically(points, start, height, density);
         }
     }
 
