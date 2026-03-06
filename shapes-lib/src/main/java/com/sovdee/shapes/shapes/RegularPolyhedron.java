@@ -6,6 +6,21 @@ import org.joml.Vector3d;
 
 import java.util.List;
 
+/**
+ * One of the five Platonic solids (regular convex polyhedra), specifically the subset with
+ * triangular or pentagonal faces: tetrahedron (4 faces), octahedron (8 faces), dodecahedron
+ * (12 faces), and icosahedron (20 faces). The shape is centred at the origin and scaled so that
+ * the circumscribed sphere has the given {@code radius}.
+ * <p>
+ * Each face is generated independently using pre-computed quaternion rotations ({@code TETRAHEDRON_FACES},
+ * etc.) that orient a canonical face into its correct position. Surface and outline points per face
+ * are produced via {@link RegularPolygon#calculateRegularPolygon}.
+ * </p>
+ * <p>
+ * The {@link #contains(Vector3d)} check uses a conservative inscribed-sphere test rather than an
+ * exact half-plane test.
+ * </p>
+ */
 public class RegularPolyhedron extends AbstractShape implements RadialShape, PolyShape {
 
     private static final Quaterniond[] TETRAHEDRON_FACES = {
@@ -70,6 +85,13 @@ public class RegularPolyhedron extends AbstractShape implements RadialShape, Pol
     private double radius;
     private int faces;
 
+    /**
+     * Constructs a regular polyhedron with the given circumscribed radius and face count.
+     * Only face counts of 4, 8, 12, and 20 are valid; any other value defaults to 4 (tetrahedron).
+     *
+     * @param radius the circumscribed sphere radius; clamped to at least {@link Shape#EPSILON}
+     * @param faces  the number of faces; must be 4, 8, 12, or 20 (defaults to 4 otherwise)
+     */
     public RegularPolyhedron(double radius, int faces) {
         super();
         this.radius = Math.max(radius, Shape.EPSILON);
@@ -79,6 +101,13 @@ public class RegularPolyhedron extends AbstractShape implements RadialShape, Pol
         };
     }
 
+    /**
+     * Generates wireframe (edge) outline points for each face of the polyhedron by applying
+     * the face-specific quaternion rotation to outline points of a regular polygon face.
+     *
+     * @param points  the list to which outline points are appended
+     * @param density the approximate spacing between consecutive points
+     */
     @Override
     public void generateOutline(List<Vector3d> points, double density) {
         Quaterniond[] rotations = getFaceRotations();
@@ -86,6 +115,13 @@ public class RegularPolyhedron extends AbstractShape implements RadialShape, Pol
             generatePolyhedron(points, rotations, radius, density, SamplingStyle.OUTLINE);
     }
 
+    /**
+     * Generates surface points covering all faces of the polyhedron. Each face is filled
+     * with a concentric-ring polygon pattern and then rotated into place.
+     *
+     * @param points  the list to which surface points are appended
+     * @param density the approximate spacing between consecutive points
+     */
     @Override
     public void generateSurface(List<Vector3d> points, double density) {
         Quaterniond[] rotations = getFaceRotations();
@@ -93,6 +129,13 @@ public class RegularPolyhedron extends AbstractShape implements RadialShape, Pol
             generatePolyhedron(points, rotations, radius, density, SamplingStyle.SURFACE);
     }
 
+    /**
+     * Generates filled interior points by stacking concentric scaled copies of the surface from
+     * {@code radius} down to {@code 0} in steps of {@code radius / round(radius / density)}.
+     *
+     * @param points  the list to which filled points are appended
+     * @param density the approximate spacing between consecutive points
+     */
     @Override
     public void generateFilled(List<Vector3d> points, double density) {
         double step = radius / Math.round(radius / density);

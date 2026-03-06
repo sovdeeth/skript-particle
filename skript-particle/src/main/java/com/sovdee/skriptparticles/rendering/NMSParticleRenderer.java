@@ -13,7 +13,7 @@ import org.bukkit.Location;
 import org.bukkit.craftbukkit.CraftParticle;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Player;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -126,7 +126,10 @@ public class NMSParticleRenderer implements ShapeRenderer<ParticleRenderContext>
     private final int defaultCount;
     private final float speed;
 
-    /** Pre-computed NMS options for the default particle (used when no modifier changed particle/data). */
+    /**
+     * Pre-computed NMS options for the default particle (used when no modifier changed
+     * particle/data).
+     */
     private final ParticleOptions defaultOptions;
 
     private List<Packet<? super ClientGamePacketListener>> chunk;

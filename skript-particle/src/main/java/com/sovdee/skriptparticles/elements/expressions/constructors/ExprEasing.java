@@ -14,7 +14,7 @@ import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
 import com.sovdee.shapes.modifiers.EasingFunction;
 import org.bukkit.event.Event;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 @Name("Easing Function")
 @Description({
@@ -80,7 +80,6 @@ public class ExprEasing extends SimpleExpression<EasingFunction> {
 
     private EasingFunction build(Event event) {
         return switch (pattern) {
-            case 0 -> EasingFunction.LINEAR;
             case 1 -> curveFromMark(parseMark, EasingFunction.Mode.IN);
             case 2 -> curveFromMark(parseMark, EasingFunction.Mode.OUT);
             case 3 -> curveFromMark(parseMark, EasingFunction.Mode.IN_OUT);
@@ -102,7 +101,9 @@ public class ExprEasing extends SimpleExpression<EasingFunction> {
         };
     }
 
-    /** Selects the right built-in curve for the parse mark (0/1=quad, 2=cubic, 3=sine). */
+    /**
+     * Selects the right built-in curve for the parse mark (0/1=quad, 2=cubic, 3=sine).
+     */
     private static EasingFunction curveFromMark(int mark, EasingFunction.Mode mode) {
         return switch (mark) {
             case 2 -> new EasingFunction.PowerEasing(3.0, mode); // cubic
@@ -112,10 +113,14 @@ public class ExprEasing extends SimpleExpression<EasingFunction> {
     }
 
     @Override
-    public boolean isSingle() { return true; }
+    public boolean isSingle() {
+        return true;
+    }
 
     @Override
-    public Class<? extends EasingFunction> getReturnType() { return EasingFunction.class; }
+    public Class<? extends EasingFunction> getReturnType() {
+        return EasingFunction.class;
+    }
 
     @Override
     public String toString(@Nullable Event event, boolean debug) {
@@ -154,6 +159,8 @@ public class ExprEasing extends SimpleExpression<EasingFunction> {
         }
 
         @Override
-        public int easingHash() { return name.hashCode(); }
+        public int easingHash() {
+            return name.hashCode();
+        }
     }
 }

@@ -13,20 +13,32 @@ import org.joml.Vector3d;
 public class MotionModifier implements PointModifier<ParticleRenderContext> {
 
     public enum Mode {
-        /** Counterclockwise orbit around the shape's Y axis. */
+        /**
+         * Counterclockwise orbit around the shape's Y axis.
+         */
         COUNTERCLOCKWISE,
-        /** Clockwise orbit around the shape's Y axis. */
+        /**
+         * Clockwise orbit around the shape's Y axis.
+         */
         CLOCKWISE,
-        /** Velocity directed toward the origin. */
+        /**
+         * Velocity directed toward the origin.
+         */
         INWARDS,
-        /** Velocity directed away from the origin. */
+        /**
+         * Velocity directed away from the origin.
+         */
         OUTWARDS,
-        /** No velocity (zero motion). */
+        /**
+         * No velocity (zero motion).
+         */
         NONE
     }
 
     private final Mode mode;
-    /** Y axis in world space after orientation transform, cached in prepare(). */
+    /**
+     * Y axis in world space after orientation transform, cached in prepare().
+     */
     private float yAxisX, yAxisY, yAxisZ;
     private boolean yAxisComputed = false;
 
@@ -108,9 +120,13 @@ public class MotionModifier implements PointModifier<ParticleRenderContext> {
     }
 
     @Override
-    public int modifierHash() { return mode.ordinal(); }
+    public int modifierHash() {
+        return mode.ordinal();
+    }
 
-    public Mode getMode() { return mode; }
+    public Mode getMode() {
+        return mode;
+    }
 
     @Override
     public MotionModifier clone() {

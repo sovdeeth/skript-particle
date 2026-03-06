@@ -40,6 +40,15 @@ public class DrawManager {
      */
     private static final double MAX_FORCED_PARTICLE_DISTANCE_SQ = 256 * 256;
 
+    /**
+     * Draws {@code shape} at its own stored {@link DrawData} location using the shape's stored
+     * particle and the identity orientation. Equivalent to calling
+     * {@link #draw(Shape, DynamicLocation, Quaternion, Particle, Collection)} with the shape's
+     * own location and particle.
+     *
+     * @param shape      the shape to draw
+     * @param recipients the players who should receive the particles
+     */
     public static void draw(Shape shape, Collection<Player> recipients) {
         DrawData dd = DrawData.of(shape);
         DynamicLocation location = dd.getLocation();
@@ -47,10 +56,30 @@ public class DrawManager {
         draw(shape, location, Quaternion.IDENTITY, dd.getParticleRaw(), recipients);
     }
 
+    /**
+     * Draws {@code shape} at the given {@code location} using the shape's stored particle and
+     * the identity orientation.
+     *
+     * @param shape      the shape to draw
+     * @param location   the world-space location to draw at
+     * @param recipients the players who should receive the particles
+     */
     public static void draw(Shape shape, DynamicLocation location, Collection<Player> recipients) {
         draw(shape, location, Quaternion.IDENTITY, DrawData.of(shape).getParticleRaw(), recipients);
     }
 
+    /**
+     * Applies {@code consumer} to {@code shape} (e.g. to set its orientation) and then draws it
+     * at the given {@code location} using the shape's stored particle.
+     * <br>
+     * The consumer runs synchronously before any rendering begins. The shape's orientation after
+     * the consumer returns is used as the base orientation for the draw call.
+     *
+     * @param shape      the shape to draw
+     * @param location   the world-space location to draw at
+     * @param consumer   a callback invoked on the shape immediately before rendering
+     * @param recipients the players who should receive the particles
+     */
     public static void drawWithConsumer(Shape shape, DynamicLocation location, Consumer<Shape> consumer, Collection<Player> recipients) {
         consumer.accept(shape);
         DrawData dd = DrawData.of(shape);
@@ -59,6 +88,23 @@ public class DrawManager {
         draw(shape, location, shapeOrientationQ, dd.getParticleRaw(), recipients);
     }
 
+    /**
+     * Draws {@code shape} at {@code location} with an explicit base orientation and particle.
+     * This is the primary draw method; all other overloads delegate to it.
+     * <br>
+     * If {@code location} is null the shape's stored location is used instead. Recipients are
+     * pre-filtered by distance from the shape centre before any per-point work is done. If
+     * {@link DrawData#getAnimationDuration()} is greater than zero the points are spread across
+     * multiple async ticks; otherwise all points are sent in a single pass.
+     *
+     * @param shape           the shape to draw
+     * @param location        the world-space location to draw at; falls back to the shape's own
+     *                        stored location if {@link DynamicLocation#isNull()} returns true
+     * @param baseOrientation additional rotation applied on top of the shape's own orientation
+     * @param particle        the particle to use for rendering; ignored when
+     *                        {@link Particle#override()} is false and the shape has its own particle
+     * @param recipients      the candidate players to send particles to (filtered by distance)
+     */
     public static void draw(Shape shape, DynamicLocation location, Quaternion baseOrientation, Particle particle, Collection<Player> recipients) {
         DrawData dd = DrawData.of(shape);
 

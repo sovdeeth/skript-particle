@@ -14,7 +14,7 @@ import ch.njol.util.Kleenean;
 import com.sovdee.shapes.modifiers.PointModifier;
 import com.sovdee.shapes.shapes.Shape;
 import org.bukkit.event.Event;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -113,11 +113,15 @@ public class ExprShapeModifiers extends SimpleExpression<PointModifier> {
     }
 
     @Override
-    public boolean isSingle() { return false; }
+    public boolean isSingle() {
+        return false;
+    }
 
     @Override
     @SuppressWarnings("rawtypes")
-    public Class<? extends PointModifier> getReturnType() { return PointModifier.class; }
+    public Class<? extends PointModifier> getReturnType() {
+        return PointModifier.class;
+    }
 
     @Override
     public String toString(@Nullable Event event, boolean debug) {

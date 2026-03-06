@@ -6,11 +6,17 @@ import ch.njol.skript.lang.ParseContext;
 import ch.njol.skript.lang.util.ContextlessEvent;
 import ch.njol.skript.registrations.Classes;
 import com.sovdee.skriptparticles.particles.Particle;
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.skriptlang.skript.bukkit.particles.particleeffects.ParticleEffect;
 import org.skriptlang.skript.lang.converter.Converters;
 
+/**
+ * Registers Skript type definitions for particle-related classes.
+ * Registers the {@code customparticle} type (backed by {@link com.sovdee.skriptparticles.particles.Particle})
+ * and a converter from Skript's built-in {@code ParticleEffect} to {@code Particle}.
+ * All registration happens in the static initializer, which is loaded by the plugin's class loader.
+ */
 public class ParticleTypes {
     static {
 
@@ -33,12 +39,12 @@ public class ParticleTypes {
                     }
 
                     @Override
-                    public @NonNull String toString(Particle particle, int flags) {
+                    public @NotNull String toString(Particle particle, int flags) {
                         return particle.toString(ContextlessEvent.get(), false);
                     }
 
                     @Override
-                    public @NonNull String toVariableNameString(Particle particle) {
+                    public @NotNull String toVariableNameString(Particle particle) {
                         return "particle:" + toString(particle, 0);
                     }
                 })

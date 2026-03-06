@@ -5,7 +5,7 @@ import com.sovdee.shapes.shapes.Shape;
 import com.sovdee.skriptparticles.particles.Particle;
 import com.sovdee.skriptparticles.util.DynamicLocation;
 import com.sovdee.skriptparticles.util.Quaternion;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Plugin-side rendering metadata attached to library shapes via {@link DrawContext}.
@@ -21,9 +21,15 @@ public class DrawData implements DrawContext {
     private long animationDuration = 0;
     private boolean drawLocalAxes = false;
     private boolean drawGlobalAxes = false;
-    /** Set to true after a large-point-count warning has been emitted for this shape. */
+    /**
+     * Set to true after a large-point-count warning has been emitted for this shape.
+     */
     private boolean largeSizeWarned = false;
 
+    /**
+     * Creates a new {@code DrawData} with default settings: a FLAME particle with zero extra
+     * speed, no location, and an identity last-orientation quaternion.
+     */
     public DrawData() {
         this.particle = new Particle(org.bukkit.Particle.FLAME).extra(0);
         this.lastOrientation = Quaternion.IDENTITY.clone();
@@ -42,57 +48,190 @@ public class DrawData implements DrawContext {
 
     // ---- Particle ----
 
-    public Particle getParticle() { return particle.clone(); }
+    /**
+     * Returns a clone of the particle stored in this draw data. Callers may modify the returned
+     * instance without affecting the stored particle.
+     *
+     * @return a cloned copy of the particle
+     */
+    public Particle getParticle() {
+        return particle.clone();
+    }
 
-    public Particle getParticleRaw() { return particle; }
+    /**
+     * Returns the raw (uncloned) particle stored in this draw data. Modifications to the returned
+     * instance will directly affect the stored particle.
+     *
+     * @return the stored {@link Particle} instance
+     */
+    public Particle getParticleRaw() {
+        return particle;
+    }
 
-    public void setParticle(Particle particle) { this.particle = particle; }
+    /**
+     * Replaces the stored particle with the given instance.
+     *
+     * @param particle the new particle to store
+     */
+    public void setParticle(Particle particle) {
+        this.particle = particle;
+    }
 
     // ---- Location ----
 
+    /**
+     * Returns a clone of the target draw location, or {@code null} if no location has been set.
+     *
+     * @return a cloned {@link DynamicLocation}, or {@code null}
+     */
     @Nullable
     public DynamicLocation getLocation() {
         if (location == null) return null;
         return location.clone();
     }
 
-    public void setLocation(DynamicLocation location) { this.location = location; }
+    /**
+     * Sets the target draw location for this shape.
+     *
+     * @param location the {@link DynamicLocation} to draw at
+     */
+    public void setLocation(DynamicLocation location) {
+        this.location = location;
+    }
 
+    /**
+     * Returns the location that was active during the most recent draw call, or {@code null} if
+     * the shape has not yet been drawn.
+     *
+     * @return the last draw location, or {@code null}
+     */
     @Nullable
-    public DynamicLocation getLastLocation() { return lastLocation; }
+    public DynamicLocation getLastLocation() {
+        return lastLocation;
+    }
 
-    public void setLastLocation(@Nullable DynamicLocation lastLocation) { this.lastLocation = lastLocation; }
+    /**
+     * Records the location used during the most recent draw call. Called internally by
+     * {@link com.sovdee.skriptparticles.shapes.DrawManager}.
+     *
+     * @param lastLocation the location to store as the last draw location, or {@code null}
+     */
+    public void setLastLocation(@Nullable DynamicLocation lastLocation) {
+        this.lastLocation = lastLocation;
+    }
 
     // ---- Orientation ----
 
-    public Quaternion getLastOrientation() { return lastOrientation; }
+    /**
+     * Returns the combined orientation quaternion that was used during the most recent draw call.
+     * The returned instance is the live object; mutating it affects the stored value.
+     *
+     * @return the last draw orientation as a {@link Quaternion}
+     */
+    public Quaternion getLastOrientation() {
+        return lastOrientation;
+    }
 
-    public void setLastOrientation(Quaternion orientation) { this.lastOrientation.set(orientation); }
+    /**
+     * Updates the stored last-orientation quaternion to match the given value.
+     *
+     * @param orientation the orientation to store
+     */
+    public void setLastOrientation(Quaternion orientation) {
+        this.lastOrientation.set(orientation);
+    }
 
     // ---- Animation ----
 
-    public long getAnimationDuration() { return animationDuration; }
+    /**
+     * Returns the animation duration in milliseconds. A value of 0 means the shape is drawn
+     * instantaneously rather than animated.
+     *
+     * @return the animation duration in milliseconds
+     */
+    public long getAnimationDuration() {
+        return animationDuration;
+    }
 
-    public void setAnimationDuration(long animationDuration) { this.animationDuration = animationDuration; }
+    /**
+     * Sets the animation duration in milliseconds. Set to 0 to disable animation.
+     *
+     * @param animationDuration the animation duration in milliseconds
+     */
+    public void setAnimationDuration(long animationDuration) {
+        this.animationDuration = animationDuration;
+    }
 
     // ---- Axes ----
 
-    public boolean showLocalAxes() { return drawLocalAxes; }
+    /**
+     * Returns {@code true} if the shape's local orientation axes should be drawn as debug
+     * particles after rendering the shape.
+     *
+     * @return {@code true} if local axes are drawn
+     */
+    public boolean showLocalAxes() {
+        return drawLocalAxes;
+    }
 
-    public void showLocalAxes(boolean show) { this.drawLocalAxes = show; }
+    /**
+     * Sets whether the shape's local orientation axes should be drawn as debug particles.
+     *
+     * @param show {@code true} to draw local axes
+     */
+    public void showLocalAxes(boolean show) {
+        this.drawLocalAxes = show;
+    }
 
-    public boolean showGlobalAxes() { return drawGlobalAxes; }
+    /**
+     * Returns {@code true} if the world-space global axes should be drawn as debug particles
+     * at the shape's origin after rendering.
+     *
+     * @return {@code true} if global axes are drawn
+     */
+    public boolean showGlobalAxes() {
+        return drawGlobalAxes;
+    }
 
-    public void showGlobalAxes(boolean show) { this.drawGlobalAxes = show; }
+    /**
+     * Sets whether the global (world-space) axes should be drawn as debug particles.
+     *
+     * @param show {@code true} to draw global axes
+     */
+    public void showGlobalAxes(boolean show) {
+        this.drawGlobalAxes = show;
+    }
 
     // ---- Warning flag ----
 
-    public boolean isLargeSizeWarned() { return largeSizeWarned; }
+    /**
+     * Returns {@code true} if a large-particle-count warning has already been emitted for this
+     * shape during the current session. Used to prevent repeated warnings.
+     *
+     * @return {@code true} if the large-size warning has been emitted
+     */
+    public boolean isLargeSizeWarned() {
+        return largeSizeWarned;
+    }
 
-    public void setLargeSizeWarned(boolean warned) { this.largeSizeWarned = warned; }
+    /**
+     * Sets the large-size warning flag to suppress duplicate warnings.
+     *
+     * @param warned {@code true} to mark the warning as already emitted
+     */
+    public void setLargeSizeWarned(boolean warned) {
+        this.largeSizeWarned = warned;
+    }
 
     // ---- DrawContext ----
 
+    /**
+     * Creates a deep copy of this {@code DrawData}, duplicating the particle, location,
+     * last location, last orientation, animation duration, and axis-draw flags. The
+     * {@link #isLargeSizeWarned()} flag is not copied and resets to {@code false} in the clone.
+     *
+     * @return a new {@code DrawData} with the same settings as this instance
+     */
     @Override
     public DrawData copy() {
         DrawData copy = new DrawData();

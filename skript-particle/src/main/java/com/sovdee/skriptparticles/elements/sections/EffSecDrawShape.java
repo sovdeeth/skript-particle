@@ -16,8 +16,8 @@ import com.sovdee.skriptparticles.util.DynamicLocation;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicLong;
@@ -103,7 +103,7 @@ public class EffSecDrawShape extends DrawShapeEffectSection {
     }
 
     @Override
-    @NonNull
+    @NotNull
     public String toString(@Nullable Event event, boolean b) {
         return "draw shape " + shapes.toString(event, b) + (locations != null ? " at " + locations.toString(event, b) : "") + " for " + (players == null ? "all players" : players.toString(event, b));
     }

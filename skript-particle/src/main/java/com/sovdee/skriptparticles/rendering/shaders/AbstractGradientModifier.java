@@ -19,9 +19,13 @@ public abstract class AbstractGradientModifier implements PointModifier<Particle
 
     protected final List<ColorStop> stops = new ArrayList<>();
     protected EasingFunction easing = EasingFunction.LINEAR;
-    /** Pre-built LUT: 256 Color objects, one per 1/255 position step. */
+    /**
+     * Pre-built LUT: 256 Color objects, one per 1/255 position step.
+     */
     protected Color[] lut;
-    /** Pre-built DustOptions LUT, parallel to {@link #lut}. Built in {@link #buildLUT()}. */
+    /**
+     * Pre-built DustOptions LUT, parallel to {@link #lut}. Built in {@link #buildLUT()}.
+     */
     protected DustOptions[] dustLut;
 
     protected AbstractGradientModifier() {}
@@ -44,7 +48,9 @@ public abstract class AbstractGradientModifier implements PointModifier<Particle
         addStop(new ColorStop(position, color));
     }
 
-    public List<ColorStop> getStops() { return stops; }
+    public List<ColorStop> getStops() {
+        return stops;
+    }
 
     /**
      * Builds the 256-entry LUT from the current stops.
@@ -71,8 +77,12 @@ public abstract class AbstractGradientModifier implements PointModifier<Particle
         return dustLut[idx];
     }
 
-    public EasingFunction getEasing() { return easing; }
-    public void setEasing(EasingFunction easing) { this.easing = easing; }
+    public EasingFunction getEasing() {
+        return easing;
+    }
+    public void setEasing(EasingFunction easing) {
+        this.easing = easing;
+    }
 
     @Override
     public void prepare(ShapeBounds bounds) {

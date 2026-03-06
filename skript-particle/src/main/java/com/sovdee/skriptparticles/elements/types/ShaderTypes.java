@@ -6,9 +6,16 @@ import ch.njol.skript.lang.ParseContext;
 import ch.njol.skript.registrations.Classes;
 import com.sovdee.shapes.modifiers.EasingFunction;
 import com.sovdee.shapes.modifiers.PointModifier;
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * Registers Skript type definitions for the modifier and easing systems.
+ * Registers the {@code pointmodifier} type (backed by {@link com.sovdee.shapes.modifiers.PointModifier})
+ * and the {@code easing} type (backed by {@link com.sovdee.shapes.modifiers.EasingFunction}),
+ * each with a non-parseable parser that provides human-readable {@code toString} and variable-name representations.
+ * All registration happens in the static initializer.
+ */
 public class ShaderTypes {
     static {
 
@@ -22,9 +29,9 @@ public class ShaderTypes {
                     @Override
                     public boolean canParse(ParseContext context) { return false; }
                     @Override
-                    public @NonNull String toString(PointModifier o, int flags) { return o.toString(); }
+                    public @NotNull String toString(PointModifier o, int flags) { return o.toString(); }
                     @Override
-                    public @NonNull String toVariableNameString(PointModifier o) { return "modifier:" + o.getClass().getSimpleName(); }
+                    public @NotNull String toVariableNameString(PointModifier o) { return "modifier:" + o.getClass().getSimpleName(); }
                 })
         );
 
@@ -40,7 +47,7 @@ public class ShaderTypes {
                     @Override
                     public boolean canParse(ParseContext context) { return false; }
                     @Override
-                    public @NonNull String toString(EasingFunction o, int flags) {
+                    public @NotNull String toString(EasingFunction o, int flags) {
                         return switch (o) {
                             case EasingFunction.PowerEasing p -> switch (p.mode()) {
                                 case IN -> "ease in (power " + p.exponent() + ")";
@@ -56,7 +63,7 @@ public class ShaderTypes {
                         };
                     }
                     @Override
-                    public @NonNull String toVariableNameString(EasingFunction o) { return "easing:" + o.easingHash(); }
+                    public @NotNull String toVariableNameString(EasingFunction o) { return "easing:" + o.easingHash(); }
                 })
         );
     }

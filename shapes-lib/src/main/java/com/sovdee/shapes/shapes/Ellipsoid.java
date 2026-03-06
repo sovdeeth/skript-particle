@@ -8,6 +8,18 @@ import org.joml.Vector3d;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A 3-D ellipsoid defined by three independent semi-axis radii along the X, Y, and Z axes.
+ * <br>
+ * Outline sampling produces the three principal great-circle ellipses (XZ, XY, YZ planes).
+ * Surface sampling generates a latitude-strip decomposition: the longest horizontal cross-section
+ * ellipse (XZ or XY/YZ depending on which radius is larger) is used as the profile, and rings
+ * at each latitude are computed from the ellipsoid equation. Filled sampling nests concentric
+ * scaled ellipsoids to fill the interior.
+ * <br>
+ * A point {@code (x, y, z)} is inside the ellipsoid when
+ * {@code (x/xRadius)² + (y/yRadius)² + (z/zRadius)² ≤ 1}.
+ */
 public class Ellipsoid extends AbstractShape implements LWHShape {
 
     private static final Quaterniond XY_ROTATION = new Quaterniond().rotateX(Math.PI / 2);
@@ -16,6 +28,14 @@ public class Ellipsoid extends AbstractShape implements LWHShape {
     protected double yRadius;
     protected double zRadius;
 
+    /**
+     * Constructs an ellipsoid with the given semi-axis lengths. Each radius is clamped to at
+     * least {@link Shape#EPSILON} to prevent degenerate geometry.
+     *
+     * @param xRadius semi-axis length along the X axis
+     * @param yRadius semi-axis length along the Y axis
+     * @param zRadius semi-axis length along the Z axis
+     */
     public Ellipsoid(double xRadius, double yRadius, double zRadius) {
         super();
         this.xRadius = Math.max(xRadius, Shape.EPSILON);
@@ -23,6 +43,14 @@ public class Ellipsoid extends AbstractShape implements LWHShape {
         this.zRadius = Math.max(zRadius, Shape.EPSILON);
     }
 
+    /**
+     * Generates the wireframe outline of the ellipsoid: three full great-circle ellipses in the
+     * XZ (horizontal), XY, and YZ planes. The XY and YZ ellipses are rotated into position using
+     * pre-computed quaternion constants so they lie correctly in their respective planes.
+     *
+     * @param points  the list to which generated points are appended
+     * @param density the desired spacing between adjacent points along each ellipse
+     */
     @Override
     public void generateOutline(List<Vector3d> points, double density) {
         Ellipse.calculateEllipse(points, xRadius, zRadius, density, 2 * Math.PI);
@@ -34,6 +62,15 @@ public class Ellipsoid extends AbstractShape implements LWHShape {
         VectorUtil.transform(ZY_ROTATION, points, start);
     }
 
+    /**
+     * Generates points covering the surface of the ellipsoid using a latitude-strip approach.
+     * The longest in-plane cross-section ellipse (XY or YZ depending on whether {@code xRadius >
+     * zRadius}) is used as the profile from which latitude angles are derived. At each latitude
+     * a horizontal ring scaled by {@code cos(θ)} is added, along with its mirror below the equator.
+     *
+     * @param points  the list to which generated points are appended
+     * @param density the desired spacing between adjacent points
+     */
     @Override
     public void generateSurface(List<Vector3d> points, double density) {
         List<Vector3d> ellipse = new ArrayList<>();
@@ -47,6 +84,15 @@ public class Ellipsoid extends AbstractShape implements LWHShape {
         generateEllipsoid(points, ellipse, 1, density);
     }
 
+    /**
+     * Generates points filling the interior of the ellipsoid by nesting concentric scaled copies
+     * of the surface, stepping the scale factor from 1 down to 0. Each scaled shell is generated
+     * by the same latitude-strip method used in {@link #generateSurface}, applied to a proportionally
+     * scaled version of the radii.
+     *
+     * @param points  the list to which generated points are appended
+     * @param density the desired spacing between adjacent points
+     */
     @Override
     public void generateFilled(List<Vector3d> points, double density) {
         double radius = Math.max(xRadius, zRadius);

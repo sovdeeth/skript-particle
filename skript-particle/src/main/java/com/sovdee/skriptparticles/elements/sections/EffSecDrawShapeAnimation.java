@@ -15,8 +15,8 @@ import com.sovdee.skriptparticles.shapes.DrawData;
 import com.sovdee.skriptparticles.util.DynamicLocation;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.function.Consumer;
@@ -62,7 +62,7 @@ public class EffSecDrawShapeAnimation extends DrawShapeEffectSection {
     }
 
     @Override
-    @NonNull
+    @NotNull
     public String toString(@Nullable Event event, boolean debug) {
         return "draw an animation of the shape of " + shapes.toString(event, debug) + " at " + (locations != null ? locations.toString(event, debug) : "shape's location") +
                 " for " + (players == null ? "all players" : players.toString(event, debug) + " over " + duration.toString(event, debug));

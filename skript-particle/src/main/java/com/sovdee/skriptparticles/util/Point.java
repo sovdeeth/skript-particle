@@ -3,7 +3,7 @@ package com.sovdee.skriptparticles.util;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.util.Vector;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Contract;
 
 import java.util.ArrayList;

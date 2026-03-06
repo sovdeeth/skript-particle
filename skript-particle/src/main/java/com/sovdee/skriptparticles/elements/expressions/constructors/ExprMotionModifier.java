@@ -13,7 +13,7 @@ import ch.njol.util.Kleenean;
 import com.sovdee.shapes.modifiers.PointModifier;
 import com.sovdee.skriptparticles.rendering.shaders.MotionModifier;
 import org.bukkit.event.Event;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 @Name("Motion Modifier Constructor")
 @Description({
@@ -55,10 +55,14 @@ public class ExprMotionModifier extends SimpleExpression<PointModifier> {
     }
 
     @Override
-    public boolean isSingle() { return true; }
+    public boolean isSingle() {
+        return true;
+    }
 
     @Override
-    public Class<? extends PointModifier> getReturnType() { return PointModifier.class; }
+    public Class<? extends PointModifier> getReturnType() {
+        return PointModifier.class;
+    }
 
     @Override
     public String toString(@Nullable Event event, boolean debug) {

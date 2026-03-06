@@ -12,6 +12,15 @@ import com.sovdee.shapes.shapes.RadialShape;
 import com.sovdee.shapes.shapes.Shape;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * Registers Skript type definitions for all shape-related classes and the shape style enum.
+ * Registered types: {@code shape}, {@code radialshape}, {@code lwhshape}, {@code cutoffshape},
+ * {@code polyshape}, and {@code shapestyle} ({@link com.sovdee.shapes.sampling.SamplingStyle}).
+ * Each shape type includes a cloner that delegates to {@code Shape::clone} so Skript can safely
+ * copy shapes when storing them in variables. The {@code shapestyle} type has a custom string parser
+ * that accepts aliases such as {@code outlined}, {@code wireframe}, {@code hollow}, {@code solid}, and {@code filled}.
+ * All registration happens in the static initializer.
+ */
 public class ShapeTypes {
     static {
         // Shape — register the library shape directly

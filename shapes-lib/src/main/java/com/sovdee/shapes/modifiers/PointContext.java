@@ -11,43 +11,65 @@ import com.sovdee.shapes.shapes.Shape;
  */
 public class PointContext {
 
-    /** Shape reference **/
+    /**
+     * Shape reference.
+     */
     public Shape shape;
 
-    /** Local-space position (writable by geometry modifiers). */
+    /**
+     * Local-space position (writable by geometry modifiers).
+     */
     public double x, y, z;
 
-    /** 0-based index of this point in the draw order. */
+    /**
+     * 0-based index of this point in the draw order.
+     */
     public int index;
 
-    /** Total number of points being drawn this pass. */
+    /**
+     * Total number of points being drawn this pass.
+     */
     public int totalPoints;
 
-    /** Pre-computed bounds for normalization helpers. Set once per pass before the modify loop. */
+    /**
+     * Pre-computed bounds for normalization helpers. Set once per pass before the modify loop.
+     */
     public ShapeBounds bounds;
 
     // ---- Normalization convenience (delegate to bounds) ----
 
-    /** Normalised X position within shape bounds [0, 1]. */
+    /**
+     * @return Normalised X position within shape bounds [0, 1].
+     */
     public double normalizedX() { return bounds.normalizeX(x); }
 
-    /** Normalised Y position within shape bounds [0, 1]. */
+    /**
+     * @return Normalised Y position within shape bounds [0, 1].
+     */
     public double normalizedY() { return bounds.normalizeY(y); }
 
-    /** Normalised Z position within shape bounds [0, 1]. */
+    /**
+     * @return Normalised Z position within shape bounds [0, 1].
+     */
     public double normalizedZ() { return bounds.normalizeZ(z); }
 
-    /** Normalised XZ radius [0, 1] relative to max XZ extent. */
+    /**
+     * @return Normalised XZ radius [0, 1] relative to max XZ extent.
+     */
     public double normalizedRadius() { return bounds.normalizeRadial(x, z); }
 
-    /** Normalised 3D spherical radius [0, 1] relative to max XZ radius. */
+    /**
+     * @return Normalised 3D spherical radius [0, 1] relative to max XZ radius.
+     */
     public double normalizedSpherical() {
         double r = Math.sqrt(x * x + y * y + z * z);
         double maxR = bounds.maxRadiusXZ();
         return maxR > 1e-12 ? r / maxR : 0.0;
     }
 
-    /** XZ angle mapped to [0, 1] (0 = +X axis, wraps around). */
+    /**
+     * @return XZ angle mapped to [0, 1] (0 = +X axis, wraps around).
+     */
     public double angle() {
         double a = Math.atan2(z, x);
         if (a < 0) a += 2 * Math.PI;

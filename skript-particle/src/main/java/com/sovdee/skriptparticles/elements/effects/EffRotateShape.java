@@ -17,6 +17,13 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Quaterniond;
 import org.joml.Quaternionf;
 
+/**
+ * Skript effect that rotates one or more shapes around an axis by an angle, or applies a quaternion rotation.
+ * Supports named cardinal axes (x, y, z), arbitrary vector axes, local (relative) rotation, and radians/degrees.
+ * When used inside a {@link com.sovdee.skriptparticles.elements.sections.DrawShapeEffectSection.DrawEvent DrawEvent}
+ * section without an explicit shape argument, it operates on the currently-being-drawn shape.
+ * See {@code @Name}, {@code @Description}, {@code @Examples}, and {@code @Since} for Skript-facing documentation.
+ */
 @Name("Rotate Shape")
 @Description({
         "Rotates shapes around a given axis by a given angle. The axis can be specified as a vector or as a single axis (x, y, or z). " +
@@ -51,6 +58,10 @@ public class EffRotateShape extends Effect {
     private boolean isRadians = false;
     private boolean isAxisAngle = false;
 
+    /**
+     * Determines whether drawn-shapes or explicit shapes are used, resolves axis/quaternion mode,
+     * and validates that the effect is inside a DrawEvent section when no explicit shape is given.
+     */
     @Override
     public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, ParseResult parseResult) {
         int offset = 0;
@@ -80,6 +91,10 @@ public class EffRotateShape extends Effect {
         return true;
     }
 
+    /**
+     * Applies the rotation to each target shape; uses premul for global rotations and mul for
+     * relative/local ones.
+     */
     @Override
     protected void execute(Event event) {
         Quaterniond rotation;
@@ -130,6 +145,9 @@ public class EffRotateShape extends Effect {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString(@Nullable Event event, boolean debug) {
         if (rotation != null)

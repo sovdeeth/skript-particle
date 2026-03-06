@@ -32,6 +32,12 @@ public interface PointModifier<Context extends PointContext> extends Cloneable {
      */
     int modifierHash();
 
+    /**
+     * Returns a deep copy of this modifier. The clone must be fully independent:
+     * changes to the clone's configuration must not affect the original.
+     *
+     * @return a new modifier instance with the same configuration
+     */
     PointModifier<Context> clone();
 
     /**
@@ -51,6 +57,13 @@ public interface PointModifier<Context extends PointContext> extends Cloneable {
      */
     abstract class PreRenderPointModifier implements PointModifier<PointContext> {
 
+        /**
+         * Returns a shallow clone of this geometry modifier.
+         * Sufficient for modifiers whose fields are all primitives or immutable objects.
+         *
+         * @return a new {@code PointModifier} instance with the same configuration
+         * @throws RuntimeException wrapping {@link CloneNotSupportedException} if cloning fails
+         */
         @Override
         @SuppressWarnings("unchecked")
         public PointModifier<PointContext> clone() {

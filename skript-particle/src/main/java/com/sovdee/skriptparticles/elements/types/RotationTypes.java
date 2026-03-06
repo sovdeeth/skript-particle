@@ -17,6 +17,14 @@ import org.joml.AxisAngle4f;
 import org.joml.Quaternionf;
 import org.skriptlang.skript.lang.converter.Converters;
 
+/**
+ * Registers Skript type definitions and global functions related to quaternion rotations.
+ * Registers the {@code quaternion} type (backed by JOML's {@link org.joml.Quaternionf}) if not already present,
+ * along with a converter from {@code Quaternionf} to the plugin's {@link com.sovdee.skriptparticles.util.Quaternion}.
+ * Also registers three global Skript functions: {@code quaternion(x, y, z, w)},
+ * {@code axisAngle(angle, x, y, z)} (radians), and {@code axisAngleDegrees(angle, x, y, z)} (degrees).
+ * All registration happens in the static initializer.
+ */
 public class RotationTypes {
     static {
         if (Classes.getExactClassInfo(Quaternionf.class) == null) {

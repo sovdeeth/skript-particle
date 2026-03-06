@@ -17,7 +17,7 @@ import com.sovdee.shapes.sampling.SamplingStyle;
 import com.sovdee.skriptparticles.shapes.DrawData;
 import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @Name("Particle Circle or Cylinder")
@@ -44,7 +44,7 @@ public class ExprCircle extends SimpleExpression<Shape> {
     private boolean isCylinder;
 
     @Override
-    public boolean init(Expression<?>[] exprs, int matchedPattern, @NonNull Kleenean isDelayed, @NonNull ParseResult parseResult) {
+    public boolean init(Expression<?>[] exprs, int matchedPattern, @NotNull Kleenean isDelayed, @NotNull ParseResult parseResult) {
         isCylinder = matchedPattern == 1;
 
         radius = (Expression<Number>) exprs[0];
@@ -75,7 +75,7 @@ public class ExprCircle extends SimpleExpression<Shape> {
 
     @Override
     @Nullable
-    protected Shape[] get(@NonNull Event event) {
+    protected Shape[] get(@NotNull Event event) {
         Number radius = this.radius.getSingle(event);
         Number height = this.height != null ? this.height.getSingle(event) : 0;
         if (radius == null || height == null)
@@ -96,13 +96,13 @@ public class ExprCircle extends SimpleExpression<Shape> {
     }
 
     @Override
-    @NonNull
+    @NotNull
     public Class<? extends Shape> getReturnType() {
         return Shape.class;
     }
 
     @Override
-    @NonNull
+    @NotNull
     public String toString(@Nullable Event event, boolean debug) {
         return (isCylinder ? "circle of radius " + radius.toString(event, debug) :
                 "cylinder of radius " + radius.toString(event, debug) + " and height " + (height != null ? height.toString(event, debug) : "0"));

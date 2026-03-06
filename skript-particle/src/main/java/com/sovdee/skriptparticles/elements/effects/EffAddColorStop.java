@@ -13,8 +13,13 @@ import com.sovdee.shapes.modifiers.PointModifier;
 import com.sovdee.skriptparticles.rendering.shaders.AbstractGradientModifier;
 import org.bukkit.Color;
 import org.bukkit.event.Event;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jetbrains.annotations.Nullable;
 
+/**
+ * Skript effect that adds a color stop at a specific normalized position to a gradient modifier.
+ * See {@link #init}, {@link #execute}, and {@link #toString} for behaviour details.
+ * Documented from the Skript side via {@code @Name}, {@code @Description}, {@code @Examples}, and {@code @Since}.
+ */
 @Name("Add Gradient Color Stop")
 @Description({
         "Adds a color stop at a specific position to a gradient modifier.",
@@ -39,6 +44,9 @@ public class EffAddColorStop extends Effect {
     private Expression<Color> color;
     private Expression<PointModifier> modifier;
 
+    /**
+     * {@inheritDoc}
+     */
     @SuppressWarnings("unchecked")
     @Override
     public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, SkriptParser.ParseResult parseResult) {
@@ -48,6 +56,10 @@ public class EffAddColorStop extends Effect {
         return true;
     }
 
+    /**
+     * Adds the color stop to the modifier only if it is an {@link AbstractGradientModifier};
+     * silently does nothing otherwise.
+     */
     @Override
     protected void execute(Event event) {
         Number pos = position.getSingle(event);
@@ -61,6 +73,9 @@ public class EffAddColorStop extends Effect {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString(@Nullable Event event, boolean debug) {
         return "add color stop at " + position.toString(event, debug)

@@ -4,15 +4,17 @@ package com.sovdee.shapes.modifiers;
  * The value used to drive a per-point computation (wave input, gradient direction, etc.).
  *
  * <ul>
- *   <li>{@link #X}, {@link #Y}, {@link #Z} — the point's local spatial coordinate.</li>
- *   <li>{@link #T} — the normalised point index ({@code index / totalPoints}), producing
+ *   <li>{@link #X}, {@link #Y}, {@link #Z} - the point's local spatial coordinate.</li>
+ *   <li>{@link #T} - the normalised point index ({@code index / totalPoints}), producing
  *       effects that vary over draw order rather than position.</li>
  * </ul>
  */
 public enum SampleAxis {
     X, Y, Z, T;
 
-    /** Evaluates this axis against the given context, returning a value in an appropriate range. */
+    /**
+     * Evaluates this axis against the given context, returning a value in an appropriate range.
+     */
     public double sample(PointContext point) {
         return switch (this) {
             case X -> point.x;
@@ -22,7 +24,9 @@ public enum SampleAxis {
         };
     }
 
-    /** Same as {@link #sample} but normalised to [0, 1] using the context's bounds. */
+    /**
+     * Same as {@link #sample} but normalised to [0, 1] using the context's bounds.
+     */
     public double sampleNormalized(PointContext point) {
         return switch (this) {
             case X -> point.normalizedX();

@@ -17,7 +17,7 @@ import com.sovdee.skriptparticles.util.Point;
 import com.sovdee.skriptparticles.util.VectorConversion;
 import org.bukkit.Location;
 import org.bukkit.event.Event;
-import org.checkerframework.checker.nullness.qual.NonNull;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3d;
 
@@ -45,7 +45,7 @@ public class ExprBezierCurve extends SimpleExpression<Shape> {
     private Expression<?> controlPoints;
 
     @Override
-    public boolean init(Expression<?>[] exprs, int matchedPattern, @NonNull Kleenean isDelayed, @NonNull ParseResult parseResult) {
+    public boolean init(Expression<?>[] exprs, int matchedPattern, @NotNull Kleenean isDelayed, @NotNull ParseResult parseResult) {
         start = exprs[0];
         end = exprs[1];
         controlPoints = exprs[2];
@@ -53,7 +53,7 @@ public class ExprBezierCurve extends SimpleExpression<Shape> {
     }
 
     @Override
-    protected Shape @Nullable [] get(@NonNull Event event) {
+    protected Shape @Nullable [] get(@NotNull Event event) {
         @Nullable Point<?> startPt = Point.of(this.start.getSingle(event));
         @Nullable Point<?> endPt = Point.of(this.end.getSingle(event));
         if (startPt == null || endPt == null)
@@ -68,7 +68,7 @@ public class ExprBezierCurve extends SimpleExpression<Shape> {
         return new Shape[]{curve};
     }
 
-    private static @NonNull BezierCurve getBezierCurve(@NonNull Point<?> startPt, List<Point<?>> controlPts, @NonNull Point<?> endPt) {
+    private static @NotNull BezierCurve getBezierCurve(@NotNull Point<?> startPt, List<Point<?>> controlPts, @NotNull Point<?> endPt) {
         BezierCurve curve = new BezierCurve(() -> {
             Location origin = startPt.getLocation();
             List<Vector3d> result = new ArrayList<>();
@@ -88,13 +88,13 @@ public class ExprBezierCurve extends SimpleExpression<Shape> {
     }
 
     @Override
-    @NonNull
+    @NotNull
     public Class<? extends Shape> getReturnType() {
         return Shape.class;
     }
 
     @Override
-    @NonNull
+    @NotNull
     public String toString(@Nullable Event event, boolean debug) {
         return "bezier curve between start " + start.toString(event, debug) + " and end " + end.toString(event, debug) +
                 " using control points " + controlPoints.toString(event, debug);

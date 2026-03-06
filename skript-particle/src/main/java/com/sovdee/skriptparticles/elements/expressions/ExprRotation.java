@@ -16,6 +16,12 @@ import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * Skript expression that constructs a {@link com.sovdee.skriptparticles.util.Quaternion} representing a rotation.
+ * Supports two forms: axis-angle (around a vector by a given angle in degrees or radians) and
+ * vector-to-vector (the shortest rotation from one direction to another).
+ * Documented from the Skript side via {@code @Name}, {@code @Description}, {@code @Examples}, and {@code @Since}.
+ */
 @Name("Rotation")
 @Description("Describes a rotation around a vector by a given angle, or from one vector to another. An alternative to the `axisAngle` and `quaternion` functions. Returns a quaternion.")
 @Examples({

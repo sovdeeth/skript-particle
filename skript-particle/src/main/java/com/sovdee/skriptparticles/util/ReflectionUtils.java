@@ -1,7 +1,7 @@
 package com.sovdee.skriptparticles.util;
 
 import org.bukkit.Bukkit;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 /*
  * Thanks to ShaneBee at SkBee for the original code.

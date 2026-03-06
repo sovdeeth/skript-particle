@@ -22,7 +22,7 @@ import com.sovdee.skriptparticles.rendering.shaders.ColorStop;
 import com.sovdee.skriptparticles.rendering.shaders.RadialGradientModifier;
 import com.sovdee.skriptparticles.rendering.shaders.SphericalGradientModifier;
 import org.bukkit.event.Event;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -147,10 +147,14 @@ public class ExprGradientModifier extends SimpleExpression<PointModifier> {
     }
 
     @Override
-    public boolean isSingle() { return true; }
+    public boolean isSingle() {
+        return true;
+    }
 
     @Override
-    public Class<? extends PointModifier> getReturnType() { return PointModifier.class; }
+    public Class<? extends PointModifier> getReturnType() {
+        return PointModifier.class;
+    }
 
     @Override
     public String toString(@Nullable Event event, boolean debug) {

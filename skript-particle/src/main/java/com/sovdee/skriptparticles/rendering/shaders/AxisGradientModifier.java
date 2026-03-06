@@ -31,7 +31,9 @@ public class AxisGradientModifier extends AbstractGradientModifier {
         point.data = dustLookup(axis.sampleNormalized(point));
     }
 
-    public SampleAxis getAxis() { return axis; }
+    public SampleAxis getAxis() {
+        return axis;
+    }
 
     @Override
     protected AbstractGradientModifier createInstance() {

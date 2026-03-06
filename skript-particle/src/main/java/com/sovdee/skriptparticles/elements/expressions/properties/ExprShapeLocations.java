@@ -15,8 +15,8 @@ import com.sovdee.shapes.shapes.Shape;
 import com.sovdee.skriptparticles.util.VectorConversion;
 import org.bukkit.Location;
 import org.bukkit.event.Event;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 
@@ -73,12 +73,12 @@ public class ExprShapeLocations extends SimpleExpression<Location> {
     }
 
     @Override
-    public @NonNull Class<? extends Location> getReturnType() {
+    public @NotNull Class<? extends Location> getReturnType() {
         return Location.class;
     }
 
     @Override
-    public @NonNull String toString(@Nullable Event event, boolean debug) {
+    public @NotNull String toString(@Nullable Event event, boolean debug) {
         return "Locations of shapes";
     }
 

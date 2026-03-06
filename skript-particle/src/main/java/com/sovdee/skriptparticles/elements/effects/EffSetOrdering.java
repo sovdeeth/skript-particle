@@ -11,11 +11,17 @@ import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.util.Kleenean;
 import com.sovdee.shapes.shapes.Shape;
 import org.bukkit.event.Event;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3d;
 
 import java.util.Comparator;
 
+/**
+ * Skript effect that sets the ordering comparator used when animating a shape's points.
+ * Supported orderings are default (none), lowest-to-highest (sum of xyz ascending), and
+ * highest-to-lowest (descending). Documented from the Skript side via {@code @Name},
+ * {@code @Description}, {@code @Examples}, and {@code @Since}.
+ */
 @Name("Shape Animation Ordering")
 @Description({
         "Controls the order in which the draw animation effect will draw points. Currently WIP, only supports 2 special orderings.",
@@ -35,6 +41,9 @@ public class EffSetOrdering extends Effect {
     private Expression<Shape> shapes;
     private int order;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean init(Expression<?>[] expressions, int matchedPattern, Kleenean isDelayed, ParseResult parseResult) {
         shapes = (Expression<Shape>) expressions[0];
@@ -42,6 +51,9 @@ public class EffSetOrdering extends Effect {
         return true;
     }
 
+    /**
+     * Resolves the comparator from the stored mark and applies it to each shape's point sampler.
+     */
     @Override
     protected void execute(Event event) {
         @Nullable Comparator<Vector3d> order = switch (this.order) {
@@ -62,6 +74,9 @@ public class EffSetOrdering extends Effect {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString(@Nullable Event event, boolean debug) {
         return "set the animation order of " + shapes.toString(event, debug) + " to " + switch (order) {

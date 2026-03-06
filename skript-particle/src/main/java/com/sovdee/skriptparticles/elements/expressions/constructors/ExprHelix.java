@@ -17,7 +17,7 @@ import com.sovdee.shapes.sampling.SamplingStyle;
 import com.sovdee.skriptparticles.shapes.DrawData;
 import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 @Name("Particle Helix / Spiral")
 @Description({

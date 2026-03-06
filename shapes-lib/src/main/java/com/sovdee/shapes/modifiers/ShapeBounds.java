@@ -27,10 +27,10 @@ public final class ShapeBounds {
         this.rangeY = maxY - minY;
         this.rangeZ = maxZ - minZ;
         this.maxRadius = maxRadius;
-        this.invRangeX = rangeX > 1e-12 ? 1.0 / rangeX : 0.0;
-        this.invRangeY = rangeY > 1e-12 ? 1.0 / rangeY : 0.0;
-        this.invRangeZ = rangeZ > 1e-12 ? 1.0 / rangeZ : 0.0;
-        this.invMaxRadius = maxRadius > 1e-12 ? 1.0 / maxRadius : 0.0;
+        this.invRangeX = rangeX > 1e-6 ? 1.0 / rangeX : 0.0;
+        this.invRangeY = rangeY > 1e-6 ? 1.0 / rangeY : 0.0;
+        this.invRangeZ = rangeZ > 1e-6 ? 1.0 / rangeZ : 0.0;
+        this.invMaxRadius = maxRadius > 1e-6 ? 1.0 / maxRadius : 0.0;
     }
 
     /**
@@ -57,36 +57,134 @@ public final class ShapeBounds {
         return new ShapeBounds(minX, minY, minZ, maxX, maxY, maxZ, maxRadius);
     }
 
-    /** Normalizes x to [0, 1] within the shape's X extent. */
-    public double normalizeX(double x) { return (x - minX) * invRangeX; }
+    /**
+     * Normalizes x to [0, 1] within the shape's X extent.
+     */
+    public double normalizeX(double x) {
+        return (x - minX) * invRangeX;
+    }
 
-    /** Normalizes y to [0, 1] within the shape's Y extent. */
-    public double normalizeY(double y) { return (y - minY) * invRangeY; }
+    /**
+     * Normalizes y to [0, 1] within the shape's Y extent.
+     */
+    public double normalizeY(double y) {
+        return (y - minY) * invRangeY;
+    }
 
-    /** Normalizes z to [0, 1] within the shape's Z extent. */
-    public double normalizeZ(double z) { return (z - minZ) * invRangeZ; }
+    /**
+     * Normalizes z to [0, 1] within the shape's Z extent.
+     */
+    public double normalizeZ(double z) {
+        return (z - minZ) * invRangeZ;
+    }
 
-    /** Normalizes the XZ radius to [0, 1] relative to the shape's max XZ radius. */
+    /**
+     * Normalizes the XZ radius to [0, 1] relative to the shape's max XZ radius.
+     */
     public double normalizeRadial(double x, double z) {
         return Math.sqrt(x * x + z * z) * invMaxRadius;
     }
 
-    /** Returns the max XZ distance from origin across all points. */
-    public double maxRadiusXZ() { return maxRadius; }
+    /**
+     * Returns the max XZ distance from origin across all points.
+     */
+    public double maxRadiusXZ() {
+        return maxRadius;
+    }
 
-    public double height() { return rangeY; }
-    public double width()  { return rangeX; }
-    public double length() { return rangeZ; }
+    /**
+     * @return the extent of the bounding box along the Y axis ({@code maxY - minY})
+     */
+    public double height() {
+        return rangeY;
+    }
+    /**
+     * @return the extent of the bounding box along the X axis ({@code maxX - minX})
+     */
+    public double width() {
+        return rangeX;
+    }
+    /**
+     * @return the extent of the bounding box along the Z axis ({@code maxZ - minZ})
+     */
+    public double length() {
+        return rangeZ;
+    }
 
-    public double minX() { return minX; }
-    public double minY() { return minY; }
-    public double minZ() { return minZ; }
-    public double maxX() { return maxX; }
-    public double maxY() { return maxY; }
-    public double maxZ() { return maxZ; }
+    /**
+     * @return the minimum X coordinate across all points
+     */
+    public double minX() {
+        return minX;
+    }
+    /**
+     * @return the minimum Y coordinate across all points
+     */
+    public double minY() {
+        return minY;
+    }
+    /**
+     * @return the minimum Z coordinate across all points
+     */
+    public double minZ() {
+        return minZ;
+    }
+    /**
+     * @return the maximum X coordinate across all points
+     */
+    public double maxX() {
+        return maxX;
+    }
+    /**
+     * @return the maximum Y coordinate across all points
+     */
+    public double maxY() {
+        return maxY;
+    }
+    /**
+     * @return the maximum Z coordinate across all points
+     */
+    public double maxZ() {
+        return maxZ;
+    }
 
-    public double invRangeX() { return invRangeX; }
-    public double invRangeY() { return invRangeY; }
-    public double invRangeZ() { return invRangeZ; }
-    public double invMaxRadius() { return invMaxRadius; }
+    /**
+     * Pre-computed reciprocal of the X extent, used for fast normalisation without division.
+     * Returns {@code 0} if the X extent is degenerate (less than {@code 1e-12}).
+     *
+     * @return {@code 1 / rangeX}, or {@code 0} if the range is effectively zero
+     */
+    public double invRangeX() {
+        return invRangeX;
+    }
+
+    /**
+     * Pre-computed reciprocal of the Y extent, used for fast normalisation without division.
+     * Returns {@code 0} if the Y extent is degenerate (less than {@code 1e-12}).
+     *
+     * @return {@code 1 / rangeY}, or {@code 0} if the range is effectively zero
+     */
+    public double invRangeY() {
+        return invRangeY;
+    }
+
+    /**
+     * Pre-computed reciprocal of the Z extent, used for fast normalisation without division.
+     * Returns {@code 0} if the Z extent is degenerate (less than {@code 1e-12}).
+     *
+     * @return {@code 1 / rangeZ}, or {@code 0} if the range is effectively zero
+     */
+    public double invRangeZ() {
+        return invRangeZ;
+    }
+
+    /**
+     * Pre-computed reciprocal of the maximum XZ radius, used for fast radial normalisation.
+     * Returns {@code 0} if the maximum radius is degenerate (less than {@code 1e-12}).
+     *
+     * @return {@code 1 / maxRadius}, or {@code 0} if the radius is effectively zero
+     */
+    public double invMaxRadius() {
+        return invMaxRadius;
+    }
 }

@@ -2,7 +2,7 @@ package com.sovdee.skriptparticles.rendering;
 
 import com.sovdee.shapes.modifiers.PointContext;
 import com.sovdee.skriptparticles.particles.Particle;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Quaterniond;
 
 /**
@@ -16,32 +16,49 @@ public class ParticleRenderContext extends PointContext {
 
     // ---- Set once per draw call ----
 
-    /** Shape orientation in world space, used by motion modifiers to transform the local Y axis. */
+    /**
+     * Shape orientation in world space, used by motion modifiers to transform the local Y axis.
+     */
     public @Nullable Quaterniond orientation;
 
-    /** Shape scale (informational, available to modifiers). */
+    /**
+     * Shape scale (informational, available to modifiers).
+     */
     public double scale = 1.0;
 
     // ---- Written by render modifiers, read by the renderer ----
 
-    /** particle type **/
+    /**
+     * Particle type.
+     */
     public org.bukkit.Particle particle;
     private final org.bukkit.Particle defaultParticle;
 
-    /** particle data **/
+    /**
+     * Particle data.
+     */
     public Object data;
     private final Object defaultData;
 
-    /** Whether this point should be rendered at all. */
+    /**
+     * Whether this point should be rendered at all.
+     */
     public boolean visible = true;
 
-    /** Position displacement added to the world coordinates at render time. */
+    /**
+     * Position displacement added to the world coordinates at render time.
+     */
     public double displacementX, displacementY, displacementZ;
 
-    /** Directional motion override (used as particle velocity). Only applied when {@link #hasMotion} is true. */
+    /**
+     * Directional motion override (used as particle velocity). Only applied when {@link #hasMotion}
+     * is true.
+     */
     public float motionX, motionY, motionZ;
 
-    /** Whether {@link #motionX}/{@link #motionY}/{@link #motionZ} should override the default motion. */
+    /**
+     * Whether {@link #motionX}/{@link #motionY}/{@link #motionZ} should override the default motion.
+     */
     public boolean hasMotion;
 
     public ParticleRenderContext(Particle particle) {
@@ -59,7 +76,9 @@ public class ParticleRenderContext extends PointContext {
         return particle == defaultParticle && data == defaultData;
     }
 
-    /** Resets all render fields to their defaults before each point is processed. */
+    /**
+     * Resets all render fields to their defaults before each point is processed.
+     */
     @Override
     public void reset() {
         particle = defaultParticle;

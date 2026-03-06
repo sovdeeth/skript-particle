@@ -14,6 +14,11 @@ import com.sovdee.skriptparticles.shapes.DrawData;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * Skript effect that shows or hides the local and/or global debug axes of one or more shapes.
+ * Intended for debugging purposes; toggles the corresponding flag on each shape's {@link com.sovdee.skriptparticles.shapes.DrawData DrawData}.
+ * Documented from the Skript side via {@code @Name}, {@code @Description}, {@code @Examples}, and {@code @Since}.
+ */
 @Name("Toggle Axes")
 @Description({
         "Toggles the visibility of the local and/or global axes of a shape.",
@@ -38,6 +43,9 @@ public class EffToggleAxes extends Effect {
     private boolean globalFlag = false;
     private boolean showFlag = false;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean init(Expression<?>[] expressions, int i, Kleenean kleenean, SkriptParser.ParseResult parseResult) {
         shape = (Expression<Shape>) expressions[0];
@@ -47,6 +55,9 @@ public class EffToggleAxes extends Effect {
         return true;
     }
 
+    /**
+     * Applies the show/hide flags to the local and/or global axes of each shape's DrawData.
+     */
     @Override
     protected void execute(Event event) {
         Shape[] shapes = shape.getArray(event);
@@ -59,6 +70,9 @@ public class EffToggleAxes extends Effect {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString(@Nullable Event event, boolean debug) {
         return (showFlag ? "show" : "hide") + (globalFlag ? "global" : "") + (globalFlag && localFlag ? " and " : "") +

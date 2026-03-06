@@ -17,7 +17,7 @@ import com.sovdee.shapes.modifiers.TaperModifier;
 import com.sovdee.shapes.modifiers.TwistModifier;
 import com.sovdee.shapes.modifiers.WaveModifier;
 import org.bukkit.event.Event;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 @Name("Point Modifier Constructor")
 @Description({
@@ -141,10 +141,14 @@ public class ExprModifier extends SimpleExpression<PointModifier> {
     }
 
     @Override
-    public boolean isSingle() { return true; }
+    public boolean isSingle() {
+        return true;
+    }
 
     @Override
-    public Class<? extends PointModifier> getReturnType() { return PointModifier.class; }
+    public Class<? extends PointModifier> getReturnType() {
+        return PointModifier.class;
+    }
 
     @Override
     public String toString(@Nullable Event event, boolean debug) {

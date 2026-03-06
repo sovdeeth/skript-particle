@@ -35,7 +35,9 @@ public record ColorStop(double position, Color color) {
         return stops.getLast().color();
     }
 
-    /** Linearly interpolates between two colors. */
+    /**
+     * Linearly interpolates between two colors.
+     */
     private static Color lerp(Color a, Color b, double t) {
         return Color.fromRGB(
                 (int) (a.getRed()   + t * (b.getRed()   - a.getRed())),
