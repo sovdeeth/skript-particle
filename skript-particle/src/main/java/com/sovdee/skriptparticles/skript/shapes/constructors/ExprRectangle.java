@@ -1,19 +1,16 @@
 package com.sovdee.skriptparticles.skript.shapes.constructors;
 
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser;
-import org.skriptlang.skript.registration.SyntaxInfo;
-import org.skriptlang.skript.registration.SyntaxRegistry;
-import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
+import com.sovdee.shapes.sampling.SamplingStyle;
 import com.sovdee.shapes.shapes.Rectangle;
 import com.sovdee.shapes.shapes.Rectangle.Plane;
 import com.sovdee.shapes.shapes.Shape;
-import com.sovdee.shapes.sampling.SamplingStyle;
 import com.sovdee.skriptparticles.rendering.DrawData;
 import com.sovdee.skriptparticles.util.DynamicLocation;
 import com.sovdee.skriptparticles.util.MathUtil;
@@ -21,26 +18,28 @@ import com.sovdee.skriptparticles.util.VectorConversion;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
+import org.skriptlang.skript.registration.SyntaxInfo;
+
+import java.util.List;
+import org.skriptlang.skript.registration.SyntaxRegistry;
 
 @Name("Particle Rectangle")
-@Description({
-        "Creates a rectangle from a length and a width, or from two corners. The length and width must be greater than 0.",
-        "When defining a rectangle from two corners, the corners can either be vectors or locations/entities. " +
-                "You cannot use both vectors and locations/entities, but you can mix and match locations and entities. " +
-                "When using locations, this is a shape that can be drawn without a specific location. It will be drawn between the two given locations.",
-        "Note that the rectangle defaults to the xz plane, or parallel to the ground, with x being width and z being length. " +
-                "You can change this to the xy or yz plane by using the 'xy' or 'yz'. In all cases, the first axis is length and the second is width."
-})
-@Examples({
-        "set {_shape} to rectangle with length 10 and width 5",
-        "set {_shape} to a yz rectangle from vector(0, 0, 0) to vector(10, 10, 10)",
-        "draw the shape of a rectangle with length 10 and width 5 at player",
-        "",
-        "# note that the following does not require a location to be drawn at",
-        "draw the shape of a rectangle from player to player's target"
-})
+@Description("""
+    Creates a rectangle from a length and a width, or from two corners. The length and width must be greater than 0.
+    When defining a rectangle from two corners, the corners can either be vectors or locations/entities.
+    You cannot use both vectors and locations/entities, but you can mix and match locations and entities.
+    When using locations, this is a shape that can be drawn without a specific location. It will be drawn between the two given locations.
+    Note that the rectangle defaults to the xz plane, or parallel to the ground, with x being width and z being length.
+    You can change this to the xy or yz plane by using the 'xy' or 'yz'. In all cases, the first axis is length and the second is width.
+    """)
+@Example("set {_shape} to rectangle with length 10 and width 5")
+@Example("set {_shape} to a yz rectangle from vector(0, 0, 0) to vector(10, 10, 10)")
+@Example("draw the shape of a rectangle with length 10 and width 5 at player")
+@Example("")
+@Example("# note that the following does not require a location to be drawn at")
+@Example("draw the shape of a rectangle from player to player's target")
 @Since("1.0.0")
-public class ExprRectangle extends SimpleExpression<Shape> {
+public class ExprRectangle extends ShapeConstructorExpression {
 
     public static void register(SyntaxRegistry registry) {
         registry.register(SyntaxRegistry.EXPRESSION, SyntaxInfo.Expression.builder(ExprRectangle.class, Shape.class)
@@ -61,7 +60,8 @@ public class ExprRectangle extends SimpleExpression<Shape> {
     private Plane plane;
 
     @Override
-    public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, SkriptParser.ParseResult parseResult) {
+    @SuppressWarnings("unchecked")
+    public boolean initialize(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, SkriptParser.ParseResult parseResult) {
         style = parseResult.hasTag("solid") ? SamplingStyle.SURFACE : SamplingStyle.OUTLINE;
         this.matchedPattern = matchedPattern;
         if (matchedPattern == 0) {
@@ -78,7 +78,7 @@ public class ExprRectangle extends SimpleExpression<Shape> {
     }
 
     @Override
-    protected @Nullable Shape[] get(Event event) {
+    protected @Nullable List<Shape> getShapes(Event event) {
         Shape shape;
         if (matchedPattern == 0) {
             if (lengthExpr == null || widthExpr == null) return null;
@@ -103,7 +103,6 @@ public class ExprRectangle extends SimpleExpression<Shape> {
                 DynamicLocation dl2 = DynamicLocation.fromLocationEntity(corner2);
                 if (dl1 == null || dl2 == null)
                     return null;
-                // Use Supplier-based Rectangle for dynamic corners
                 shape = new Rectangle(
                         () -> VectorConversion.toJOML(dl1.getLocation().toVector()),
                         () -> VectorConversion.toJOML(dl2.getLocation().toVector()),
@@ -113,17 +112,7 @@ public class ExprRectangle extends SimpleExpression<Shape> {
         }
         shape.getPointSampler().setStyle(style);
         shape.getPointSampler().setDrawContext(new DrawData());
-        return new Shape[]{shape};
-    }
-
-    @Override
-    public boolean isSingle() {
-        return true;
-    }
-
-    @Override
-    public Class<? extends Shape> getReturnType() {
-        return Shape.class;
+        return List.of(shape);
     }
 
     @Override

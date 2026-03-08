@@ -2,33 +2,35 @@ package com.sovdee.skriptparticles.skript.shapes.constructors;
 
 import ch.njol.skript.Skript;
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
+import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.Literal;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
-import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
-import org.skriptlang.skript.registration.SyntaxInfo;
-import org.skriptlang.skript.registration.SyntaxRegistry;
-import com.sovdee.shapes.shapes.Shape;
 import com.sovdee.shapes.sampling.SamplingStyle;
+import com.sovdee.shapes.shapes.Shape;
 import com.sovdee.shapes.shapes.Star;
 import com.sovdee.skriptparticles.rendering.DrawData;
 import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
+import org.skriptlang.skript.registration.SyntaxInfo;
+
+import java.util.List;
+import org.skriptlang.skript.registration.SyntaxRegistry;
 
 @Name("Particle Star")
-@Description({
-        "Creates a star shape with the given number of points, inner radius, and outer radius. The number of points must be at least 2, and the inner and outer radii must be greater than 0.",
-        "Note that \"points\" in this context is referring to the tips of the star, not the number of particles."
-})
-@Examples({
-        "set {_shape} to star with 5 points, inner radius 1, and outer radius 2",
-        "draw the shape of a star with 4 points, inner radius 2, and outer radius 4 at player"
-})
-public class ExprStar extends SimpleExpression<Shape> {
+@Description("""
+    Creates a star shape with the given number of points, inner radius, and outer radius.
+    The number of points must be at least 2, and the inner and outer radii must be greater than 0.
+    Note that "points" in this context is referring to the tips of the star, not the number of particles.
+    """)
+@Example("set {_shape} to star with 5 points, inner radius 1, and outer radius 2")
+@Example("draw the shape of a star with 4 points, inner radius 2, and outer radius 4 at player")
+@Since("1.0.1")
+public class ExprStar extends ShapeConstructorExpression {
 
     public static void register(SyntaxRegistry registry) {
         registry.register(SyntaxRegistry.EXPRESSION, SyntaxInfo.Expression.builder(ExprStar.class, Shape.class)
@@ -43,7 +45,8 @@ public class ExprStar extends SimpleExpression<Shape> {
     private boolean isSolid;
 
     @Override
-    public boolean init(Expression<?>[] expressions, int i, Kleenean kleenean, ParseResult parseResult) {
+    @SuppressWarnings("unchecked")
+    public boolean initialize(Expression<?>[] expressions, int matchedPattern, Kleenean kleenean, ParseResult parseResult) {
         points = (Expression<Number>) expressions[0];
         innerRadius = (Expression<Number>) expressions[1];
         outerRadius = (Expression<Number>) expressions[2];
@@ -69,8 +72,7 @@ public class ExprStar extends SimpleExpression<Shape> {
     }
 
     @Override
-    @Nullable
-    protected Shape[] get(Event event) {
+    protected @Nullable List<Shape> getShapes(Event event) {
         Number points = this.points.getSingle(event);
         Number innerRadius = this.innerRadius.getSingle(event);
         Number outerRadius = this.outerRadius.getSingle(event);
@@ -85,21 +87,11 @@ public class ExprStar extends SimpleExpression<Shape> {
         if (isSolid)
             shape.getPointSampler().setStyle(SamplingStyle.SURFACE);
         shape.getPointSampler().setDrawContext(new DrawData());
-        return new Shape[]{shape};
+        return List.of(shape);
     }
 
     @Override
-    public boolean isSingle() {
-        return true;
-    }
-
-    @Override
-    public Class<? extends Shape> getReturnType() {
-        return Shape.class;
-    }
-
-    @Override
-    public String toString(@Nullable Event event, boolean b) {
-        return "a " + (isSolid ? "solid " : "") + "star shape with " + points.toString(event, b) + " points, inner radius " + innerRadius.toString(event, b) + ", and outer radius " + outerRadius.toString(event, b);
+    public String toString(@Nullable Event event, boolean debug) {
+        return "a " + (isSolid ? "solid " : "") + "star shape with " + points.toString(event, debug) + " points, inner radius " + innerRadius.toString(event, debug) + ", and outer radius " + outerRadius.toString(event, debug);
     }
 }

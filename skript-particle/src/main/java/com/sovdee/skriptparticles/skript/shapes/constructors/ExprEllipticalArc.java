@@ -2,38 +2,37 @@ package com.sovdee.skriptparticles.skript.shapes.constructors;
 
 import ch.njol.skript.Skript;
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.Literal;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
-import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
-import org.skriptlang.skript.registration.SyntaxInfo;
-import org.skriptlang.skript.registration.SyntaxRegistry;
+import com.sovdee.shapes.sampling.SamplingStyle;
 import com.sovdee.shapes.shapes.EllipticalArc;
 import com.sovdee.shapes.shapes.Shape;
-import com.sovdee.shapes.sampling.SamplingStyle;
 import com.sovdee.skriptparticles.rendering.DrawData;
 import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
+import org.skriptlang.skript.registration.SyntaxInfo;
+
+import java.util.List;
+import org.skriptlang.skript.registration.SyntaxRegistry;
 
 @Name("Particle Elliptical Arc or Sector")
-@Description({
-        "Creates an elliptical arc or sector with the given radii and cutoff angle. The radii must be greater than 0 and the height, if given, must be positive.",
-        "The angle must be between 0 and 360 degrees. If the angle is 360 degrees, the shape will be a ellipse or elliptical cylinder.",
-        "An arc is a portion of the ellipse's circumference. A sector is a portion of the ellipse's area.",
-        "NOTE: Very eccentric elliptical sectors (those with a large difference between the x and z radii) may have many more particles than expected. Be careful."
-})
-@Examples({
-        "set {_shape} to an elliptical arc with radii 10 and 3 and cutoff angle of 90 degrees",
-        "set {_shape} to a elliptical sector of radius 3 and 5 and cutoff angle of 45 degrees",
-        "set {_shape} to a elliptical cylinder with radii 3 and 5, height 10, and cutoff angle of 3.1415 radians"
-})
+@Description("""
+    Creates an elliptical arc or sector with the given radii and cutoff angle. The radii must be greater than 0 and the height, if given, must be positive.
+    The angle must be between 0 and 360 degrees. If the angle is 360 degrees, the shape will be an ellipse or elliptical cylinder.
+    An arc is a portion of the ellipse's circumference. A sector is a portion of the ellipse's area.
+    NOTE: Very eccentric elliptical sectors (those with a large difference between the x and z radii) may have many more particles than expected. Be careful.
+    """)
+@Example("set {_shape} to an elliptical arc with radii 10 and 3 and cutoff angle of 90 degrees")
+@Example("set {_shape} to a elliptical sector of radius 3 and 5 and cutoff angle of 45 degrees")
+@Example("set {_shape} to a elliptical cylinder with radii 3 and 5, height 10, and cutoff angle of 3.1415 radians")
 @Since("1.0.0")
-public class ExprEllipticalArc extends SimpleExpression<Shape> {
+public class ExprEllipticalArc extends ShapeConstructorExpression {
 
     public static void register(SyntaxRegistry registry) {
         registry.register(SyntaxRegistry.EXPRESSION, SyntaxInfo.Expression.builder(ExprEllipticalArc.class, Shape.class)
@@ -53,10 +52,8 @@ public class ExprEllipticalArc extends SimpleExpression<Shape> {
     private boolean isRadians;
 
     @Override
-    public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, ParseResult parseResult) {
-//        Skript.error("Elliptical arcs are currently disabled. If you know how to efficiently compute the inverse of the " +
-//                "elliptic integral of the second kind, please send me a message on Discord or Github.");
-//        return false;
+    @SuppressWarnings("unchecked")
+    public boolean initialize(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, ParseResult parseResult) {
         xRadius = (Expression<Number>) exprs[0];
         zRadius = (Expression<Number>) exprs[1];
         if (matchedPattern == 1) {
@@ -97,8 +94,7 @@ public class ExprEllipticalArc extends SimpleExpression<Shape> {
     }
 
     @Override
-    @Nullable
-    protected Shape[] get(Event event) {
+    protected @Nullable List<Shape> getShapes(Event event) {
         Number xRadius = this.xRadius.getSingle(event);
         Number zRadius = this.zRadius.getSingle(event);
         Number height = this.height == null ? 0 : this.height.getSingle(event);
@@ -116,17 +112,7 @@ public class ExprEllipticalArc extends SimpleExpression<Shape> {
         EllipticalArc shape = new EllipticalArc(xRadius.doubleValue(), zRadius.doubleValue(), height.doubleValue(), angle.doubleValue());
         shape.getPointSampler().setStyle(style);
         shape.getPointSampler().setDrawContext(new DrawData());
-        return new Shape[]{shape};
-    }
-
-    @Override
-    public boolean isSingle() {
-        return true;
-    }
-
-    @Override
-    public Class<? extends Shape> getReturnType() {
-        return Shape.class;
+        return List.of(shape);
     }
 
     @Override

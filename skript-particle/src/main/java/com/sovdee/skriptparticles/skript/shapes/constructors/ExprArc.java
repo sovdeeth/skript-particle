@@ -2,45 +2,45 @@ package com.sovdee.skriptparticles.skript.shapes.constructors;
 
 import ch.njol.skript.Skript;
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.Literal;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
-import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
-import org.skriptlang.skript.registration.SyntaxInfo;
-import org.skriptlang.skript.registration.SyntaxRegistry;
+import com.sovdee.shapes.sampling.SamplingStyle;
 import com.sovdee.shapes.shapes.Arc;
 import com.sovdee.shapes.shapes.Shape;
-import com.sovdee.shapes.sampling.SamplingStyle;
 import com.sovdee.skriptparticles.rendering.DrawData;
 import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
+import org.skriptlang.skript.registration.SyntaxInfo;
+
+import java.util.List;
+import org.skriptlang.skript.registration.SyntaxRegistry;
 
 @Name("Particle Arc or Sector")
-@Description({
-        "Creates an arc or sector with the given radius and cutoff angle. The radius must be greater than 0 and the height, if given, must be positive.",
-        "The angle must be between 0 and 360 degrees. If the angle is 360 degrees, the shape will be a circle or cylinder.",
-        "An arc is a portion of the circle's circumference. A sector is a portion of the circle's area."
-})
-@Examples({
-        "set {_shape} to an arc with radius 10 and angle 45 degrees",
-        "set {_shape} to a circular sector of radius 3 and angle 90 degrees",
-        "set {_shape} to a sector of radius 3 and height 5 and angle 90 degrees",
-        "set {_shape} to a cylindrical sector of radius 1, height 0.5, and angle 45"
-})
+@Description("""
+    Creates an arc or sector with the given radius and cutoff angle. The radius must be greater than 0 and the height, if given, must be positive.
+    The angle must be between 0 and 360 degrees. If the angle is 360 degrees, the shape will be a circle or cylinder.
+    An arc is a portion of the circle's circumference. A sector is a portion of the circle's area.
+    """)
+@Example("set {_shape} to an arc with radius 10 and angle 45 degrees")
+@Example("set {_shape} to a circular sector of radius 3 and angle 90 degrees")
+@Example("set {_shape} to a sector of radius 3 and height 5 and angle 90 degrees")
+@Example("set {_shape} to a cylindrical sector of radius 1, height 0.5, and angle 45")
 @Since("1.0.0")
-public class ExprArc extends SimpleExpression<Shape> {
+public class ExprArc extends ShapeConstructorExpression {
 
     public static void register(SyntaxRegistry registry) {
-        registry.register(SyntaxRegistry.EXPRESSION, SyntaxInfo.Expression.builder(ExprArc.class, Shape.class)
+        registry.register(
+                SyntaxRegistry.EXPRESSION, SyntaxInfo.Expression.builder(ExprArc.class, Shape.class)
                 .supplier(ExprArc::new)
                 .addPatterns(
-                        "[a[n]] [circular] (arc|:sector) (with|of) radius %number% and [cutoff] angle [of] %number% [degrees|:radians]",
-                        "[a[n]] [cylindrical] (arc|:sector) (with|of) radius %number%(,| and) height %-number%[,] and [cutoff] angle [of] %number% [degrees|:radians]"
+                    "[a[n]] [circular] (arc|:sector) (with|of) radius %number% and [cutoff] angle [of] %number% [degrees|:radians]",
+                    "[a[n]] [cylindrical] (arc|:sector) (with|of) radius %number%(,| and) height %-number%[,] and [cutoff] angle [of] %number% [degrees|:radians]"
                 )
                 .build());
     }
@@ -52,7 +52,8 @@ public class ExprArc extends SimpleExpression<Shape> {
     private boolean isSector = false;
 
     @Override
-    public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, ParseResult parseResult) {
+    @SuppressWarnings("unchecked")
+    public boolean initialize(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, ParseResult parseResult) {
         radius = (Expression<Number>) exprs[0];
         if (matchedPattern == 1) {
             height = (Expression<Number>) exprs[1];
@@ -85,8 +86,7 @@ public class ExprArc extends SimpleExpression<Shape> {
     }
 
     @Override
-    @Nullable
-    protected Shape[] get(Event event) {
+    protected @Nullable List<Shape> getShapes(Event event) {
         Number radius = this.radius.getSingle(event);
         Number angle = this.angle.getSingle(event);
         Number height = (this.height != null) ? this.height.getSingle(event) : 0;
@@ -105,17 +105,7 @@ public class ExprArc extends SimpleExpression<Shape> {
             shape.getPointSampler().setStyle(SamplingStyle.FILL);
         shape.getPointSampler().setDrawContext(new DrawData());
 
-        return new Shape[]{shape};
-    }
-
-    @Override
-    public boolean isSingle() {
-        return true;
-    }
-
-    @Override
-    public Class<? extends Shape> getReturnType() {
-        return Shape.class;
+        return List.of(shape);
     }
 
     @Override

@@ -2,15 +2,12 @@ package com.sovdee.skriptparticles.skript.shapes.constructors;
 
 import ch.njol.skript.Skript;
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.Literal;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
-import ch.njol.skript.lang.util.SimpleExpression;
-import org.skriptlang.skript.registration.SyntaxInfo;
-import org.skriptlang.skript.registration.SyntaxRegistry;
 import ch.njol.util.Kleenean;
 import com.sovdee.shapes.shapes.Line;
 import com.sovdee.shapes.shapes.Shape;
@@ -21,32 +18,32 @@ import com.sovdee.skriptparticles.util.VectorConversion;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
+import org.skriptlang.skript.registration.SyntaxInfo;
+import org.skriptlang.skript.registration.SyntaxRegistry;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Name("Particle Line")
-@Description({
-        "Creates a line shape between points, or in a direction for a given length. The length must be greater than 0.",
-        "When defining a line from points, the points can either be vectors or locations/entities. Each point in the first set will connect to each point in the second set. " +
-                "You can use the third pattern to connect points in series, like a path along the points.",
-        "",
-        "You cannot use both vectors and locations/entities, but you can mix and match locations and entities." +
-                "When using locations, this is a shape that can be drawn without a specific location. It will be drawn between the two given locations.",
-        "If using vectors, or a direction and length, the shape does require a location to be drawn at."
-})
-@Examples({
-        "set {_shape} to line from vector(0, 0, 0) to vector(10, 10, 10)",
-        "set {_shape} to a line in direction vector(1, 1, 1) and length 10",
-        "draw the shape of a line from vector(0, 0, 0) to vector(10, 10, 10) at player",
-        "",
-        "# note that the following does not require a location to be drawn at",
-        "draw the shape of a line from player to player's target",
-        "draw the shape of a line from player to (all players in radius 10 of player)",
-        "draw the shape of a line connecting {_locations::*}"
-})
+@Description("""
+    Creates a line shape between points, or in a direction for a given length. The length must be greater than 0.
+    When defining a line from points, the points can either be vectors or locations/entities. Each point in the first set will connect to each point in the second set.
+    You can use the third pattern to connect points in series, like a path along the points.
+
+    You cannot use both vectors and locations/entities, but you can mix and match locations and entities.
+    When using locations, this is a shape that can be drawn without a specific location. It will be drawn between the two given locations.
+    If using vectors, or a direction and length, the shape does require a location to be drawn at.
+    """)
+@Example("set {_shape} to line from vector(0, 0, 0) to vector(10, 10, 10)")
+@Example("set {_shape} to a line in direction vector(1, 1, 1) and length 10")
+@Example("draw the shape of a line from vector(0, 0, 0) to vector(10, 10, 10) at player")
+@Example("")
+@Example("# note that the following does not require a location to be drawn at")
+@Example("draw the shape of a line from player to player's target")
+@Example("draw the shape of a line from player to (all players in radius 10 of player)")
+@Example("draw the shape of a line connecting {_locations::*}")
 @Since("1.0.0")
-public class ExprLine extends SimpleExpression<Shape> {
+public class ExprLine extends ShapeConstructorExpression {
 
     public static void register(SyntaxRegistry registry) {
         registry.register(SyntaxRegistry.EXPRESSION, SyntaxInfo.Expression.builder(ExprLine.class, Shape.class)
@@ -61,16 +58,14 @@ public class ExprLine extends SimpleExpression<Shape> {
 
     private Expression<?> start;
     private Expression<?> end;
-
     private Expression<?> points;
-
     private Expression<Vector> direction;
     private Expression<Number> length;
-
     private int matchedPattern = 0;
 
     @Override
-    public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, ParseResult parseResult) {
+    @SuppressWarnings("unchecked")
+    public boolean initialize(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, ParseResult parseResult) {
         switch (matchedPattern) {
             case 0 -> {
                 start = exprs[0];
@@ -93,14 +88,8 @@ public class ExprLine extends SimpleExpression<Shape> {
         return true;
     }
 
-    private Shape attachDrawData(Shape shape) {
-        shape.getPointSampler().setDrawContext(new DrawData());
-        return shape;
-    }
-
     @Override
-    @Nullable
-    protected Shape[] get(Event event) {
+    protected @Nullable List<Shape> getShapes(Event event) {
         List<Shape> lines = new ArrayList<>();
         switch (matchedPattern) {
             case 0 -> {
@@ -119,7 +108,6 @@ public class ExprLine extends SimpleExpression<Shape> {
                         if (endPoint == null || startPoint == null) {
                             continue;
                         }
-                        // Use Supplier-based Line for dynamic endpoints
                         lines.add(attachDrawData(new Line(
                                 () -> VectorConversion.toJOML(startPoint.getLocation().toVector()),
                                 () -> VectorConversion.toJOML(endPoint.getLocation().toVector())
@@ -168,7 +156,12 @@ public class ExprLine extends SimpleExpression<Shape> {
                 return null;
             }
         }
-        return lines.toArray(new Shape[0]);
+        return lines;
+    }
+
+    private Shape attachDrawData(Shape shape) {
+        shape.getPointSampler().setDrawContext(new DrawData());
+        return shape;
     }
 
     @Override
@@ -178,11 +171,6 @@ public class ExprLine extends SimpleExpression<Shape> {
             case 1, 2 -> true;
             default -> throw new IllegalStateException("invalid pattern " + matchedPattern);
         };
-    }
-
-    @Override
-    public Class<? extends Shape> getReturnType() {
-        return Shape.class;
     }
 
     @Override

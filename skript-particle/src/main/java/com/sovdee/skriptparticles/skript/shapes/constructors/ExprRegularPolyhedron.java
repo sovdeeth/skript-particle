@@ -2,35 +2,36 @@ package com.sovdee.skriptparticles.skript.shapes.constructors;
 
 import ch.njol.skript.Skript;
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
+import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.Literal;
 import ch.njol.skript.lang.SkriptParser;
-import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
-import org.skriptlang.skript.registration.SyntaxInfo;
-import org.skriptlang.skript.registration.SyntaxRegistry;
+import com.sovdee.shapes.sampling.SamplingStyle;
 import com.sovdee.shapes.shapes.RegularPolyhedron;
 import com.sovdee.shapes.shapes.Shape;
-import com.sovdee.shapes.sampling.SamplingStyle;
 import com.sovdee.skriptparticles.rendering.DrawData;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
+import org.skriptlang.skript.registration.SyntaxInfo;
+
+import java.util.List;
+import org.skriptlang.skript.registration.SyntaxRegistry;
 
 @Name("Particle Regular Polyhedron")
-@Description({
-        "Creates a regular polyhedron shape with the given radius. The radius must be greater than 0.",
-        "Valid polyhedra are tetrahedra (4 faces), octahedra (8), dodecahedra (12), and icosahedra (20).",
-        "",
-        "Polyhedra currently do not support the particle count expression, only particle density."
-})
-@Examples({
-        "set {_shape} to a tetrahedron with radius 1",
-        "set {_shape} to a solid icosahedron with radius 2",
-        "draw the shape of a tetrahedron with radius 5 at player"
-})
-public class ExprRegularPolyhedron extends SimpleExpression<Shape> {
+@Description("""
+    Creates a regular polyhedron shape with the given radius. The radius must be greater than 0.
+    Valid polyhedra are tetrahedra (4 faces), octahedra (8), dodecahedra (12), and icosahedra (20).
+
+    Polyhedra currently do not support the particle count expression, only particle density.
+    """)
+@Example("set {_shape} to a tetrahedron with radius 1")
+@Example("set {_shape} to a solid icosahedron with radius 2")
+@Example("draw the shape of a tetrahedron with radius 5 at player")
+@Since("1.0.0")
+public class ExprRegularPolyhedron extends ShapeConstructorExpression {
 
     public static void register(SyntaxRegistry registry) {
         registry.register(SyntaxRegistry.EXPRESSION, SyntaxInfo.Expression.builder(ExprRegularPolyhedron.class, Shape.class)
@@ -44,7 +45,8 @@ public class ExprRegularPolyhedron extends SimpleExpression<Shape> {
     private SamplingStyle style;
 
     @Override
-    public boolean init(Expression<?>[] expressions, int i, Kleenean kleenean, SkriptParser.ParseResult parseResult) {
+    @SuppressWarnings("unchecked")
+    public boolean initialize(Expression<?>[] expressions, int matchedPattern, Kleenean kleenean, SkriptParser.ParseResult parseResult) {
         radius = (Expression<Number>) expressions[0];
         faces = parseResult.hasTag("tetra") ? 4 : parseResult.hasTag("octa") ? 8 : parseResult.hasTag("dodeca") ? 12 : 20;
         style = parseResult.hasTag("hollow") ? SamplingStyle.SURFACE : parseResult.hasTag("solid") ? SamplingStyle.FILL : SamplingStyle.OUTLINE;
@@ -59,27 +61,18 @@ public class ExprRegularPolyhedron extends SimpleExpression<Shape> {
     }
 
     @Override
-    protected @Nullable Shape[] get(Event event) {
-        if (radius.getSingle(event) == null)
-            return new Shape[0];
-        RegularPolyhedron shape = new RegularPolyhedron(radius.getSingle(event).doubleValue(), faces);
+    protected @Nullable List<Shape> getShapes(Event event) {
+        Number r = radius.getSingle(event);
+        if (r == null)
+            return null;
+        RegularPolyhedron shape = new RegularPolyhedron(r.doubleValue(), faces);
         shape.getPointSampler().setStyle(style);
         shape.getPointSampler().setDrawContext(new DrawData());
-        return new Shape[]{shape};
+        return List.of(shape);
     }
 
     @Override
-    public boolean isSingle() {
-        return true;
-    }
-
-    @Override
-    public Class<? extends Shape> getReturnType() {
-        return Shape.class;
-    }
-
-    @Override
-    public String toString(@Nullable Event event, boolean b) {
-        return "regular polyhedron with " + faces + " faces with radius " + radius.toString(event, b);
+    public String toString(@Nullable Event event, boolean debug) {
+        return "regular polyhedron with " + faces + " faces with radius " + radius.toString(event, debug);
     }
 }

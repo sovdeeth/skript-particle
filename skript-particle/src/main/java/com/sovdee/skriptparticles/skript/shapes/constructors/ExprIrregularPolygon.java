@@ -2,16 +2,13 @@ package com.sovdee.skriptparticles.skript.shapes.constructors;
 
 import ch.njol.skript.Skript;
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.Literal;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
-import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
-import org.skriptlang.skript.registration.SyntaxInfo;
-import org.skriptlang.skript.registration.SyntaxRegistry;
 import com.sovdee.shapes.shapes.IrregularPolygon;
 import com.sovdee.shapes.shapes.Shape;
 import com.sovdee.skriptparticles.rendering.DrawData;
@@ -22,23 +19,23 @@ import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3d;
+import org.skriptlang.skript.registration.SyntaxInfo;
+import org.skriptlang.skript.registration.SyntaxRegistry;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Name("Particle Irregular Polygon")
-@Description({
-        "Creates an irregular polygon from a list of vectors or locations. If locations are used, the polygon can be drawn without giving a specific location to draw at.",
-        "The height of the polygon will be the height between the lowest and highest points. It can also be set with the optional height parameter.",
-        "",
-        "Irregular polygons currently only support the wireframe style. Also, they do not currently support Dynamic Locations like lines and cuboids do."
-})
-@Examples({
-        "set {_shape} to a polygon with points vector(0, 0, 0), vector(1, 0, 0), and vector(1, 1, 1)",
-        "set {_shape} to a 2d polygon from points vector(0,0,1), vector(1,0,1), vector(0,0,-1) and height 0.5"
-})
+@Description("""
+    Creates an irregular polygon from a list of vectors or locations. If locations are used, the polygon can be drawn without giving a specific location to draw at.
+    The height of the polygon will be the height between the lowest and highest points. It can also be set with the optional height parameter.
+
+    Irregular polygons currently only support the wireframe style. Also, they do not currently support Dynamic Locations like lines and cuboids do.
+    """)
+@Example("set {_shape} to a polygon with points vector(0, 0, 0), vector(1, 0, 0), and vector(1, 1, 1)")
+@Example("set {_shape} to a 2d polygon from points vector(0,0,1), vector(1,0,1), vector(0,0,-1) and height 0.5")
 @Since("1.0.0")
-public class ExprIrregularPolygon extends SimpleExpression<Shape> {
+public class ExprIrregularPolygon extends ShapeConstructorExpression {
 
     public static void register(SyntaxRegistry registry) {
         registry.register(SyntaxRegistry.EXPRESSION, SyntaxInfo.Expression.builder(ExprIrregularPolygon.class, Shape.class)
@@ -51,7 +48,8 @@ public class ExprIrregularPolygon extends SimpleExpression<Shape> {
     private Expression<Number> height;
 
     @Override
-    public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, ParseResult parseResult) {
+    @SuppressWarnings("unchecked")
+    public boolean initialize(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, ParseResult parseResult) {
         points = exprs[0];
         if (exprs.length > 1) {
             height = (Expression<Number>) exprs[1];
@@ -62,13 +60,11 @@ public class ExprIrregularPolygon extends SimpleExpression<Shape> {
                 return false;
             }
         }
-
         return true;
     }
 
     @Override
-    @Nullable
-    protected Shape[] get(Event event) {
+    protected @Nullable List<Shape> getShapes(Event event) {
         Object[] points = this.points.getArray(event);
         List<Vector3d> vertices = new ArrayList<>(points.length);
         Vector locationOffset = null;
@@ -94,17 +90,7 @@ public class ExprIrregularPolygon extends SimpleExpression<Shape> {
         if (locationOffset != null) {
             DrawData.of(shape).setLocation(new DynamicLocation((Location) points[0]));
         }
-        return new Shape[]{shape};
-    }
-
-    @Override
-    public boolean isSingle() {
-        return true;
-    }
-
-    @Override
-    public Class<? extends Shape> getReturnType() {
-        return Shape.class;
+        return List.of(shape);
     }
 
     @Override

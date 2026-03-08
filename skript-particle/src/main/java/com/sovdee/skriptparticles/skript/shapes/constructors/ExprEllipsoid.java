@@ -2,40 +2,39 @@ package com.sovdee.skriptparticles.skript.shapes.constructors;
 
 import ch.njol.skript.Skript;
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.Literal;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
-import ch.njol.skript.lang.util.SimpleExpression;
-import org.skriptlang.skript.registration.SyntaxInfo;
-import org.skriptlang.skript.registration.SyntaxRegistry;
 import ch.njol.util.Kleenean;
+import com.sovdee.shapes.sampling.SamplingStyle;
 import com.sovdee.shapes.shapes.Ellipsoid;
 import com.sovdee.shapes.shapes.Shape;
-import com.sovdee.shapes.sampling.SamplingStyle;
 import com.sovdee.skriptparticles.rendering.DrawData;
 import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
+import org.skriptlang.skript.registration.SyntaxInfo;
+
+import java.util.List;
+import org.skriptlang.skript.registration.SyntaxRegistry;
 
 @Name("Particle Ellipsoid")
-@Description({
-        "Creates a ellipsoid shape with the given radii. The radii must be greater than 0.",
-        "The first radius is the x radius, and the second is the y radius, and the last is the z radius. " +
-                "These are relative to the shape's rotation, so they only correspond exactly to the world axes if the shape is not rotated.",
-        "Note that this shape is modified using the Length/Width/Height modifiers, not the Radius modifier. This means the length/width/height " +
-                "of the shape will be twice the radius in each direction. Length is the x axis, width is the z axis, and height is the y axis.",
-        "NOTE: Very eccentric solid ellipsoids (those with a large difference between the radii) may have many more particles than expected. Be careful."
-})
-@Examples({
-        "set {_shape} to ellipsoid with radii 10, 3, and 8",
-        "set {_shape} to a solid ellipsoid of radius 3 and 5 and 6",
-        "set {_shape} to a hollow ellipsoid with radii 3, 6 and 5"
-})
+@Description("""
+    Creates an ellipsoid shape with the given radii. The radii must be greater than 0.
+    The first radius is the x radius, the second is the y radius, and the last is the z radius.
+    These are relative to the shape's rotation, so they only correspond exactly to the world axes if the shape is not rotated.
+    Note that this shape is modified using the Length/Width/Height modifiers, not the Radius modifier. This means the length/width/height
+    of the shape will be twice the radius in each direction. Length is the x axis, width is the z axis, and height is the y axis.
+    NOTE: Very eccentric solid ellipsoids (those with a large difference between the radii) may have many more particles than expected. Be careful.
+    """)
+@Example("set {_shape} to ellipsoid with radii 10, 3, and 8")
+@Example("set {_shape} to a solid ellipsoid of radius 3 and 5 and 6")
+@Example("set {_shape} to a hollow ellipsoid with radii 3, 6 and 5")
 @Since("1.0.0")
-public class ExprEllipsoid extends SimpleExpression<Shape> {
+public class ExprEllipsoid extends ShapeConstructorExpression {
 
     public static void register(SyntaxRegistry registry) {
         registry.register(SyntaxRegistry.EXPRESSION, SyntaxInfo.Expression.builder(ExprEllipsoid.class, Shape.class)
@@ -50,7 +49,8 @@ public class ExprEllipsoid extends SimpleExpression<Shape> {
     private SamplingStyle style;
 
     @Override
-    public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, ParseResult parseResult) {
+    @SuppressWarnings("unchecked")
+    public boolean initialize(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, ParseResult parseResult) {
         xRadius = (Expression<Number>) exprs[0];
         yRadius = (Expression<Number>) exprs[1];
         zRadius = (Expression<Number>) exprs[2];
@@ -78,8 +78,7 @@ public class ExprEllipsoid extends SimpleExpression<Shape> {
     }
 
     @Override
-    @Nullable
-    protected Shape[] get(Event event) {
+    protected @Nullable List<Shape> getShapes(Event event) {
         Number xRadius = this.xRadius.getSingle(event);
         Number yRadius = this.yRadius.getSingle(event);
         Number zRadius = this.zRadius.getSingle(event);
@@ -93,22 +92,11 @@ public class ExprEllipsoid extends SimpleExpression<Shape> {
         Ellipsoid shape = new Ellipsoid(xRadius.doubleValue(), yRadius.doubleValue(), zRadius.doubleValue());
         shape.getPointSampler().setStyle(style);
         shape.getPointSampler().setDrawContext(new DrawData());
-        return new Shape[]{shape};
-    }
-
-    @Override
-    public boolean isSingle() {
-        return true;
-    }
-
-    @Override
-    public Class<? extends Shape> getReturnType() {
-        return Shape.class;
+        return List.of(shape);
     }
 
     @Override
     public String toString(@Nullable Event event, boolean debug) {
         return "ellipsoid with radii " + xRadius.toString(event, debug) + ", " + yRadius.toString(event, debug) + ", and " + zRadius.toString(event, debug);
     }
-
 }

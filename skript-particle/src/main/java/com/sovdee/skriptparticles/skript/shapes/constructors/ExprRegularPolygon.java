@@ -2,35 +2,35 @@ package com.sovdee.skriptparticles.skript.shapes.constructors;
 
 import ch.njol.skript.Skript;
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
+import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.Literal;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
-import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.skript.lang.util.SimpleLiteral;
 import ch.njol.util.Kleenean;
-import org.skriptlang.skript.registration.SyntaxInfo;
-import org.skriptlang.skript.registration.SyntaxRegistry;
+import com.sovdee.shapes.sampling.SamplingStyle;
 import com.sovdee.shapes.shapes.RegularPolygon;
 import com.sovdee.shapes.shapes.Shape;
-import com.sovdee.shapes.sampling.SamplingStyle;
 import com.sovdee.skriptparticles.rendering.DrawData;
 import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
+import org.skriptlang.skript.registration.SyntaxInfo;
+
+import java.util.List;
+import org.skriptlang.skript.registration.SyntaxRegistry;
 
 @Name("Particle Regular Polygon")
-@Description({
-        "Creates a regular polygon with the given number of sides and radius. The number of sides must be at least 3. " +
-                "The radius must be greater than 0."
-})
-@Examples({
-        "set {_shape} to a regular polygon with 5 sides and radius 10",
-        "set {_shape} to a solid regular polygon with 6 sides and side length 3",
-        "draw the shape of a triangle with side length 5 at player"
-})
-public class ExprRegularPolygon extends SimpleExpression<Shape> {
+@Description("""
+    Creates a regular polygon with the given number of sides and radius. The number of sides must be at least 3 and the radius must be greater than 0.
+    """)
+@Example("set {_shape} to a regular polygon with 5 sides and radius 10")
+@Example("set {_shape} to a solid regular polygon with 6 sides and side length 3")
+@Example("draw the shape of a triangle with side length 5 at player")
+@Since("1.0.0")
+public class ExprRegularPolygon extends ShapeConstructorExpression {
 
     // TODO: add ExprRegularPrism
 
@@ -53,7 +53,8 @@ public class ExprRegularPolygon extends SimpleExpression<Shape> {
     private int matchedPattern;
 
     @Override
-    public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, ParseResult parseResult) {
+    @SuppressWarnings("unchecked")
+    public boolean initialize(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, ParseResult parseResult) {
         style = parseResult.hasTag("solid") ? SamplingStyle.SURFACE : SamplingStyle.OUTLINE;
         this.matchedPattern = matchedPattern;
         switch (matchedPattern) {
@@ -94,13 +95,11 @@ public class ExprRegularPolygon extends SimpleExpression<Shape> {
     }
 
     @Override
-    @Nullable
-    protected Shape[] get(Event event) {
+    protected @Nullable List<Shape> getShapes(Event event) {
         Number sides = this.sides.getSingle(event);
         if (sides == null)
             return null;
 
-        // get radius, if radius is not specified, calculate it from side length
         Number radius;
         if (matchedPattern % 2 == 0) {
             radius = this.radius.getSingle(event);
@@ -118,17 +117,7 @@ public class ExprRegularPolygon extends SimpleExpression<Shape> {
         RegularPolygon shape = new RegularPolygon(sides.intValue(), radius.doubleValue());
         shape.getPointSampler().setStyle(style);
         shape.getPointSampler().setDrawContext(new DrawData());
-        return new Shape[]{shape};
-    }
-
-    @Override
-    public boolean isSingle() {
-        return true;
-    }
-
-    @Override
-    public Class<? extends Shape> getReturnType() {
-        return Shape.class;
+        return List.of(shape);
     }
 
     @Override
@@ -142,5 +131,4 @@ public class ExprRegularPolygon extends SimpleExpression<Shape> {
                     default -> "regular polygon";
                 };
     }
-
 }

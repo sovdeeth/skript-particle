@@ -1,18 +1,15 @@
 package com.sovdee.skriptparticles.skript.shapes.constructors;
 
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
-import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
-import org.skriptlang.skript.registration.SyntaxInfo;
-import org.skriptlang.skript.registration.SyntaxRegistry;
+import com.sovdee.shapes.sampling.SamplingStyle;
 import com.sovdee.shapes.shapes.Cuboid;
 import com.sovdee.shapes.shapes.Shape;
-import com.sovdee.shapes.sampling.SamplingStyle;
 import com.sovdee.skriptparticles.rendering.DrawData;
 import com.sovdee.skriptparticles.util.DynamicLocation;
 import com.sovdee.skriptparticles.util.MathUtil;
@@ -20,22 +17,24 @@ import com.sovdee.skriptparticles.util.VectorConversion;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
+import org.skriptlang.skript.registration.SyntaxInfo;
+
+import java.util.List;
+import org.skriptlang.skript.registration.SyntaxRegistry;
 
 @Name("Particle Cuboid")
-@Description({
-        "Creates a cuboid from a length, a width, and a height, or from two corners.",
-        "The specified length, width, and height must be greater than 0. Length is the x-axis, width is the z-axis, and height is the y-axis.",
-        "When defining a cuboid from two corners, the corners can either be vectors or locations/entities. " +
-                "You cannot use both vectors and locations/entities, but you can mix and match locations and entities." +
-                "When using locations, this is a shape that can be drawn without a specific location. It will be drawn between the two given locations.",
-})
-@Examples({
-        "set {_shape} to a solid cuboid with length 10, width 10, and height 10",
-        "set {_shape} to a hollow cuboid from vector(-5, -5, -5) to vector(5, 5, 5)",
-        "draw the shape of a cuboid from player to player's target"
-})
+@Description("""
+    Creates a cuboid from a length, a width, and a height, or from two corners.
+    The specified length, width, and height must be greater than 0. Length is the x-axis, width is the z-axis, and height is the y-axis.
+    When defining a cuboid from two corners, the corners can either be vectors or locations/entities.
+    You cannot use both vectors and locations/entities, but you can mix and match locations and entities.
+    When using locations, this is a shape that can be drawn without a specific location. It will be drawn between the two given locations.
+    """)
+@Example("set {_shape} to a solid cuboid with length 10, width 10, and height 10")
+@Example("set {_shape} to a hollow cuboid from vector(-5, -5, -5) to vector(5, 5, 5)")
+@Example("draw the shape of a cuboid from player to player's target")
 @Since("1.0.0")
-public class ExprCuboid extends SimpleExpression<Shape> {
+public class ExprCuboid extends ShapeConstructorExpression {
 
     public static void register(SyntaxRegistry registry) {
         registry.register(SyntaxRegistry.EXPRESSION, SyntaxInfo.Expression.builder(ExprCuboid.class, Shape.class)
@@ -53,11 +52,11 @@ public class ExprCuboid extends SimpleExpression<Shape> {
     private Expression<?> corner1;
     private Expression<?> corner2;
     private int matchedPattern = 0;
-
     private SamplingStyle style;
 
     @Override
-    public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, ParseResult parseResult) {
+    @SuppressWarnings("unchecked")
+    public boolean initialize(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, ParseResult parseResult) {
         switch (matchedPattern) {
             case 0 -> {
                 length = (Expression<Number>) exprs[0];
@@ -81,10 +80,8 @@ public class ExprCuboid extends SimpleExpression<Shape> {
     }
 
     @Override
-    @Nullable
-    protected Shape[] get(Event event) {
+    protected @Nullable List<Shape> getShapes(Event event) {
         Shape shape;
-        // from width, length, height
         if (matchedPattern == 0) {
             if (width == null || length == null || height == null) return null;
             Number width = this.width.getSingle(event);
@@ -95,14 +92,12 @@ public class ExprCuboid extends SimpleExpression<Shape> {
             length = Math.max(length.doubleValue(), MathUtil.EPSILON);
             height = Math.max(height.doubleValue(), MathUtil.EPSILON);
             shape = new Cuboid(length.doubleValue(), width.doubleValue(), height.doubleValue());
-            // from location/entity/vector to location/entity/vector
         } else {
             if (corner1 == null || corner2 == null) return null;
             Object corner1 = this.corner1.getSingle(event);
             Object corner2 = this.corner2.getSingle(event);
             if (corner1 == null || corner2 == null) return null;
 
-            // vector check
             if (corner1 instanceof Vector && corner2 instanceof Vector) {
                 shape = new Cuboid(VectorConversion.toJOML((Vector) corner1), VectorConversion.toJOML((Vector) corner2));
             } else if (corner1 instanceof Vector || corner2 instanceof Vector) {
@@ -112,7 +107,6 @@ public class ExprCuboid extends SimpleExpression<Shape> {
                 DynamicLocation dl2 = DynamicLocation.fromLocationEntity(corner2);
                 if (dl1 == null || dl2 == null)
                     return null;
-                // Use Supplier-based Cuboid for dynamic corners
                 shape = new Cuboid(
                         () -> VectorConversion.toJOML(dl1.getLocation().toVector()),
                         () -> VectorConversion.toJOML(dl2.getLocation().toVector())
@@ -121,17 +115,7 @@ public class ExprCuboid extends SimpleExpression<Shape> {
         }
         shape.getPointSampler().setStyle(style);
         shape.getPointSampler().setDrawContext(new DrawData());
-        return new Shape[]{shape};
-    }
-
-    @Override
-    public boolean isSingle() {
-        return true;
-    }
-
-    @Override
-    public Class<? extends Shape> getReturnType() {
-        return Shape.class;
+        return List.of(shape);
     }
 
     @Override
@@ -147,6 +131,5 @@ public class ExprCuboid extends SimpleExpression<Shape> {
                     case 1 -> "from " + corner1.toString(event, debug) + " to " + corner2.toString(event, debug);
                     default -> "";
                 };
-
     }
 }

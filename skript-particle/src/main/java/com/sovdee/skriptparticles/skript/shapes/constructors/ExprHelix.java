@@ -2,37 +2,36 @@ package com.sovdee.skriptparticles.skript.shapes.constructors;
 
 import ch.njol.skript.Skript;
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.Literal;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
-import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
-import org.skriptlang.skript.registration.SyntaxInfo;
-import org.skriptlang.skript.registration.SyntaxRegistry;
+import com.sovdee.shapes.sampling.SamplingStyle;
 import com.sovdee.shapes.shapes.Helix;
 import com.sovdee.shapes.shapes.Shape;
-import com.sovdee.shapes.sampling.SamplingStyle;
 import com.sovdee.skriptparticles.rendering.DrawData;
 import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
+import org.skriptlang.skript.registration.SyntaxInfo;
+
+import java.util.List;
+import org.skriptlang.skript.registration.SyntaxRegistry;
 
 @Name("Particle Helix / Spiral")
-@Description({
-        "Creates a helix or spiral shape with the given radius and height. The radius and height must be greater than 0.",
-        "The winding rate is the number of loops per meter or block. If omitted, the winding rate will be 1 loop per block.",
-        "The height of the helix can be manipulated through both the length and height expressions."
-})
-@Examples({
-        "set {_shape} to helix with radius 10 and height 5",
-        "set {_shape} to a spiral with radius 3 and height 5 and winding rate of 2 loops per meter",
-        "set {_shape} to a solid anti-clockwise helix with radius 3, height 5, winding rate 1"
-})
+@Description("""
+    Creates a helix or spiral shape with the given radius and height. The radius and height must be greater than 0.
+    The winding rate is the number of loops per meter or block. If omitted, the winding rate will be 1 loop per block.
+    The height of the helix can be manipulated through both the length and height expressions.
+    """)
+@Example("set {_shape} to helix with radius 10 and height 5")
+@Example("set {_shape} to a spiral with radius 3 and height 5 and winding rate of 2 loops per meter")
+@Example("set {_shape} to a solid anti-clockwise helix with radius 3, height 5, winding rate 1")
 @Since("1.0.0")
-public class ExprHelix extends SimpleExpression<Shape> {
+public class ExprHelix extends ShapeConstructorExpression {
 
     public static void register(SyntaxRegistry registry) {
         registry.register(SyntaxRegistry.EXPRESSION, SyntaxInfo.Expression.builder(ExprHelix.class, Shape.class)
@@ -49,7 +48,8 @@ public class ExprHelix extends SimpleExpression<Shape> {
     private SamplingStyle style;
 
     @Override
-    public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, ParseResult parseResult) {
+    @SuppressWarnings("unchecked")
+    public boolean initialize(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, ParseResult parseResult) {
         radius = (Expression<Number>) exprs[0];
         height = (Expression<Number>) exprs[1];
         if (exprs.length > 2)
@@ -79,13 +79,12 @@ public class ExprHelix extends SimpleExpression<Shape> {
     }
 
     @Override
-    @Nullable
-    protected Shape[] get(Event event) {
+    protected @Nullable List<Shape> getShapes(Event event) {
         @Nullable Number radius = this.radius.getSingle(event);
         @Nullable Number height = this.height.getSingle(event);
         @Nullable Number windingRate = this.windingRate == null ? 1 : this.windingRate.getSingle(event);
         if (radius == null || height == null || windingRate == null)
-            return new Shape[0];
+            return null;
 
         radius = Math.max(radius.doubleValue(), MathUtil.EPSILON);
         height = Math.max(height.doubleValue(), MathUtil.EPSILON);
@@ -94,17 +93,7 @@ public class ExprHelix extends SimpleExpression<Shape> {
         Helix shape = new Helix(radius.doubleValue(), height.doubleValue(), slope / (2 * Math.PI), direction);
         shape.getPointSampler().setStyle(style);
         shape.getPointSampler().setDrawContext(new DrawData());
-        return new Shape[]{shape};
-    }
-
-    @Override
-    public boolean isSingle() {
-        return true;
-    }
-
-    @Override
-    public Class<? extends Shape> getReturnType() {
-        return Shape.class;
+        return List.of(shape);
     }
 
     @Override
@@ -113,5 +102,4 @@ public class ExprHelix extends SimpleExpression<Shape> {
                 radius.toString(event, debug) + ", height " + height.toString(event, debug) +
                 (windingRate == null ? "" : ", and winding rate " + windingRate.toString(event, debug));
     }
-
 }

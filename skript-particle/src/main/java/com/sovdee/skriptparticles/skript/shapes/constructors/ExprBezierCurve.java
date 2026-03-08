@@ -1,14 +1,11 @@
 package com.sovdee.skriptparticles.skript.shapes.constructors;
 
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
-import org.skriptlang.skript.registration.SyntaxInfo;
-import org.skriptlang.skript.registration.SyntaxRegistry;
-import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
 import com.sovdee.shapes.shapes.BezierCurve;
 import com.sovdee.shapes.shapes.Shape;
@@ -20,20 +17,20 @@ import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3d;
+import org.skriptlang.skript.registration.SyntaxInfo;
+import org.skriptlang.skript.registration.SyntaxRegistry;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Name("Particle Bezier Curve")
-@Description({
-        "Creates a bezier curve between the given start and end points, using the given control points to change the curve."
-})
-@Examples({
-        "set {_shape} to a bezier curve from {a} to {b} with control points {c} and {d}",
-        "set {_shape} to a curve from player to player's target with control point (location 3 above player)"
-})
+@Description("""
+    Creates a bezier curve between the given start and end points, using the given control points to change the curve.
+    """)
+@Example("set {_shape} to a bezier curve from {a} to {b} with control points {c} and {d}")
+@Example("set {_shape} to a curve from player to player's target with control point (location 3 above player)")
 @Since("1.3.0")
-public class ExprBezierCurve extends SimpleExpression<Shape> {
+public class ExprBezierCurve extends ShapeConstructorExpression {
 
     public static void register(SyntaxRegistry registry) {
         registry.register(SyntaxRegistry.EXPRESSION, SyntaxInfo.Expression.builder(ExprBezierCurve.class, Shape.class)
@@ -47,7 +44,7 @@ public class ExprBezierCurve extends SimpleExpression<Shape> {
     private Expression<?> controlPoints;
 
     @Override
-    public boolean init(Expression<?>[] exprs, int matchedPattern, @NotNull Kleenean isDelayed, @NotNull ParseResult parseResult) {
+    public boolean initialize(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, ParseResult parseResult) {
         start = exprs[0];
         end = exprs[1];
         controlPoints = exprs[2];
@@ -55,7 +52,7 @@ public class ExprBezierCurve extends SimpleExpression<Shape> {
     }
 
     @Override
-    protected Shape @Nullable [] get(@NotNull Event event) {
+    protected @Nullable List<Shape> getShapes(Event event) {
         @Nullable Point<?> startPt = Point.of(this.start.getSingle(event));
         @Nullable Point<?> endPt = Point.of(this.end.getSingle(event));
         if (startPt == null || endPt == null)
@@ -64,10 +61,7 @@ public class ExprBezierCurve extends SimpleExpression<Shape> {
         for (Object value : this.controlPoints.getArray(event)) {
             controlPts.add(Point.of(value));
         }
-
-        // Use Supplier-based BezierCurve for dynamic control points
-        BezierCurve curve = getBezierCurve(startPt, controlPts, endPt);
-        return new Shape[]{curve};
+        return List.of(getBezierCurve(startPt, controlPts, endPt));
     }
 
     private static @NotNull BezierCurve getBezierCurve(@NotNull Point<?> startPt, List<Point<?>> controlPts, @NotNull Point<?> endPt) {
@@ -85,18 +79,6 @@ public class ExprBezierCurve extends SimpleExpression<Shape> {
     }
 
     @Override
-    public boolean isSingle() {
-        return true;
-    }
-
-    @Override
-    @NotNull
-    public Class<? extends Shape> getReturnType() {
-        return Shape.class;
-    }
-
-    @Override
-    @NotNull
     public String toString(@Nullable Event event, boolean debug) {
         return "bezier curve between start " + start.toString(event, debug) + " and end " + end.toString(event, debug) +
                 " using control points " + controlPoints.toString(event, debug);

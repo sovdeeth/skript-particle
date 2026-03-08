@@ -2,36 +2,34 @@ package com.sovdee.skriptparticles.skript.shapes.constructors;
 
 import ch.njol.skript.Skript;
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.Literal;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
-import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
-import org.skriptlang.skript.registration.SyntaxInfo;
-import org.skriptlang.skript.registration.SyntaxRegistry;
+import com.sovdee.shapes.sampling.SamplingStyle;
 import com.sovdee.shapes.shapes.Circle;
 import com.sovdee.shapes.shapes.Shape;
-import com.sovdee.shapes.sampling.SamplingStyle;
 import com.sovdee.skriptparticles.rendering.DrawData;
 import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.skriptlang.skript.registration.SyntaxInfo;
+
+import java.util.List;
+import org.skriptlang.skript.registration.SyntaxRegistry;
 
 @Name("Particle Circle or Cylinder")
-@Description({
-        "Creates a circle, disc, or cylinder shape with the given radius. The radius must be greater than 0 and the height cannot be negative."
-})
-@Examples({
-        "set {_shape} to circle with radius 10",
-        "set {_shape} to a disc of radius 3",
-        "set {_shape} to a solid cylinder with radius 3 and height 5"
-})
+@Description("""
+    Creates a circle, disc, or cylinder shape with the given radius. The radius must be greater than 0 and the height cannot be negative.
+    """)
+@Example("set {_shape} to circle with radius 10")
+@Example("set {_shape} to a disc of radius 3")
+@Example("set {_shape} to a solid cylinder with radius 3 and height 5")
 @Since("1.0.0")
-public class ExprCircle extends SimpleExpression<Shape> {
+public class ExprCircle extends ShapeConstructorExpression {
 
     public static void register(SyntaxRegistry registry) {
         registry.register(SyntaxRegistry.EXPRESSION, SyntaxInfo.Expression.builder(ExprCircle.class, Shape.class)
@@ -49,7 +47,8 @@ public class ExprCircle extends SimpleExpression<Shape> {
     private boolean isCylinder;
 
     @Override
-    public boolean init(Expression<?>[] exprs, int matchedPattern, @NotNull Kleenean isDelayed, @NotNull ParseResult parseResult) {
+    @SuppressWarnings("unchecked")
+    public boolean initialize(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, ParseResult parseResult) {
         isCylinder = matchedPattern == 1;
 
         radius = (Expression<Number>) exprs[0];
@@ -79,8 +78,7 @@ public class ExprCircle extends SimpleExpression<Shape> {
     }
 
     @Override
-    @Nullable
-    protected Shape[] get(@NotNull Event event) {
+    protected @Nullable List<Shape> getShapes(Event event) {
         Number radius = this.radius.getSingle(event);
         Number height = this.height != null ? this.height.getSingle(event) : 0;
         if (radius == null || height == null)
@@ -92,22 +90,10 @@ public class ExprCircle extends SimpleExpression<Shape> {
         Circle shape = new Circle(radius.doubleValue(), height.doubleValue());
         shape.getPointSampler().setStyle(style);
         shape.getPointSampler().setDrawContext(new DrawData());
-        return new Shape[]{shape};
+        return List.of(shape);
     }
 
     @Override
-    public boolean isSingle() {
-        return true;
-    }
-
-    @Override
-    @NotNull
-    public Class<? extends Shape> getReturnType() {
-        return Shape.class;
-    }
-
-    @Override
-    @NotNull
     public String toString(@Nullable Event event, boolean debug) {
         return (isCylinder ? "circle of radius " + radius.toString(event, debug) :
                 "cylinder of radius " + radius.toString(event, debug) + " and height " + (height != null ? height.toString(event, debug) : "0"));
