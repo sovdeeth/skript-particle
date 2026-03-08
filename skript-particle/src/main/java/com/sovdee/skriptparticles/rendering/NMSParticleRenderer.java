@@ -1,8 +1,6 @@
 package com.sovdee.skriptparticles.rendering;
 
 import com.sovdee.shapes.sampling.ShapeRenderer;
-import com.sovdee.skriptparticles.particles.Particle;
-import com.sovdee.skriptparticles.shapes.DrawData;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;

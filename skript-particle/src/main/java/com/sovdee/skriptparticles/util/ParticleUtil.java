@@ -16,8 +16,8 @@ public class ParticleUtil {
     private static final ParticleBuilder X_AXIS = new ParticleBuilder(Particle.DUST).data(new DustOptions(DyeColor.RED.getColor(), 0.5f));
     private static final ParticleBuilder Z_AXIS = new ParticleBuilder(Particle.DUST).data(new DustOptions(DyeColor.BLUE.getColor(), 0.5f));
 
-    public static com.sovdee.skriptparticles.particles.Particle getDefaultParticle() {
-        return new com.sovdee.skriptparticles.particles.Particle(Particle.FLAME).count(1).extra(0);
+    public static com.sovdee.skriptparticles.rendering.Particle getDefaultParticle() {
+        return new com.sovdee.skriptparticles.rendering.Particle(Particle.FLAME).count(1).extra(0);
     }
 
     public static void drawAxes(Location location, Quaternion orientation, Collection<Player> recipients) {

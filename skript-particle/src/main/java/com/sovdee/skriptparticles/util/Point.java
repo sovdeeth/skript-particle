@@ -3,18 +3,17 @@ package com.sovdee.skriptparticles.util;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.util.Vector;
-import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class Point<T> {
 
     private final T rawValue;
     private final Class<T> type;
-    private boolean isDynamic;
+    private final boolean isDynamic;
 
     public Point(T value, Class<T> type) {
         this(value, type, false);
@@ -37,20 +36,17 @@ public class Point<T> {
     @Nullable
     @Contract("!null -> !null")
     public static Point<?> of(@Nullable Object value) {
-        if (value == null)
-            return null;
-
-        if (value instanceof Vector v) {
-            return Point.of(v);
-        } else if (value instanceof Entity v) {
-            return Point.of(v);
-        } else if (value instanceof Location v) {
-            return Point.of(v);
-        } else if (value instanceof DynamicLocation v) {
-            return Point.of(v);
-        }
-        assert false;
-        return null;
+        return switch (value) {
+            case null -> null;
+            case Vector v -> Point.of(v);
+            case Entity v -> Point.of(v);
+            case Location v -> Point.of(v);
+            case DynamicLocation v -> Point.of(v);
+            default -> {
+                assert false;
+                yield null;
+            }
+        };
     }
 
     public static Point<Vector> of(Vector value) {

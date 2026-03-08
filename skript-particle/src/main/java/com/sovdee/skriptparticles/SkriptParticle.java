@@ -4,12 +4,12 @@ import ch.njol.skript.Skript;
 import ch.njol.skript.SkriptAddon;
 import ch.njol.skript.bstats.bukkit.Metrics;
 import ch.njol.skript.util.Version;
+import com.sovdee.skriptparticles.skript.SkriptParticleModule;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
 import java.util.logging.Logger;
 
 /**
@@ -133,13 +133,7 @@ public class SkriptParticle extends JavaPlugin {
         instance = this;
         addon = Skript.registerAddon(this);
         addon.setLanguageFileDirectory("lang");
-        try {
-            addon.loadClasses("com.sovdee.skriptparticles");
-        } catch (IOException error) {
-            error.printStackTrace();
-            manager.disablePlugin(this);
-            return;
-        }
+        addon.loadModules(new SkriptParticleModule());
         new Metrics(this, 18457);
         SkriptParticle.info("Successfully enabled skript-particle.");
     }

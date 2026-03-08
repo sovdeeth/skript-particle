@@ -158,7 +158,7 @@ public class DynamicLocation {
      *
      * @param direction the direction to set the dynamic location to
      */
-    public void setDirection(Direction direction) {
+    public void setDirection(@Nullable Direction direction) {
         this.direction = direction;
     }
 

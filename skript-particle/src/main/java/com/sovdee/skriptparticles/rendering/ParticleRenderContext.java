@@ -1,7 +1,6 @@
 package com.sovdee.skriptparticles.rendering;
 
 import com.sovdee.shapes.modifiers.PointContext;
-import com.sovdee.skriptparticles.particles.Particle;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaterniond;
 

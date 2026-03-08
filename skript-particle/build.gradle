@@ -13,6 +13,7 @@ configurations.configureEach {
 }
 
 repositories {
+    mavenLocal()
     mavenCentral()
     maven {
         url 'https://repo.papermc.io/repository/maven-public/'
@@ -25,7 +26,7 @@ repositories {
 dependencies {
     implementation project(':shapes-lib')
     paperweight.paperDevBundle("1.21.11-R0.1-SNAPSHOT")
-    compileOnly("com.github.SkriptLang:Skript:2.14.0")
+    compileOnly("com.github.SkriptLang:Skript:2.14.2")
     compileOnly "org.joml:joml:${jomlVersion}"
 }
 

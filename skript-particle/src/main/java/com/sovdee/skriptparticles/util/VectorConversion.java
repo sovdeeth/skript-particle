@@ -12,11 +12,11 @@ import java.util.List;
 public class VectorConversion {
 
     public static Vector toBukkit(Vector3d v) {
-        return new Vector(v.x, v.y, v.z);
+        return Vector.fromJOML(v);
     }
 
     public static Vector3d toJOML(Vector v) {
-        return new Vector3d(v.getX(), v.getY(), v.getZ());
+        return v.toVector3d();
     }
 
     public static List<Vector> toBukkit(List<Vector3d> points) {
