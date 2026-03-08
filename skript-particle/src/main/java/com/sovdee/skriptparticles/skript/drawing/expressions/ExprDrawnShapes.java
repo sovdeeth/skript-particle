@@ -23,7 +23,7 @@ public class ExprDrawnShapes extends EventValueExpression<Shape> {
     public static void register(SyntaxRegistry registry) {
         registry.register(
             SyntaxRegistry.EXPRESSION,
-            infoBuilder(ExprDrawnShapes.class, Shape.class, "[drawn] shape")
+            infoBuilder(ExprDrawnShapes.class, Shape.class, "drawn shape")
                 .supplier(ExprDrawnShapes::new)
                 .build());
     }

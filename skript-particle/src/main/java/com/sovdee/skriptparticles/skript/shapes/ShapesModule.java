@@ -18,6 +18,7 @@ import com.sovdee.shapes.shapes.LWHShape;
 import com.sovdee.shapes.shapes.PolyShape;
 import com.sovdee.shapes.shapes.RadialShape;
 import com.sovdee.shapes.shapes.Shape;
+import com.sovdee.skriptparticles.skript.shapes.expressions.ExprCurrentShape;
 import com.sovdee.skriptparticles.skript.shapes.expressions.ExprRotation;
 import com.sovdee.skriptparticles.skript.shapes.expressions.ExprShapeCopy;
 import com.sovdee.skriptparticles.rendering.Particle;
@@ -320,6 +321,8 @@ public class ShapesModule extends HierarchicalAddonModule {
     @Override
     protected void loadSelf(SkriptAddon addon) {
         register(addon,
+                // shape
+                ExprCurrentShape::register,
                 // shape factory expressions
                 ExprCircle::register,
                 ExprSphere::register,
