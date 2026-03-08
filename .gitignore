@@ -7,6 +7,6 @@
 /src/test/skriptparticle/
 CLAUDE.md
 /.claude
-/shapes-lib/build
-/skript-particle/build
-/skript-particle/.gradle/caches
+/shapes-lib/build/
+/skript-particle/build/
+/skript-particle/.gradle/
