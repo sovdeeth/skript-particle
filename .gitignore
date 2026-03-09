@@ -7,5 +7,7 @@
 /src/test/skriptparticle/
 CLAUDE.md
 /.claude
-/shapes-lib/build
-/skript-particle/build
+/shapes-lib/build/
+/skript-particle/build/
+/skript-particle/.gradle/
+/net/minecraft/network

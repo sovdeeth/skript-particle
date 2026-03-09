@@ -3,8 +3,8 @@ package com.sovdee.shapes.shapes;
 import com.sovdee.shapes.sampling.SamplingStyle;
 import org.joml.Vector3d;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Helix extends AbstractShape implements RadialShape, LWHShape {
 
@@ -30,31 +30,31 @@ public class Helix extends AbstractShape implements RadialShape, LWHShape {
         this.direction = direction;
     }
 
-    private static Set<Vector3d> calculateHelix(double radius, double height, double slope, int direction, double density) {
-        Set<Vector3d> points = new LinkedHashSet<>();
+    private static void calculateHelix(List<Vector3d> points, double radius, double height, double slope, int direction, double density) {
         if (radius <= 0 || height <= 0) {
-            return points;
+            return;
         }
         double loops = Math.abs(height / slope);
         double length = slope * slope + radius * radius;
         double stepSize = density / length;
+        if (points instanceof ArrayList<?> al)
+            al.ensureCapacity(points.size() + (int) (loops / stepSize) + 1);
         for (double t = 0; t < loops; t += stepSize) {
             double x = radius * Math.cos(direction * t);
             double z = radius * Math.sin(direction * t);
             points.add(new Vector3d(x, t * slope, z));
         }
-        return points;
     }
 
     @Override
-    public void generateOutline(Set<Vector3d> points, double density) {
-        points.addAll(calculateHelix(radius, height, slope, direction, density));
+    public void generateOutline(List<Vector3d> points, double density) {
+        calculateHelix(points, radius, height, slope, direction, density);
     }
 
     @Override
-    public void generateSurface(Set<Vector3d> points, double density) {
+    public void generateSurface(List<Vector3d> points, double density) {
         for (double r = radius; r > 0; r -= density) {
-            points.addAll(calculateHelix(r, height, slope, direction, density));
+            calculateHelix(points, r, height, slope, direction, density);
         }
     }
 

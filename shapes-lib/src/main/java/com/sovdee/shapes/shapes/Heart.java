@@ -3,8 +3,8 @@ package com.sovdee.shapes.shapes;
 import com.sovdee.shapes.sampling.SamplingStyle;
 import org.joml.Vector3d;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Heart extends AbstractShape implements LWHShape {
 
@@ -19,26 +19,26 @@ public class Heart extends AbstractShape implements LWHShape {
         this.eccentricity = Math.max(eccentricity, 1);
     }
 
-    private static Set<Vector3d> calculateHeart(double length, double width, double eccentricity, double density) {
-        Set<Vector3d> points = new LinkedHashSet<>();
+    private static void calculateHeart(List<Vector3d> points, double length, double width, double eccentricity, double density) {
         double angleStep = 4 / 3.0 * density / (width + length);
+        if (points instanceof ArrayList<?> al)
+            al.ensureCapacity(points.size() + (int) (Math.PI * 2 / angleStep) + 1);
         for (double theta = 0; theta < Math.PI * 2; theta += angleStep) {
             double x = width * Math.pow(Math.sin(theta), 3);
             double y = length * (Math.cos(theta) - 1 / eccentricity * Math.cos(2 * theta) - 1.0 / 6 * Math.cos(3 * theta) - 1.0 / 16 * Math.cos(4 * theta));
             points.add(new Vector3d(x, 0, y));
         }
-        return points;
     }
 
     @Override
-    public void generateOutline(Set<Vector3d> points, double density) {
-        points.addAll(calculateHeart(length / 2, width / 2, eccentricity, density));
+    public void generateOutline(List<Vector3d> points, double density) {
+        calculateHeart(points, length / 2, width / 2, eccentricity, density);
     }
 
     @Override
-    public void generateSurface(Set<Vector3d> points, double density) {
+    public void generateSurface(List<Vector3d> points, double density) {
         for (double w = width, l = length; w > 0 && l > 0; w -= density * 1.5, l -= density * 1.5) {
-            points.addAll(calculateHeart(l / 2, w / 2, eccentricity, density));
+            calculateHeart(points, l / 2, w / 2, eccentricity, density);
         }
     }
 

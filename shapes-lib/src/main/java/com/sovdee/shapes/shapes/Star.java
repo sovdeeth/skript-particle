@@ -4,8 +4,7 @@ import com.sovdee.shapes.sampling.SamplingStyle;
 import com.sovdee.shapes.util.VectorUtil;
 import org.joml.Vector3d;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.List;
 
 public class Star extends AbstractShape {
 
@@ -20,28 +19,31 @@ public class Star extends AbstractShape {
         this.angle = Math.clamp(angle, Shape.EPSILON, Math.PI);
     }
 
-    private static Set<Vector3d> calculateStar(double innerRadius, double outerRadius, double angle, double density) {
-        Set<Vector3d> points = new LinkedHashSet<>();
+    private static void calculateStar(List<Vector3d> points, double innerRadius, double outerRadius, double angle, double density) {
         Vector3d outerVertex = new Vector3d(outerRadius, 0, 0);
         Vector3d innerVertex = new Vector3d(innerRadius, 0, 0);
         for (double theta = 0; theta < 2 * Math.PI; theta += angle) {
             Vector3d currentVertex = VectorUtil.rotateAroundY(new Vector3d(outerVertex), theta);
-            points.addAll(Line.calculateLine(currentVertex, VectorUtil.rotateAroundY(new Vector3d(innerVertex), theta + angle / 2), density));
-            points.addAll(Line.calculateLine(currentVertex, VectorUtil.rotateAroundY(new Vector3d(innerVertex), theta - angle / 2), density));
+            Line.calculateLine(points, currentVertex, VectorUtil.rotateAroundY(new Vector3d(innerVertex), theta + angle / 2), density);
+            // Second line from same vertex - skip duplicate first point
+            int before = points.size();
+            Line.calculateLine(points, currentVertex, VectorUtil.rotateAroundY(new Vector3d(innerVertex), theta - angle / 2), density);
+            if (points.size() > before) {
+                points.remove(before);
+            }
         }
-        return points;
     }
 
     @Override
-    public void generateOutline(Set<Vector3d> points, double density) {
-        points.addAll(calculateStar(innerRadius, outerRadius, angle, density));
+    public void generateOutline(List<Vector3d> points, double density) {
+        calculateStar(points, innerRadius, outerRadius, angle, density);
     }
 
     @Override
-    public void generateSurface(Set<Vector3d> points, double density) {
+    public void generateSurface(List<Vector3d> points, double density) {
         double minRadius = Math.min(innerRadius, outerRadius);
         for (double r = 0; r < minRadius; r += density) {
-            points.addAll(calculateStar(innerRadius - r, outerRadius - r, angle, density));
+            calculateStar(points, innerRadius - r, outerRadius - r, angle, density);
         }
     }
 

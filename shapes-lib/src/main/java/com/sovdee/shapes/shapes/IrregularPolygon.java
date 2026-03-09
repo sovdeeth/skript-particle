@@ -5,9 +5,8 @@ import org.joml.Vector3d;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
+
 
 public class IrregularPolygon extends AbstractShape implements LWHShape {
 
@@ -46,17 +45,18 @@ public class IrregularPolygon extends AbstractShape implements LWHShape {
     }
 
     @Override
-    public void generateOutline(Set<Vector3d> points, double density) {
-        points.addAll(Line.connectPoints(vertices, density));
-        points.addAll(Line.calculateLine(vertices.get(0), vertices.get(vertices.size() - 1), density));
+    public void generateOutline(List<Vector3d> points, double density) {
+        int start = points.size();
+        Line.connectPoints(points, vertices, density);
+        Line.calculateLine(points, vertices.get(0), vertices.get(vertices.size() - 1), density);
         if (height != 0) {
-            Set<Vector3d> upperPoints = new LinkedHashSet<>();
-            for (Vector3d v : points) {
-                upperPoints.add(new Vector3d(v.x, height, v.z));
+            int end = points.size();
+            for (int i = start; i < end; i++) {
+                Vector3d v = points.get(i);
+                points.add(new Vector3d(v.x, height, v.z));
             }
-            points.addAll(upperPoints);
             for (Vector3d v : vertices) {
-                points.addAll(Line.calculateLine(v, new Vector3d(v.x, height, v.z), density));
+                Line.calculateLine(points, v, new Vector3d(v.x, height, v.z), density);
             }
         }
     }

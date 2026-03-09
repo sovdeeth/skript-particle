@@ -2,7 +2,7 @@ package com.sovdee.shapes.shapes;
 
 import org.joml.Vector3d;
 
-import java.util.Set;
+import java.util.List;
 
 public class EllipticalArc extends Ellipse implements CutoffShape {
 
@@ -16,7 +16,7 @@ public class EllipticalArc extends Ellipse implements CutoffShape {
     }
 
     @Override
-    public void generateSurface(Set<Vector3d> points, double density) {
+    public void generateSurface(List<Vector3d> points, double density) {
         generateFilled(points, density);
     }
 
