@@ -17,11 +17,8 @@ import com.sovdee.shapes.modifiers.PointModifier;
 import com.sovdee.shapes.modifiers.StandardInput;
 import com.sovdee.skriptparticles.rendering.ParticleRenderContext;
 import com.sovdee.skriptparticles.rendering.shaders.AbstractGradientModifier;
-import com.sovdee.skriptparticles.rendering.shaders.AngularGradientModifier;
-import com.sovdee.skriptparticles.rendering.shaders.AxisGradientModifier;
 import com.sovdee.skriptparticles.rendering.shaders.ColorStop;
-import com.sovdee.skriptparticles.rendering.shaders.RadialGradientModifier;
-import com.sovdee.skriptparticles.rendering.shaders.SphericalGradientModifier;
+import com.sovdee.skriptparticles.rendering.shaders.GradientModifier;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
 
@@ -96,30 +93,30 @@ public class ExprGradientModifier extends SimpleExpression<PointModifier> {
                 Color c1 = color1.getSingle(event);
                 Color c2 = color2.getSingle(event);
                 if (c1 == null || c2 == null) yield null;
-                yield new AxisGradientModifier(c1.asBukkitColor(), c2.asBukkitColor(), axisFromMark(parseMark));
+                yield new GradientModifier(c1.asBukkitColor(), c2.asBukkitColor(), axisFromMark(parseMark));
             }
             case 1 -> { // multi-color axis gradient (evenly spaced)
                 Color[] cs = colors.getArray(event);
                 if (cs == null || cs.length == 0) yield null;
-                yield new AxisGradientModifier(evenlySpaced(cs), axisFromMark(parseMark));
+                yield new GradientModifier(evenlySpaced(cs), axisFromMark(parseMark));
             }
             case 2 -> { // radial
                 Color c1 = color1.getSingle(event);
                 Color c2 = color2.getSingle(event);
                 if (c1 == null || c2 == null) yield null;
-                yield new RadialGradientModifier(c1.asBukkitColor(), c2.asBukkitColor());
+                yield new GradientModifier(c1.asBukkitColor(), c2.asBukkitColor(), StandardInput.RADIUS);
             }
             case 3 -> { // angular
                 Color c1 = color1.getSingle(event);
                 Color c2 = color2.getSingle(event);
                 if (c1 == null || c2 == null) yield null;
-                yield new AngularGradientModifier(c1.asBukkitColor(), c2.asBukkitColor());
+                yield new GradientModifier(c1.asBukkitColor(), c2.asBukkitColor(), StandardInput.ANGLE);
             }
             case 4 -> { // spherical
                 Color c1 = color1.getSingle(event);
                 Color c2 = color2.getSingle(event);
                 if (c1 == null || c2 == null) yield null;
-                yield new SphericalGradientModifier(c1.asBukkitColor(), c2.asBukkitColor());
+                yield new GradientModifier(c1.asBukkitColor(), c2.asBukkitColor(), StandardInput.SPHERICAL);
             }
             default -> null;
         };
