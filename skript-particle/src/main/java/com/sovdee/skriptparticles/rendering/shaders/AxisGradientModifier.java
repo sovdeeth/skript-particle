@@ -1,6 +1,6 @@
 package com.sovdee.skriptparticles.rendering.shaders;
 
-import com.sovdee.shapes.modifiers.SampleAxis;
+import com.sovdee.shapes.modifiers.NormalizedInput;
 import com.sovdee.skriptparticles.rendering.ParticleRenderContext;
 import org.bukkit.Color;
 import org.bukkit.Particle;
@@ -8,35 +8,35 @@ import org.bukkit.Particle;
 import java.util.List;
 
 /**
- * Colors each point based on its position along a {@link SampleAxis} within the shape's bounds.
- * Supports X, Y, Z (spatial axes) and T (normalised draw order).
+ * Colors each point based on its position along a {@link NormalizedInput} within the shape's bounds.
+ * Supports any normalized input — X, Y, Z, T (normalized draw order), RADIUS, SPHERICAL, or ANGLE.
  */
 public class AxisGradientModifier extends AbstractGradientModifier {
 
-    private final SampleAxis axis;
+    private final NormalizedInput input;
 
-    public AxisGradientModifier(Color from, Color to, SampleAxis axis) {
+    public AxisGradientModifier(Color from, Color to, NormalizedInput input) {
         super(from, to);
-        this.axis = axis;
+        this.input = input;
     }
 
-    public AxisGradientModifier(List<ColorStop> stops, SampleAxis axis) {
+    public AxisGradientModifier(List<ColorStop> stops, NormalizedInput input) {
         super(stops);
-        this.axis = axis;
+        this.input = input;
     }
 
     @Override
     public void modify(ParticleRenderContext point) {
         point.particle = Particle.DUST;
-        point.data = dustLookup(axis.sampleNormalized(point));
+        point.data = dustLookup(input.sample(point));
     }
 
-    public SampleAxis getAxis() {
-        return axis;
+    public NormalizedInput getInput() {
+        return input;
     }
 
     @Override
     protected AbstractGradientModifier createInstance() {
-        return new AxisGradientModifier(List.of(), axis);
+        return new AxisGradientModifier(List.of(), input);
     }
 }

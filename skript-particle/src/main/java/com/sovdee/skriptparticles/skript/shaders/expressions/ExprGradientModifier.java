@@ -12,8 +12,9 @@ import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.skript.util.Color;
 import ch.njol.util.Kleenean;
 import com.sovdee.shapes.modifiers.EasingFunction;
+import com.sovdee.shapes.modifiers.NormalizedInput;
 import com.sovdee.shapes.modifiers.PointModifier;
-import com.sovdee.shapes.modifiers.SampleAxis;
+import com.sovdee.shapes.modifiers.StandardInput;
 import com.sovdee.skriptparticles.rendering.ParticleRenderContext;
 import com.sovdee.skriptparticles.rendering.shaders.AbstractGradientModifier;
 import com.sovdee.skriptparticles.rendering.shaders.AngularGradientModifier;
@@ -127,12 +128,12 @@ public class ExprGradientModifier extends SimpleExpression<PointModifier> {
         return new PointModifier[]{mod};
     }
 
-    private static SampleAxis axisFromMark(int mark) {
+    private static NormalizedInput axisFromMark(int mark) {
         return switch (mark) {
-            case 0 -> SampleAxis.X;
-            case 2 -> SampleAxis.Z;
-            case 3 -> SampleAxis.T;
-            default -> SampleAxis.Y;
+            case 0 -> StandardInput.X;
+            case 2 -> StandardInput.Z;
+            case 3 -> StandardInput.T;
+            default -> StandardInput.Y;
         };
     }
 

@@ -1,70 +1,71 @@
 package com.sovdee.shapes.modifiers;
 
 /**
- * Rotates each point in the plane perpendicular to {@code axis} by an angle proportional to
- * its normalised position along that axis. A {@code totalAngle} of 2π produces one full twist.
+ * Rotates each point in the specified {@link RotationPlane} by an angle proportional to
+ * the value of a {@link NormalizedInput}. A {@code totalAngle} of 2π produces one full twist.
+ *
+ * <p>Examples:</p>
  * <ul>
- *   <li>Y axis (default): rotates in the XZ plane</li>
- *   <li>X axis: rotates in the YZ plane</li>
- *   <li>Z axis: rotates in the XY plane</li>
- *   <li>T axis: rotates in the XZ plane, driven by normalised draw order</li>
+ *   <li>Classic Y-axis twist: {@code new TwistModifier(2*PI, StandardInput.Y, RotationPlane.XZ)}</li>
+ *   <li>Radial tornado: {@code new TwistModifier(2*PI, StandardInput.RADIUS, RotationPlane.XZ)}</li>
+ *   <li>Draw-order twist: {@code new TwistModifier(PI, StandardInput.T, RotationPlane.XZ)}</li>
  * </ul>
  */
-public class TwistModifier extends PointModifier.PreRenderPointModifier implements Axial, Easable {
+public class TwistModifier extends PointModifier.PreRenderPointModifier implements HasInput, Easable {
 
     private double totalAngle;
-    private SampleAxis axis;
+    private NormalizedInput input;
+    private RotationPlane plane;
     private EasingFunction easing = EasingFunction.LINEAR;
 
     /**
-     * Creates a {@code TwistModifier} along the Y axis.
+     * Creates a {@code TwistModifier} in the XZ plane driven by the Y axis.
      *
-     * @param totalAngle total rotation in radians from axis minimum to maximum;
-     *                   {@code 2π} produces one full revolution
+     * @param totalAngle total rotation in radians; {@code 2π} produces one full revolution
      */
     public TwistModifier(double totalAngle) {
-        this(totalAngle, SampleAxis.Y);
+        this(totalAngle, StandardInput.Y, RotationPlane.XZ);
     }
 
     /**
-     * Creates a {@code TwistModifier} along the specified axis.
+     * Creates a {@code TwistModifier} with a specified input and rotation plane.
      *
-     * @param totalAngle total rotation in radians from axis minimum to maximum;
-     *                   {@code 2π} produces one full revolution
-     * @param axis       the axis along which twist progresses
+     * @param totalAngle total rotation in radians; {@code 2π} produces one full revolution
+     * @param input      the normalized input that drives the rotation angle
+     * @param plane      the plane in which points are rotated
      */
-    public TwistModifier(double totalAngle, SampleAxis axis) {
+    public TwistModifier(double totalAngle, NormalizedInput input, RotationPlane plane) {
         this.totalAngle = totalAngle;
-        this.axis = axis;
+        this.input = input;
+        this.plane = plane;
     }
 
     /**
-     * Rotates the point in the plane perpendicular to {@code axis} by
-     * {@code easing(t) * totalAngle} radians, where {@code t} is the normalised position
-     * of the point along the twist axis.
+     * Rotates the point in the configured plane by {@code easing(t) * totalAngle} radians,
+     * where {@code t} is sampled from the input.
      *
      * @param point the mutable point context to transform
      */
     @Override
     public void modify(PointContext point) {
-        double t = easing.apply(axis.sampleNormalized(point));
+        double t = easing.apply(input.sample(point));
         double angle = totalAngle * t;
         double cos = Math.cos(angle);
         double sin = Math.sin(angle);
-        switch (axis) {
-            case X -> { // rotate YZ plane
+        switch (plane) {
+            case YZ -> {
                 double newY = point.y * cos - point.z * sin;
                 double newZ = point.y * sin + point.z * cos;
                 point.y = newY;
                 point.z = newZ;
             }
-            case Z -> { // rotate XY plane
+            case XY -> {
                 double newX = point.x * cos - point.y * sin;
                 double newY = point.x * sin + point.y * cos;
                 point.x = newX;
                 point.y = newY;
             }
-            default -> { // Y and T: rotate XZ plane
+            default -> { // XZ
                 double newX = point.x * cos - point.z * sin;
                 double newZ = point.x * sin + point.z * cos;
                 point.x = newX;
@@ -75,39 +76,53 @@ public class TwistModifier extends PointModifier.PreRenderPointModifier implemen
 
     /**
      * {@inheritDoc}
-     * Includes {@code totalAngle}, {@code axis}, and the easing hash.
-     *
-     * @return stable hash of this modifier's configuration
+     * Includes {@code totalAngle}, {@code input}, {@code plane}, and the easing hash.
      */
     @Override
     public int modifierHash() {
         int result = Double.hashCode(totalAngle);
-        result = 31 * result + axis.hashCode();
+        result = 31 * result + input.inputHash();
+        result = 31 * result + plane.ordinal();
         result = 31 * result + easing.easingHash();
         return result;
     }
 
     /**
-     * @return the total rotation angle in radians across the full axis extent
+     * @return the total rotation angle in radians
      */
     public double getTotalAngle() {
         return totalAngle;
     }
+
     /**
-     * @param totalAngle the total rotation angle in radians across the full axis extent
+     * @param totalAngle the total rotation angle in radians
      */
     public void setTotalAngle(double totalAngle) {
         this.totalAngle = totalAngle;
     }
 
-    @Override
-    public SampleAxis getAxis() {
-        return axis;
+    /**
+     * @return the rotation plane
+     */
+    public RotationPlane getPlane() {
+        return plane;
+    }
+
+    /**
+     * @param plane the rotation plane
+     */
+    public void setPlane(RotationPlane plane) {
+        this.plane = plane;
     }
 
     @Override
-    public void setAxis(SampleAxis axis) {
-        this.axis = axis;
+    public NormalizedInput getInput() {
+        return input;
+    }
+
+    @Override
+    public void setInput(NormalizedInput input) {
+        this.input = input;
     }
 
     @Override

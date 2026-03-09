@@ -25,14 +25,14 @@ class TwistModifierTest {
         return List.of(new Vector3d(0, 0, 0), new Vector3d(1, 0, 0));
     }
 
-    // --- Default Y-axis tests ---
+    // --- Default Y-input, XZ-plane tests ---
 
     @Test
     void noTwistAtBottom() {
         TwistModifier mod = new TwistModifier(Math.PI);
         PointContext c = ctx(1, 0, 0, ySpan());
         mod.modify(c);
-        // angle = PI * 0 = 0 → identity rotation
+        // angle = PI * normalizedY(0) = PI * 0 = 0 → identity rotation
         assertEquals(1.0, c.x, 1e-9);
         assertEquals(0.0, c.z, 1e-9);
     }
@@ -65,30 +65,41 @@ class TwistModifierTest {
         PointContext c = ctx(1, 0.5, 0, ySpan());
         double origY = c.y;
         mod.modify(c);
-        assertEquals(origY, c.y, 1e-9, "Twist along Y must not change Y");
+        assertEquals(origY, c.y, 1e-9, "XZ-plane twist must not change Y");
     }
 
-    // --- X-axis twist: rotates YZ plane, X unchanged ---
+    // --- X-input, YZ-plane twist: rotates YZ plane, X unchanged ---
 
     @Test
-    void xAxis_quarterTwist_rotatesYZ() {
+    void xInput_yzPlane_quarterTwist() {
         // totalAngle=π, normalizedX=0.5 → angle=π/2
         // point (0, 1, 0): newY = 1*cos(π/2) - 0*sin(π/2) = 0, newZ = 1*sin(π/2) + 0*cos(π/2) = 1
-        TwistModifier mod = new TwistModifier(Math.PI, SampleAxis.X);
+        TwistModifier mod = new TwistModifier(Math.PI, StandardInput.X, RotationPlane.YZ);
         PointContext c = ctx(0.5, 1, 0, xSpan());
         mod.modify(c);
         assertEquals(0.0, c.y, 1e-9, "Y rotated to 0");
         assertEquals(1.0, c.z, 1e-9, "Z rotated to 1");
-        assertEquals(0.5, c.x, 1e-9, "X must not change when axis=X");
+        assertEquals(0.5, c.x, 1e-9, "X must not change in YZ-plane twist");
     }
 
     @Test
-    void xAxis_xCoordinateUnchanged() {
-        TwistModifier mod = new TwistModifier(Math.PI, SampleAxis.X);
+    void xInput_xCoordinateUnchanged() {
+        TwistModifier mod = new TwistModifier(Math.PI, StandardInput.X, RotationPlane.YZ);
         PointContext c = ctx(0.5, 1, 0, xSpan());
         double origX = c.x;
         mod.modify(c);
-        assertEquals(origX, c.x, 1e-9, "Twist along X must not change X");
+        assertEquals(origX, c.x, 1e-9, "YZ-plane twist must not change X");
+    }
+
+    // --- XY-plane twist ---
+
+    @Test
+    void xyPlane_zCoordinateUnchanged() {
+        TwistModifier mod = new TwistModifier(Math.PI, StandardInput.Y, RotationPlane.XY);
+        PointContext c = ctx(1, 0.5, 7, ySpan());
+        double origZ = c.z;
+        mod.modify(c);
+        assertEquals(origZ, c.z, 1e-9, "XY-plane twist must not change Z");
     }
 
     // --- Hash and clone ---
@@ -101,12 +112,19 @@ class TwistModifierTest {
     }
 
     @Test
-    void modifierHashChangesWithAxis() {
-        TwistModifier y = new TwistModifier(Math.PI, SampleAxis.Y);
-        TwistModifier x = new TwistModifier(Math.PI, SampleAxis.X);
-        TwistModifier t = new TwistModifier(Math.PI, SampleAxis.T);
-        assertNotEquals(y.modifierHash(), x.modifierHash(), "Y vs X axis");
-        assertNotEquals(y.modifierHash(), t.modifierHash(), "Y vs T axis");
+    void modifierHashChangesWithInput() {
+        TwistModifier y = new TwistModifier(Math.PI, StandardInput.Y, RotationPlane.XZ);
+        TwistModifier x = new TwistModifier(Math.PI, StandardInput.X, RotationPlane.XZ);
+        TwistModifier t = new TwistModifier(Math.PI, StandardInput.T, RotationPlane.XZ);
+        assertNotEquals(y.modifierHash(), x.modifierHash(), "Y vs X input");
+        assertNotEquals(y.modifierHash(), t.modifierHash(), "Y vs T input");
+    }
+
+    @Test
+    void modifierHashChangesWithPlane() {
+        TwistModifier xz = new TwistModifier(Math.PI, StandardInput.Y, RotationPlane.XZ);
+        TwistModifier xy = new TwistModifier(Math.PI, StandardInput.Y, RotationPlane.XY);
+        assertNotEquals(xz.modifierHash(), xy.modifierHash(), "XZ vs XY plane");
     }
 
     @Test

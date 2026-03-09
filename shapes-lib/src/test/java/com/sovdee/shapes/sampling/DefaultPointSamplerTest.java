@@ -3,7 +3,9 @@ package com.sovdee.shapes.sampling;
 import com.sovdee.shapes.modifiers.PointContext;
 import com.sovdee.shapes.modifiers.PointModifier;
 import com.sovdee.shapes.modifiers.ShapeBounds;
-import com.sovdee.shapes.modifiers.TaperModifier;
+import com.sovdee.shapes.modifiers.ScalingModifier;
+import com.sovdee.shapes.modifiers.ScaleAxes;
+import com.sovdee.shapes.modifiers.StandardInput;
 import com.sovdee.shapes.shapes.Circle;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
@@ -141,12 +143,12 @@ class DefaultPointSamplerTest {
 
     @Test
     void geoModifier_appliedToPoints() {
-        // Taper from 0 to 0 collapses all XZ to zero
-        sampler.addModifier(new TaperModifier(0.0, 0.0));
+        // Scale from 0 to 0 collapses all XZ to zero
+        sampler.addModifier(new ScalingModifier(0.0, 0.0, StandardInput.Y, ScaleAxes.XZ));
         List<Vector3d> points = sampler.getPoints(circle);
         for (Vector3d p : points) {
-            assertEquals(0.0, p.x, 1e-9, "TaperModifier(0,0) should zero all X");
-            assertEquals(0.0, p.z, 1e-9, "TaperModifier(0,0) should zero all Z");
+            assertEquals(0.0, p.x, 1e-9, "ScalingModifier(0,0) should zero all X");
+            assertEquals(0.0, p.z, 1e-9, "ScalingModifier(0,0) should zero all Z");
         }
     }
 
