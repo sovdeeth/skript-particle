@@ -146,8 +146,11 @@ public class DefaultPointSampler implements PointSampler {
     @Override
     public <Context extends PointContext> void render(Shape shape, Quaterniond orientation, ShapeRenderer<Context> renderer) {
         List<Vector3d> points = getPoints(shape, orientation);
-        Context context = renderer.getContext();
+        preparePass(shape, points, renderer.getContext()).renderBatch(points, renderer);
+    }
 
+    @Override
+    public <Context extends PointContext> RenderPass<Context> preparePass(Shape shape, List<Vector3d> points, Context context) {
         // Collect render modifiers (everything that is not a pre-render/geometry modifier)
         List<PointModifier<Context>> renderMods = new ArrayList<>();
         Class<?> ctxClass = context.getClass();
@@ -164,7 +167,7 @@ public class DefaultPointSampler implements PointSampler {
             renderMods.add((PointModifier<Context>) mod);
         }
 
-        // Prepare render modifiers
+        // Prepare render modifiers against the full point set
         ShapeBounds bounds = ShapeBounds.compute(points);
         context.bounds = bounds;
         context.totalPoints = points.size();
@@ -172,20 +175,7 @@ public class DefaultPointSampler implements PointSampler {
         for (PointModifier<Context> mod : renderMods) {
             mod.prepare(bounds);
         }
-
-        // Render loop
-        renderer.begin(points.size());
-        for (int i = 0; i < points.size(); i++) {
-            Vector3d p = points.get(i);
-            context.reset();
-            context.x = p.x; context.y = p.y; context.z = p.z;
-            context.index = i;
-            for (PointModifier<Context> mod : renderMods) {
-                mod.modify(context);
-            }
-            renderer.renderPoint(context);
-        }
-        renderer.end();
+        return new RenderPass<>(context, renderMods);
     }
 
     /**

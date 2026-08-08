@@ -18,6 +18,7 @@ import com.sovdee.skriptparticles.skript.shaders.expressions.point.ExprPointInde
 import com.sovdee.skriptparticles.skript.shaders.expressions.point.ExprPointMotion;
 import com.sovdee.skriptparticles.skript.shaders.expressions.point.ExprPointScale;
 import com.sovdee.skriptparticles.skript.shaders.expressions.point.ExprPointVisible;
+import com.sovdee.skriptparticles.skript.shaders.sections.ExprSecCustomModifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.skriptlang.skript.addon.AddonModule;
@@ -95,7 +96,8 @@ public class ShadersModule extends HierarchicalAddonModule {
                 ExprPointVisible::register,
                 ExprPointScale::register,
                 ExprPointIndex::register,
-                ExprPointCount::register
+                ExprPointCount::register,
+                ExprSecCustomModifier::register
         );
     }
 

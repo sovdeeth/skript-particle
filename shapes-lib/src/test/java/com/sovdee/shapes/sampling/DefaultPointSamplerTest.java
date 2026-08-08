@@ -226,6 +226,55 @@ class DefaultPointSamplerTest {
         assertDoesNotThrow(() -> sampler.render(circle, circle.getOrientation(), renderer));
     }
 
+    // ----- Batched render pass -----
+
+    /** Records the context index of every rendered point. */
+    static class IndexRecordingRenderer implements ShapeRenderer<PointContext> {
+        int beginCount, endCount;
+        final List<Integer> indices = new ArrayList<>();
+        final List<Integer> totals = new ArrayList<>();
+        final PointContext ctx = new PointContext();
+
+        @Override public void begin(int total) { beginCount++; }
+        @Override public void renderPoint(PointContext p) { indices.add(p.index); totals.add(p.totalPoints); }
+        @Override public PointContext getContext() { return ctx; }
+        @Override public void end() { endCount++; }
+    }
+
+    @Test
+    void preparePass_batchedIndicesAreContinuous() {
+        CountingRenderModifier renderMod = new CountingRenderModifier();
+        sampler.addModifier(renderMod);
+        IndexRecordingRenderer renderer = new IndexRecordingRenderer();
+
+        List<Vector3d> points = sampler.getPoints(circle);
+        RenderPass<PointContext> pass = sampler.preparePass(circle, points, renderer.getContext());
+        assertEquals(1, renderMod.prepareCount, "prepare() must run once per pass, not per batch");
+
+        int mid = points.size() / 2;
+        pass.renderBatch(points.subList(0, mid), renderer);
+        pass.renderBatch(points.subList(mid, points.size()), renderer);
+
+        assertEquals(points.size(), renderer.indices.size());
+        for (int i = 0; i < points.size(); i++) {
+            assertEquals(i, renderer.indices.get(i), "Point index must stay continuous across batches");
+            assertEquals(points.size(), renderer.totals.get(i), "totalPoints must reflect the full pass, not the batch");
+        }
+        assertEquals(points.size(), renderMod.modifyCount, "Render modifier must run once per point across all batches");
+        assertEquals(2, renderer.beginCount, "begin() should run once per batch");
+        assertEquals(2, renderer.endCount, "end() should run once per batch");
+        assertEquals(1, renderMod.prepareCount, "prepare() must not run again for later batches");
+    }
+
+    @Test
+    void preparePass_rejectsIncompatibleModifier() {
+        sampler.addModifier(new SubContextModifier());
+        List<Vector3d> points = sampler.getPoints(circle);
+        assertThrows(IllegalStateException.class,
+                () -> sampler.preparePass(circle, points, new PointContext()),
+                "preparePass must validate modifier context types like render()");
+    }
+
     // ----- Transform pipeline -----
 
     @Test

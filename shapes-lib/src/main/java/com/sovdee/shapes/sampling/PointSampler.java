@@ -155,6 +155,18 @@ public interface PointSampler extends Cloneable {
     <Context extends PointContext>  void render(Shape shape, Quaterniond orientation, ShapeRenderer<Context> renderer);
 
     /**
+     * Collects and prepares this sampler's render modifiers against the given (already sampled)
+     * point set, returning a {@link RenderPass} that can render the points in one or more
+     * sequential batches with a continuous point index. Used by clients that spread rendering
+     * over multiple ticks (e.g. animated draws); {@link #render} is the single-batch shortcut.
+     *
+     * @param shape   the shape being rendered
+     * @param points  the full, ordered point set for this pass
+     * @param context the renderer's context; its bounds/totalPoints/shape fields are populated
+     */
+    <Context extends PointContext> RenderPass<Context> preparePass(Shape shape, List<Vector3d> points, Context context);
+
+    /**
      * Returns a deep copy of this sampler with the same configuration.
      * The clone must be fully independent from the original.
      *

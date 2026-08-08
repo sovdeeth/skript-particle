@@ -45,7 +45,7 @@ public abstract class ShapeConstructorExpression extends SectionExpression<Shape
             getParser().setHasDelayBefore(hasDelayBefore);
             hasSection = true;
         }
-        return false;
+        return true;
     }
 
     protected abstract boolean initialize(Expression<?>[] expressions, int matchedPattern, Kleenean hasDelayBefore, ParseResult parseResult);

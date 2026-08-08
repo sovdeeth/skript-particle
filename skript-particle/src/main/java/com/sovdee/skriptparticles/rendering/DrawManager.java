@@ -1,6 +1,7 @@
 package com.sovdee.skriptparticles.rendering;
 
 import ch.njol.skript.Skript;
+import com.sovdee.shapes.sampling.RenderPass;
 import com.sovdee.shapes.shapes.Shape;
 import com.sovdee.skriptparticles.util.DynamicLocation;
 import com.sovdee.skriptparticles.util.MathUtil;
@@ -180,8 +181,9 @@ public class DrawManager {
 
     /**
      * Draws points over time using batched async ticks.
-     * NMS: uses the library render loop with sub-range batching.
-     * Fallback: converts JOML points to Bukkit Vectors per batch.
+     * NMS: uses the library render loop with sub-range batching; render modifiers are prepared
+     * once against the full point set and applied per batch with a continuous point index.
+     * Fallback: converts JOML points to Bukkit Vectors per batch (no render modifiers).
      */
     private static void drawAnimated(Shape shape, List<Vector3d> jomlPoints, Quaterniond orientation,
                                      long animationDuration, Particle particle, DrawData dd,
@@ -189,6 +191,19 @@ public class DrawManager {
         int particleCount = jomlPoints.size();
         double millisecondsPerPoint = animationDuration / (double) particleCount;
         Iterator<List<Vector3d>> batchIterator = MathUtil.batch(jomlPoints, millisecondsPerPoint).iterator();
+
+        NMSParticleRenderer renderer;
+        RenderPass<ParticleRenderContext> pass;
+        if (useNMS) {
+            renderer = new NMSParticleRenderer(particle, dd, filteredRecipients, baseLoc);
+            ParticleRenderContext ctx = renderer.getContext();
+            ctx.orientation = orientation;
+            ctx.scale = shape.getScale();
+            pass = shape.getPointSampler().preparePass(shape, jomlPoints, ctx);
+        } else {
+            renderer = null;
+            pass = null;
+        }
 
         BukkitRunnable runnable = new BukkitRunnable() {
             @Override
@@ -199,9 +214,8 @@ public class DrawManager {
                 }
                 List<Vector3d> batch = batchIterator.next();
                 try {
-                    if (useNMS) {
-                        // Use a simple inline renderer for batch sub-lists
-                        sendBatchNMS(batch, particle, dd, filteredRecipients, baseLoc);
+                    if (pass != null) {
+                        pass.renderBatch(batch, renderer);
                     } else {
                         for (Vector3d point : batch) {
                             particle.prepareForPoint(dd, new Vector(point.x, point.y, point.z));
@@ -214,27 +228,6 @@ public class DrawManager {
             }
         };
         runnable.runTaskTimerAsynchronously(Skript.getInstance(), 0, 1);
-    }
-
-    /**
-     * Sends a pre-computed batch of JOML points via NMS without running the full render pipeline.
-     * Used by animated drawing where the points are already computed.
-     */
-    private static void sendBatchNMS(List<Vector3d> batch, Particle particle, DrawData dd,
-                                     List<Player> filteredRecipients, Location baseLoc) {
-        // For batched animation we use NMSParticleRenderer directly on the pre-computed points.
-        // Render modifiers are skipped for animated batches (they run only on full render passes).
-        NMSParticleRenderer sender = new NMSParticleRenderer(particle, dd, filteredRecipients, baseLoc);
-        ParticleRenderContext ctx = new ParticleRenderContext(particle);
-        sender.begin(batch.size());
-        for (int i = 0; i < batch.size(); i++) {
-            Vector3d p = batch.get(i);
-            ctx.reset();
-            ctx.x = p.x; ctx.y = p.y; ctx.z = p.z;
-            ctx.index = i;
-            sender.renderPoint(ctx);
-        }
-        sender.end();
     }
 
     /**
