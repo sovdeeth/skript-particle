@@ -5,6 +5,7 @@ import com.sovdee.skriptparticles.skript.shaders.ShadersModule;
 import com.sovdee.skriptparticles.skript.shapes.ShapesModule;
 import org.skriptlang.skript.addon.AddonModule;
 import org.skriptlang.skript.addon.HierarchicalAddonModule;
+import org.skriptlang.skript.addon.SkriptAddon;
 
 import java.util.List;
 
@@ -15,6 +16,11 @@ public class SkriptParticleModule extends HierarchicalAddonModule {
 
     public SkriptParticleModule() {
         super();
+    }
+
+    @Override
+    protected void loadSelf(SkriptAddon addon) {
+        // all syntax lives in the child modules
     }
 
     @Override

@@ -54,8 +54,8 @@ public class ExprEasing extends SimpleExpression<EasingFunction> {
                         "linear [easing]",
                         "(ease in|in ease) [(0:quadratic|1:quadratic|2:cubic|3:sine)] [easing]",
                         "(ease out|out ease) [(0:quadratic|1:quadratic|2:cubic|3:sine)] [easing]",
-                        "(ease in[- ]out|in[- ]out ease) [(0:quadratic|1:quadratic|2:cubic|3:sine)] [easing]",
-                        "[a] power ease (0:in|1:out|2:in[- ]out) with exponent %number%",
+                        "(ease in[-| ]out|in[-| ]out ease) [(0:quadratic|1:quadratic|2:cubic|3:sine)] [easing]",
+                        "[a] power ease (0:in|1:out|2:in[-| ]out) with exponent %number%",
                         "[a] custom easing [from [function]] %string%"
                 )
                 .build());

@@ -168,6 +168,13 @@ public class ShapesModule extends HierarchicalAddonModule {
                 })
         );
 
+        // Allow Shape-typed expressions (current shape, drawn shape, ...) to be used where a
+        // dimension-specific shape interface is expected. The converters filter by instanceof.
+        Converters.registerConverter(Shape.class, RadialShape.class, shape -> shape instanceof RadialShape radial ? radial : null);
+        Converters.registerConverter(Shape.class, LWHShape.class, shape -> shape instanceof LWHShape lwh ? lwh : null);
+        Converters.registerConverter(Shape.class, CutoffShape.class, shape -> shape instanceof CutoffShape cutoff ? cutoff : null);
+        Converters.registerConverter(Shape.class, PolyShape.class, shape -> shape instanceof PolyShape poly ? poly : null);
+
         Classes.registerClass(new ClassInfo<>(SamplingStyle.class, "shapestyle")
                 .user("shape ?styles?")
                 .name("Shape Style")

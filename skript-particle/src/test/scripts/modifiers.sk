@@ -1,0 +1,58 @@
+# Parsing and list-behavior tests for point modifiers, gradients, and easings.
+
+test "scale modifier constructor":
+	set {_m} to a scale from 1 to 0 along the y axis
+	assert {_m} is set with "scale modifier constructor failed"
+
+test "twist modifier constructor":
+	set {_m} to a twist of 90 degrees in the xz plane driven by y
+	assert {_m} is set with "twist modifier constructor failed"
+
+test "wave modifier constructor":
+	set {_m} to a wave with amplitude 0.5 and frequency 2
+	assert {_m} is set with "wave modifier constructor failed"
+
+test "gradient modifier constructors":
+	set {_g} to a gradient from red to blue along the y axis
+	assert {_g} is set with "axis gradient constructor failed"
+	set {_g} to a radial gradient from white to black
+	assert {_g} is set with "radial gradient constructor failed"
+	set {_g} to angular gradient from red to blue
+	assert {_g} is set with "angular gradient constructor failed"
+	set {_g} to a spherical gradient from yellow to orange
+	assert {_g} is set with "spherical gradient constructor failed"
+
+test "easing constructors":
+	set {_e} to linear easing
+	assert {_e} is set with "linear easing constructor failed"
+	set {_e} to ease in quadratic
+	assert {_e} is set with "quadratic ease in constructor failed"
+	set {_e} to a power ease in with exponent 3
+	assert {_e} is set with "power easing constructor failed"
+
+test "eased modifier constructor":
+	set {_m} to a scale from 1 to 0 along the y axis eased with ease in-out sine
+	assert {_m} is set with "eased scale modifier constructor failed"
+
+test "shape modifier list behavior":
+	set {_c} to a circle with radius 3
+	assert modifiers of {_c} is not set with "a new shape should have no modifiers"
+
+	add a scale from 1 to 0 along the y axis to modifiers of {_c}
+	assert size of modifiers of {_c} is 1 with "adding a modifier should result in 1 modifier"
+
+	add a gradient from red to blue along the y axis to modifiers of {_c}
+	assert size of modifiers of {_c} is 2 with "adding a second modifier should result in 2 modifiers"
+
+	set modifiers of {_c} to a wave with amplitude 1 and frequency 2
+	assert size of modifiers of {_c} is 1 with "setting modifiers should replace the list"
+
+	delete modifiers of {_c}
+	assert modifiers of {_c} is not set with "deleting modifiers should clear the list"
+
+test "geometry modifier affects sampled points":
+	set {_c} to a circle with radius 3
+	add a scale from 0 to 0 along the y axis to modifiers of {_c}
+	loop points of {_c}:
+		assert x of loop-value is between -0.001 and 0.001 with "scale-to-zero modifier should collapse x coordinates"
+		assert z of loop-value is between -0.001 and 0.001 with "scale-to-zero modifier should collapse z coordinates"
