@@ -11,6 +11,13 @@ import com.sovdee.skriptparticles.skript.shaders.expressions.ExprEasing;
 import com.sovdee.skriptparticles.skript.shaders.expressions.ExprGradientModifier;
 import com.sovdee.skriptparticles.skript.shaders.expressions.ExprModifier;
 import com.sovdee.skriptparticles.skript.shaders.expressions.ExprMotionModifier;
+import com.sovdee.skriptparticles.skript.shaders.expressions.point.ExprPointCoordinate;
+import com.sovdee.skriptparticles.skript.shaders.expressions.point.ExprPointCount;
+import com.sovdee.skriptparticles.skript.shaders.expressions.point.ExprPointDisplacement;
+import com.sovdee.skriptparticles.skript.shaders.expressions.point.ExprPointIndex;
+import com.sovdee.skriptparticles.skript.shaders.expressions.point.ExprPointMotion;
+import com.sovdee.skriptparticles.skript.shaders.expressions.point.ExprPointScale;
+import com.sovdee.skriptparticles.skript.shaders.expressions.point.ExprPointVisible;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.skriptlang.skript.addon.AddonModule;
@@ -81,7 +88,14 @@ public class ShadersModule extends HierarchicalAddonModule {
                 ExprMotionModifier::register,
                 ExprModifier::register,
                 ExprEasing::register,
-                EffAddColorStop::register
+                EffAddColorStop::register,
+                ExprPointCoordinate::register,
+                ExprPointDisplacement::register,
+                ExprPointMotion::register,
+                ExprPointVisible::register,
+                ExprPointScale::register,
+                ExprPointIndex::register,
+                ExprPointCount::register
         );
     }
 
