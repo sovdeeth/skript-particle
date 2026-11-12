@@ -223,17 +223,24 @@ public class RegularPolyhedron extends AbstractShape implements RadialShape, Pol
     }
 
     @Override
-    public boolean contains(Vector3d point) {
-        // Conservative: check if within inscribed sphere
-        double sideLength = getSideLength();
-        double inscribedRadius = switch (faces) {
-            case 4 -> sideLength * TETRA_INSC;
-            case 8 -> sideLength * OCTA_INSC;
-            case 12 -> sideLength * DODECA_INSC;
-            case 20 -> sideLength * ICOSA_INSC;
+    protected boolean containsLocal(Vector3d point, double tolerance) {
+        Quaterniond[] rotations = getFaceRotations();
+        if (rotations == null) return false;
+        double inscribedRadius = getSideLength() * switch (faces) {
+            case 4 -> TETRA_INSC;
+            case 8 -> OCTA_INSC;
+            case 12 -> DODECA_INSC;
+            case 20 -> ICOSA_INSC;
             default -> 0;
         };
-        return point.length() <= inscribedRadius;
+        // a convex polyhedron is the space behind all of its faces
+        Vector3d normal = new Vector3d();
+        for (Quaterniond rotation : rotations) {
+            rotation.transform(normal.set(0, 1, 0));
+            if (point.dot(normal) > inscribedRadius + tolerance)
+                return false;
+        }
+        return true;
     }
 
     @Override

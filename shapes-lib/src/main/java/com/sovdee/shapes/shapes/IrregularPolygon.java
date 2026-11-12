@@ -1,6 +1,7 @@
 package com.sovdee.shapes.shapes;
 
 import com.sovdee.shapes.sampling.SamplingStyle;
+import com.sovdee.shapes.util.VectorUtil;
 import org.joml.Vector3d;
 
 import java.util.ArrayList;
@@ -82,21 +83,14 @@ public class IrregularPolygon extends AbstractShape implements LWHShape {
     }
 
     @Override
-    public boolean contains(Vector3d point) {
-        if (height > 0 && (point.y < 0 || point.y > height)) return false;
-        if (height == 0 && Math.abs(point.y) > EPSILON) return false;
-        // Ray casting algorithm on XZ plane
-        int n = vertices.size();
-        boolean inside = false;
-        for (int i = 0, j = n - 1; i < n; j = i++) {
-            double xi = vertices.get(i).x, zi = vertices.get(i).z;
-            double xj = vertices.get(j).x, zj = vertices.get(j).z;
-            if ((zi > point.z) != (zj > point.z) &&
-                    point.x < (xj - xi) * (point.z - zi) / (zj - zi) + xi) {
-                inside = !inside;
-            }
+    protected boolean containsLocal(Vector3d point, double tolerance) {
+        if (height > 0) {
+            if (point.y < -tolerance || point.y > height + tolerance) return false;
+        } else if (Math.abs(point.y) > tolerance) {
+            return false;
         }
-        return inside;
+        return VectorUtil.isInPolygonXZ(vertices, point.x, point.z)
+                || VectorUtil.isNearPolygonXZ(vertices, point.x, point.z, tolerance);
     }
 
     @Override

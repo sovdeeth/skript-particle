@@ -1,6 +1,7 @@
 package com.sovdee.shapes.shapes;
 
 import com.sovdee.shapes.sampling.SamplingStyle;
+import com.sovdee.shapes.util.VectorUtil;
 import org.joml.Vector3d;
 
 import java.util.ArrayList;
@@ -79,19 +80,12 @@ public class Heart extends AbstractShape implements LWHShape {
     }
 
     @Override
-    public boolean contains(Vector3d point) {
-        // Approximate: check if point is within parametric heart boundary
-        if (Math.abs(point.y) > EPSILON) return false;
-        double x = point.x;
-        double z = point.z;
-        double hw = width / 2;
-        double hl = length / 2;
-        if (hw < EPSILON || hl < EPSILON) return false;
-        // Normalize and check parametric distance
-        double nx = x / hw;
-        double nz = z / hl;
-        // Simple bounding check
-        return nx * nx + nz * nz <= 4;
+    protected boolean containsLocal(Vector3d point, double tolerance) {
+        if (Math.abs(point.y) > tolerance) return false;
+        // Approximate: test against the outline traced as a polygon
+        List<Vector3d> outline = outlinePolygon(256);
+        return VectorUtil.isInPolygonXZ(outline, point.x, point.z)
+                || VectorUtil.isNearPolygonXZ(outline, point.x, point.z, tolerance);
     }
 
     @Override

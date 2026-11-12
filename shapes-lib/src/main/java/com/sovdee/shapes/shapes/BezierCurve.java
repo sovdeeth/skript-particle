@@ -1,6 +1,7 @@
 package com.sovdee.shapes.shapes;
 
 import com.sovdee.shapes.sampling.SamplingStyle;
+import com.sovdee.shapes.util.VectorUtil;
 import org.joml.Vector3d;
 
 import java.util.ArrayList;
@@ -151,17 +152,19 @@ public class BezierCurve extends AbstractShape {
      * of {@code point}.
      *
      * @param point the point to test, in local coordinates
+     * @param tolerance how far outside the exact shape still counts as contained
      * @return {@code true} if the point is within {@link Shape#EPSILON} of the curve
      */
     @Override
-    public boolean contains(Vector3d point) {
-        // Approximate: check distance to nearest sampled point
-        int samples = Math.max((int) (estimateLength() / 0.1), 10);
+    protected boolean containsLocal(Vector3d point, double tolerance) {
+        // Approximate: test against the curve traced as a polyline
+        int samples = Math.max(segments(estimateLength(), 0.05), 16);
         int n = controlPoints.size();
         Vector3d[] temp = new Vector3d[n];
         for (int i = 0; i < n; i++) temp[i] = new Vector3d();
-
-        for (int step = 0; step <= samples; step++) {
+        Vector3d previous = new Vector3d(controlPoints.get(0));
+        double limit = tolerance * tolerance;
+        for (int step = 1; step <= samples; step++) {
             double t = (double) step / samples;
             double nt = 1 - t;
             for (int i = 0; i < n; i++) temp[i].set(controlPoints.get(i));
@@ -170,7 +173,8 @@ public class BezierCurve extends AbstractShape {
                     temp[i].mul(nt).add(new Vector3d(temp[i + 1]).mul(t));
                 }
             }
-            if (point.distance(temp[0]) <= EPSILON) return true;
+            if (VectorUtil.distanceToSegmentSquared(point, previous, temp[0]) <= limit) return true;
+            previous.set(temp[0]);
         }
         return false;
     }

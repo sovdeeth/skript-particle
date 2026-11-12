@@ -97,11 +97,14 @@ public interface Shape extends Cloneable {
     // --- Geometry query ---
 
     /**
-     * Returns {@code true} if the given point lies within or on the surface of this shape's volume.
-     * Points are tested in the shape's local coordinate space (before orientation and scale are applied).
-     * Implementations should use {@link #EPSILON} for floating-point boundary comparisons.
+     * Returns {@code true} if the given point lies within the volume of this shape.
+     * The point is in the same space as the points returned by {@link PointSampler#getPoints(Shape)}:
+     * the shape's orientation, scale and offset are taken into account.
+     * <p>
+     * The volume is that of the solid shape, regardless of sampling style. Shapes with no volume of their own
+     * (curves and flat shapes) are treated as being {@link #EPSILON} thick.
      *
-     * @param point the point to test, in local coordinates
+     * @param point the point to test
      * @return {@code true} if the point is contained by this shape
      */
     boolean contains(Vector3d point);

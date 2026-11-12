@@ -68,5 +68,56 @@ public class VectorUtil {
         points.subList(write, points.size()).clear();
     }
 
-    private record Key(long x, long y, long z) {}
+    /**
+     * Checks whether a point is inside a closed polygon on the XZ plane, using ray casting.
+     * The y components of the vertices are ignored.
+     */
+    public static boolean isInPolygonXZ(List<Vector3d> vertices, double x, double z) {
+        boolean inside = false;
+        int n = vertices.size();
+        for (int i = 0, j = n - 1; i < n; j = i++) {
+            double xi = vertices.get(i).x, zi = vertices.get(i).z;
+            double xj = vertices.get(j).x, zj = vertices.get(j).z;
+            if ((zi > z) != (zj > z) && x < (xj - xi) * (z - zi) / (zj - zi) + xi)
+                inside = !inside;
+        }
+        return inside;
+    }
+
+    /**
+     * Checks whether a point on the XZ plane is within {@code tolerance} of the outline of a closed polygon.
+     * The y components of the vertices are ignored.
+     */
+    public static boolean isNearPolygonXZ(List<Vector3d> vertices, double x, double z, double tolerance) {
+        Vector3d point = new Vector3d(x, 0, z);
+        Vector3d a = new Vector3d();
+        Vector3d b = new Vector3d();
+        int n = vertices.size();
+        for (int i = 0, j = n - 1; i < n; j = i++) {
+            a.set(vertices.get(i).x, 0, vertices.get(i).z);
+            b.set(vertices.get(j).x, 0, vertices.get(j).z);
+            if (distanceToSegmentSquared(point, a, b) <= tolerance * tolerance)
+                return true;
+        }
+        return false;
+    }
+
+    /**
+     * @return the squared distance between a point and the line segment from {@code a} to {@code b}
+     */
+    public static double distanceToSegmentSquared(Vector3d point, Vector3d a, Vector3d b) {
+        double abx = b.x - a.x, aby = b.y - a.y, abz = b.z - a.z;
+        double lengthSquared = abx * abx + aby * aby + abz * abz;
+        double t = 0;
+        if (lengthSquared > 0) {
+            t = ((point.x - a.x) * abx + (point.y - a.y) * aby + (point.z - a.z) * abz) / lengthSquared;
+            t = Math.clamp(t, 0.0, 1.0);
+        }
+        double dx = a.x + abx * t - point.x;
+        double dy = a.y + aby * t - point.y;
+        double dz = a.z + abz * t - point.z;
+        return dx * dx + dy * dy + dz * dz;
+    }
+
+        private record Key(long x, long y, long z) {}
 }

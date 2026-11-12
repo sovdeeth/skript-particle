@@ -77,14 +77,15 @@ public class Helix extends AbstractShape implements RadialShape, LWHShape {
     }
 
     @Override
-    public boolean contains(Vector3d point) {
-        // Approximate: check distance to nearest helix point
-        if (point.y < 0 || point.y > height) return false;
-        double t = point.y / slope;
-        double helixX = radius * Math.cos(direction * t);
-        double helixZ = radius * Math.sin(direction * t);
-        double dist = Math.sqrt((point.x - helixX) * (point.x - helixX) + (point.z - helixZ) * (point.z - helixZ));
-        return dist <= EPSILON;
+    protected boolean containsLocal(Vector3d point, double tolerance) {
+        // Approximate: compare against the point of the helix at the same height
+        if (point.y < -tolerance || point.y > height + tolerance) return false;
+        double y = Math.clamp(point.y, 0.0, height);
+        double t = y / slope;
+        double dx = point.x - radius * Math.cos(direction * t);
+        double dz = point.z - radius * Math.sin(direction * t);
+        double dy = point.y - y;
+        return dx * dx + dy * dy + dz * dz <= tolerance * tolerance;
     }
 
     public double getSlope() { return slope; }

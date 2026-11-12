@@ -261,13 +261,15 @@ public class Cuboid extends AbstractShape implements LWHShape {
      * {@code |x| ≤ halfLength && |y| ≤ halfHeight && |z| ≤ halfWidth}.
      *
      * @param point the point to test, in local shape space
+     * @param tolerance how far outside the exact shape still counts as contained
      * @return {@code true} if {@code point} is within the axis-aligned bounds of the cuboid
      */
     @Override
-    public boolean contains(Vector3d point) {
-        return Math.abs(point.x) <= halfLength &&
-               Math.abs(point.y) <= halfHeight &&
-               Math.abs(point.z) <= halfWidth;
+    protected boolean containsLocal(Vector3d point, double tolerance) {
+        point.sub(centerOffset);
+        return Math.abs(point.x) <= halfLength + tolerance &&
+               Math.abs(point.y) <= halfHeight + tolerance &&
+               Math.abs(point.z) <= halfWidth + tolerance;
     }
 
     /**

@@ -192,10 +192,40 @@ public abstract class AbstractShape implements Shape {
 
     /**
      * {@inheritDoc}
-     * Concrete subclasses must implement the containment test appropriate to their geometry.
      */
     @Override
-    public abstract boolean contains(Vector3d point);
+    public boolean contains(Vector3d point) {
+        return contains(point, EPSILON);
+    }
+
+    /**
+     * Returns {@code true} if the given point lies within the volume of this shape, grown by {@code tolerance}.
+     * For shapes with no volume of their own (curves and flat shapes), the tolerance is how thick they are
+     * treated as being.
+     *
+     * @param point     the point to test, in the same space as the sampled points
+     * @param tolerance how far outside the exact shape still counts as contained, in the shape's local units
+     * @return {@code true} if the point is contained by this shape
+     */
+    public boolean contains(Vector3d point, double tolerance) {
+        if (scale == 0)
+            return false;
+        refresh();
+        // undo the transform the sampler applies: orientation, then scale, then offset
+        Vector3d local = new Vector3d(point).sub(offset).div(scale);
+        orientation.transformInverse(local);
+        return containsLocal(local, Math.max(tolerance, 0));
+    }
+
+    /**
+     * Tests a point in this shape's local space, before orientation, scale and offset are applied.
+     * Concrete subclasses implement the containment test appropriate to their geometry.
+     *
+     * @param point     the point to test, in local coordinates. Implementations may modify it.
+     * @param tolerance a non-negative distance outside the exact shape that still counts as contained
+     * @return {@code true} if the point is contained by this shape
+     */
+    protected abstract boolean containsLocal(Vector3d point, double tolerance);
 
     // --- PointSampler ---
 

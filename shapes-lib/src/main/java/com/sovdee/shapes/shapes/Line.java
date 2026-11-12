@@ -1,6 +1,7 @@
 package com.sovdee.shapes.shapes;
 
 import com.sovdee.shapes.sampling.SamplingStyle;
+import com.sovdee.shapes.util.VectorUtil;
 import org.joml.Vector3d;
 
 import java.util.ArrayList;
@@ -272,20 +273,12 @@ public class Line extends AbstractShape implements LWHShape {
      * then checks that the closest point on the segment equals {@code point}.
      *
      * @param point the point to test
+     * @param tolerance how far outside the exact shape still counts as contained
      * @return {@code true} if the point is on the segment
      */
     @Override
-    public boolean contains(Vector3d point) {
-        Vector3d start = getStart();
-        Vector3d end = getEnd();
-        Vector3d line = new Vector3d(end).sub(start);
-        double len = line.length();
-        if (len < EPSILON) return point.distance(start) < EPSILON;
-        Vector3d toPoint = new Vector3d(point).sub(start);
-        double t = toPoint.dot(line) / (len * len);
-        if (t < 0 || t > 1) return false;
-        Vector3d closest = new Vector3d(start).add(new Vector3d(line).mul(t));
-        return point.distance(closest) <= EPSILON;
+    protected boolean containsLocal(Vector3d point, double tolerance) {
+        return VectorUtil.distanceToSegmentSquared(point, start, end) <= tolerance * tolerance;
     }
 
     /**

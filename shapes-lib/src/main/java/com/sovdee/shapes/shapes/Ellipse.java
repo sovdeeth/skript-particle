@@ -254,15 +254,19 @@ public class Ellipse extends AbstractShape implements LWHShape {
      * otherwise the point must lie in the XZ plane ({@code |y| < EPSILON}).
      *
      * @param point the point to test in local shape space
+     * @param tolerance how far outside the exact shape still counts as contained
      * @return {@code true} if the point is contained within the ellipse (or cylinder)
      */
     @Override
-    public boolean contains(Vector3d point) {
-        double nx = point.x / xRadius;
-        double nz = point.z / zRadius;
-        if (nx * nx + nz * nz > 1) return false;
-        if (height > 0) return point.y >= 0 && point.y <= height;
-        return Math.abs(point.y) < EPSILON;
+    protected boolean containsLocal(Vector3d point, double tolerance) {
+        if (height > 0) {
+            if (point.y < -tolerance || point.y > height + tolerance) return false;
+        } else if (Math.abs(point.y) > tolerance) {
+            return false;
+        }
+        double nx = point.x / (xRadius + tolerance);
+        double nz = point.z / (zRadius + tolerance);
+        return nx * nx + nz * nz <= 1;
     }
 
     /**

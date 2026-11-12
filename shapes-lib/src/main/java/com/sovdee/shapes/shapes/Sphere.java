@@ -103,8 +103,9 @@ public class Sphere extends AbstractShape implements RadialShape {
     }
 
     @Override
-    public boolean contains(Vector3d point) {
-        return point.x * point.x + point.y * point.y + point.z * point.z <= radius * radius;
+    protected boolean containsLocal(Vector3d point, double tolerance) {
+        double maxDistance = radius + tolerance;
+        return point.lengthSquared() <= maxDistance * maxDistance;
     }
 
     @Override

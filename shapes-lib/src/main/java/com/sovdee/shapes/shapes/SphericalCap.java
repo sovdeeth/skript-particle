@@ -23,11 +23,12 @@ public class SphericalCap extends Sphere implements CutoffShape {
     }
 
     @Override
-    public boolean contains(Vector3d point) {
-        if (!super.contains(point)) return false;
-        // Check if within the cap's polar angle
-        double y = point.y / getRadius();
-        return y >= cutoffAngleCos;
+    protected boolean containsLocal(Vector3d point, double tolerance) {
+        if (!super.containsLocal(point, tolerance)) return false;
+        // The solid form of a cap is a spherical sector: everything within the cutoff angle of the y-axis.
+        double distance = point.length();
+        if (distance <= tolerance) return true;
+        return point.y >= distance * cutoffAngleCos - tolerance;
     }
 
     @Override

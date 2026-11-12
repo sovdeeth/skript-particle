@@ -90,14 +90,21 @@ public class Arc extends Circle implements CutoffShape {
      * and normalised to {@code [0, 2π]} using {@code atan2(z, x)}.
      *
      * @param point the point to test, in local coordinates
+     * @param tolerance how far outside the exact shape still counts as contained
      * @return {@code true} if the point lies inside this arc sector
      */
     @Override
-    public boolean contains(Vector3d point) {
-        if (!super.contains(point)) return false;
+    protected boolean containsLocal(Vector3d point, double tolerance) {
+        if (!super.containsLocal(point, tolerance)) return false;
+        if (cutoffAngle >= Math.PI * 2 - EPSILON) return true;
+        double distance = Math.sqrt(point.x * point.x + point.z * point.z);
+        // the axis itself belongs to every sector
+        if (distance <= tolerance) return true;
         double angle = Math.atan2(point.z, point.x);
         if (angle < 0) angle += 2 * Math.PI;
-        return angle <= cutoffAngle;
+        // allow the tolerance, as an angle at this distance, on either side of the sector
+        double slack = tolerance / distance;
+        return angle <= cutoffAngle + slack || angle >= 2 * Math.PI - slack;
     }
 
     /**

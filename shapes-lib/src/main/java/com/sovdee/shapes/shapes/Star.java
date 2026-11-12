@@ -4,6 +4,7 @@ import com.sovdee.shapes.sampling.SamplingStyle;
 import com.sovdee.shapes.util.VectorUtil;
 import org.joml.Vector3d;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Star extends AbstractShape {
@@ -96,11 +97,16 @@ public class Star extends AbstractShape {
     }
 
     @Override
-    public boolean contains(Vector3d point) {
-        if (Math.abs(point.y) > EPSILON) return false;
-        // Check if within outer radius bounding circle
-        double dist = Math.sqrt(point.x * point.x + point.z * point.z);
-        return dist <= Math.max(innerRadius, outerRadius);
+    protected boolean containsLocal(Vector3d point, double tolerance) {
+        if (Math.abs(point.y) > tolerance) return false;
+        // the outline as a polygon: outer and inner vertices in turn
+        List<Vector3d> outline = new ArrayList<>(starPoints * 2);
+        for (int i = 0; i < starPoints; i++) {
+            outline.add(VectorUtil.rotateAroundY(new Vector3d(outerRadius, 0, 0), i * angle));
+            outline.add(VectorUtil.rotateAroundY(new Vector3d(innerRadius, 0, 0), (i + 0.5) * angle));
+        }
+        return VectorUtil.isInPolygonXZ(outline, point.x, point.z)
+                || VectorUtil.isNearPolygonXZ(outline, point.x, point.z, tolerance);
     }
 
     public double getInnerRadius() { return innerRadius; }

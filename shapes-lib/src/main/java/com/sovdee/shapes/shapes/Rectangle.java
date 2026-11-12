@@ -217,14 +217,18 @@ public class Rectangle extends AbstractShape implements LWHShape {
      * including the constraint that it lies on the rectangle's plane (within {@link #EPSILON}).
      *
      * @param point the point to test in local coordinates
+     * @param tolerance how far outside the exact shape still counts as contained
      * @return {@code true} if the point is inside the rectangle
      */
     @Override
-    public boolean contains(Vector3d point) {
+    protected boolean containsLocal(Vector3d point, double tolerance) {
+        point.sub(centerOffset);
+        double l = halfLength + tolerance;
+        double w = halfWidth + tolerance;
         return switch (plane) {
-            case XZ -> Math.abs(point.x) <= halfLength && Math.abs(point.z) <= halfWidth && Math.abs(point.y) < EPSILON;
-            case XY -> Math.abs(point.x) <= halfLength && Math.abs(point.y) <= halfWidth && Math.abs(point.z) < EPSILON;
-            case YZ -> Math.abs(point.y) <= halfLength && Math.abs(point.z) <= halfWidth && Math.abs(point.x) < EPSILON;
+            case XZ -> Math.abs(point.x) <= l && Math.abs(point.z) <= w && Math.abs(point.y) <= tolerance;
+            case XY -> Math.abs(point.x) <= l && Math.abs(point.y) <= w && Math.abs(point.z) <= tolerance;
+            case YZ -> Math.abs(point.y) <= l && Math.abs(point.z) <= w && Math.abs(point.x) <= tolerance;
         };
     }
 

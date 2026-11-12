@@ -189,11 +189,14 @@ public class Circle extends AbstractShape implements RadialShape, LWHShape {
     }
 
     @Override
-    public boolean contains(Vector3d point) {
-        double distSq = point.x * point.x + point.z * point.z;
-        if (distSq > radius * radius) return false;
-        if (height > 0) return point.y >= 0 && point.y <= height;
-        return Math.abs(point.y) < EPSILON;
+    protected boolean containsLocal(Vector3d point, double tolerance) {
+        if (height > 0) {
+            if (point.y < -tolerance || point.y > height + tolerance) return false;
+        } else if (Math.abs(point.y) > tolerance) {
+            return false;
+        }
+        double maxDistance = radius + tolerance;
+        return point.x * point.x + point.z * point.z <= maxDistance * maxDistance;
     }
 
     @Override

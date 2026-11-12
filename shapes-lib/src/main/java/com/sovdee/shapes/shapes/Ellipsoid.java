@@ -153,10 +153,10 @@ public class Ellipsoid extends AbstractShape implements LWHShape {
     }
 
     @Override
-    public boolean contains(Vector3d point) {
-        double nx = point.x / xRadius;
-        double ny = point.y / yRadius;
-        double nz = point.z / zRadius;
+    protected boolean containsLocal(Vector3d point, double tolerance) {
+        double nx = point.x / (xRadius + tolerance);
+        double ny = point.y / (yRadius + tolerance);
+        double nz = point.z / (zRadius + tolerance);
         return nx * nx + ny * ny + nz * nz <= 1;
     }
 

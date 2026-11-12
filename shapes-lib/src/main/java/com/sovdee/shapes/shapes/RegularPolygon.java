@@ -285,16 +285,24 @@ public class RegularPolygon extends AbstractShape implements PolyShape, RadialSh
      * and the angular position to test against the actual polygon boundary.
      *
      * @param point the point to test in local coordinates
+     * @param tolerance how far outside the exact shape still counts as contained
      * @return {@code true} if the point is inside the polygon or prism
      */
     @Override
-    public boolean contains(Vector3d point) {
-        if (height > 0 && (point.y < 0 || point.y > height)) return false;
-        if (height == 0 && Math.abs(point.y) > EPSILON) return false;
-        // Check if point is within the polygon on XZ plane using inscribed radius
-        double dist = Math.sqrt(point.x * point.x + point.z * point.z);
+    protected boolean containsLocal(Vector3d point, double tolerance) {
+        if (height > 0) {
+            if (point.y < -tolerance || point.y > height + tolerance) return false;
+        } else if (Math.abs(point.y) > tolerance) {
+            return false;
+        }
+        double distance = Math.sqrt(point.x * point.x + point.z * point.z);
+        if (distance > radius + tolerance) return false;
+        // Fold the point's angle into a single side: [0, angle), with the side's midpoint at angle / 2.
+        // The vertices sit at multiples of the angle, and the polygon is symmetric about the x-axis.
+        double folded = Math.atan2(point.z, point.x) % angle;
+        if (folded < 0) folded += angle;
         double apothem = radius * Math.cos(angle / 2);
-        return dist <= radius && dist <= apothem / Math.cos(Math.atan2(point.z, point.x) % angle - angle / 2);
+        return distance * Math.cos(folded - angle / 2) <= apothem + tolerance;
     }
 
     /**
