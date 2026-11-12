@@ -1,10 +1,33 @@
 import org.apache.tools.ant.filters.ReplaceTokens
 
+buildscript {
+    // The skript-test plugin is only published to mavenLocal for now, so it is optional:
+    // without it (e.g. on CI) the project still builds and runs its JUnit tests, just not the Skript tests.
+    def skriptTestMarker = new File(System.getProperty('user.home'),
+            '.m2/repository/skript-test/skript-test.gradle.plugin/1.0.1')
+    if (skriptTestMarker.isDirectory()) {
+        repositories { mavenLocal() }
+        dependencies { classpath 'skript-test:skript-test.gradle.plugin:1.0.1' }
+    }
+}
+
 plugins {
     id 'java'
     id 'com.gradleup.shadow' version '8.3.5'
     id("io.papermc.paperweight.userdev") version "2.0.0-beta.24"
-//    id 'skript-test' version '1.0.1'
+}
+
+if (buildscript.configurations.classpath.dependencies.any { it.group == 'skript-test' }) {
+    apply plugin: 'skript-test'
+    skriptTest {
+        dependsOn build
+        testScriptDirectory = file("src/test/scripts")
+        extraPluginsDirectory = layout.buildDirectory.dir("libs")
+        skriptRepoRef = "2.17.1"
+        runVanillaTests = false
+    }
+} else {
+    logger.lifecycle("skript-test plugin not found in mavenLocal; the Skript tests (skriptTest) are unavailable")
 }
 
 group 'com.sovdee'
@@ -68,14 +91,6 @@ tasks.named('jar') {
 tasks.named('build') {
     dependsOn shadowJar
 }
-
-//skriptTest {
-//    dependsOn build
-//    testScriptDirectory = file("src/test/scripts")
-//    extraPluginsDirectory = layout.buildDirectory.dir("libs")
-//    skriptRepoRef = "2.17.1"
-//    runVanillaTests = false
-//}
 
 tasks.register('copyJar', Copy) {
     dependsOn shadowJar
