@@ -13,6 +13,7 @@ import ch.njol.util.Kleenean;
 import org.skriptlang.skript.registration.SyntaxInfo;
 import org.skriptlang.skript.registration.SyntaxRegistry;
 import com.sovdee.shapes.shapes.Shape;
+import com.sovdee.skriptparticles.SkriptParticle;
 import com.sovdee.skriptparticles.util.DynamicLocation;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -95,13 +96,13 @@ public class EffSecDrawShape extends DrawShapeEffectSection {
         BukkitRunnable runnable = new BukkitRunnable() {
             @Override
             public void run() {
-                executeAsync(locations, shapes, recipients);
+                execute(locations, shapes, recipients);
                 if (currentIteration.incrementAndGet() >= iterations) {
                     this.cancel();
                 }
             }
         };
-        runnable.runTaskTimerAsynchronously(Skript.getInstance(), 0, period);
+        runnable.runTaskTimerAsynchronously(SkriptParticle.getInstance(), 0, period);
     }
 
     @Override

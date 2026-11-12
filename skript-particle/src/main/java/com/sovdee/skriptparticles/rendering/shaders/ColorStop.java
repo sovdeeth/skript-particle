@@ -21,6 +21,8 @@ public record ColorStop(double position, Color color) {
 
         // Find surrounding stops
         ColorStop prev = stops.getFirst();
+        // before the first stop there is nothing to blend from
+        if (t <= prev.position()) return prev.color();
         for (int i = 1; i < stops.size(); i++) {
             ColorStop next = stops.get(i);
             if (t <= next.position()) {

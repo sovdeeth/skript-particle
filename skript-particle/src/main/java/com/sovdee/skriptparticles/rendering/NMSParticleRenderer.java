@@ -17,7 +17,9 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -45,7 +47,11 @@ public class NMSParticleRenderer implements ShapeRenderer<ParticleRenderContext>
     /**
      * Warn when a shape draws more than this many particles in a single call.
      */
-    private static final int LARGE_PARTICLE_THRESHOLD = 16_000;
+    /**
+     * How many distinct particle data objects to keep converted options for.
+     * Gradients use at most 256; anything producing more than this is not worth caching.
+     */
+    private static final int MAX_CACHED_OPTIONS = 1024;
 
     /**
      * Functional interface for packet creation, eliminating branching in hot loop.
@@ -115,7 +121,6 @@ public class NMSParticleRenderer implements ShapeRenderer<ParticleRenderContext>
 
     // ---- Instance fields (set up in constructor, used across begin/renderPoint/end) ----
 
-    private final DrawData dd;
     private final List<ServerPlayer> serverPlayers;
     private final double baseX, baseY, baseZ;
 
@@ -129,6 +134,10 @@ public class NMSParticleRenderer implements ShapeRenderer<ParticleRenderContext>
      * particle/data).
      */
     private final ParticleOptions defaultOptions;
+    // Converted options for particle data set by modifiers, keyed by the data object's identity.
+    // Modifiers such as gradients hand out the same few data objects for every point.
+    private final Map<Object, ParticleOptions> optionsCache = new IdentityHashMap<>();
+    private org.bukkit.Particle cachedOptionsParticle;
 
     private List<Packet<? super ClientGamePacketListener>> chunk;
 
@@ -139,12 +148,10 @@ public class NMSParticleRenderer implements ShapeRenderer<ParticleRenderContext>
      * Creates a renderer instance for one draw call.
      *
      * @param particle   the particle configuration (also stored as defaults in the context)
-     * @param dd         the draw data for the shape (for warning flag)
      * @param recipients pre-filtered list of players
      * @param baseLoc    world-space base location for point offsets
      */
-    public NMSParticleRenderer(Particle particle, DrawData dd, List<Player> recipients, Location baseLoc) {
-        this.dd = dd;
+    public NMSParticleRenderer(Particle particle, List<Player> recipients, Location baseLoc) {
         this.baseX = baseLoc.getX();
         this.baseY = baseLoc.getY();
         this.baseZ = baseLoc.getZ();
@@ -172,12 +179,7 @@ public class NMSParticleRenderer implements ShapeRenderer<ParticleRenderContext>
 
     @Override
     public void begin(int totalPoints) {
-        if (!dd.isLargeSizeWarned() && totalPoints > LARGE_PARTICLE_THRESHOLD) {
-            LOGGER.warning("Shape is drawing " + totalPoints + " particles in one call. " +
-                    "This may cause lag. Consider reducing particle density or shape size.");
-            dd.setLargeSizeWarned(true);
-        }
-        chunk = new ArrayList<>(MAX_BUNDLE_SIZE);
+        chunk = new ArrayList<>(Math.min(Math.max(totalPoints, 1), MAX_BUNDLE_SIZE));
     }
 
     @Override
@@ -204,11 +206,13 @@ public class NMSParticleRenderer implements ShapeRenderer<ParticleRenderContext>
         // Use default cached options if no modifier changed the particle; recompute otherwise.
         ParticleOptions options = context.isDefaultParticle()
                 ? defaultOptions
-                : CraftParticle.createParticleParam(context.particle, context.data);
+                : optionsFor(context.particle, context.data);
 
         ClientboundLevelParticlesPacket pkt = createPacket(
                 options, force, px, py, pz, offsetX, offsetY, offsetZ, speed, count
         );
+        // the packet could not be created; the failure has already been logged
+        if (pkt == null) return;
         chunk.add(pkt);
 
         if (chunk.size() >= MAX_BUNDLE_SIZE) {
@@ -222,6 +226,26 @@ public class NMSParticleRenderer implements ShapeRenderer<ParticleRenderContext>
         if (!chunk.isEmpty()) {
             sendChunkToPlayers(chunk, serverPlayers);
         }
+    }
+
+    /**
+     * Converts a particle and its data to NMS options, reusing the result for data objects seen before.
+     */
+    private ParticleOptions optionsFor(org.bukkit.Particle particle, @Nullable Object data) {
+        if (data == null)
+            return CraftParticle.createParticleParam(particle, null);
+        // the cache is keyed by data alone, so it only holds options for one particle type at a time
+        if (particle != cachedOptionsParticle) {
+            optionsCache.clear();
+            cachedOptionsParticle = particle;
+        }
+        ParticleOptions options = optionsCache.get(data);
+        if (options == null) {
+            options = CraftParticle.createParticleParam(particle, data);
+            if (optionsCache.size() < MAX_CACHED_OPTIONS)
+                optionsCache.put(data, options);
+        }
+        return options;
     }
 
     /**

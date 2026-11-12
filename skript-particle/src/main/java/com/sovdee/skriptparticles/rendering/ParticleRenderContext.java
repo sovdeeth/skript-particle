@@ -76,6 +76,13 @@ public class ParticleRenderContext extends PointContext {
     }
 
     /**
+     * @return the data of the particle being drawn, before any modifier changed it
+     */
+    public @Nullable Object defaultData() {
+        return defaultData;
+    }
+
+    /**
      * Resets all render fields to their defaults before each point is processed.
      */
     @Override

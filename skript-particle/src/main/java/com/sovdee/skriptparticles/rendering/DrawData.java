@@ -6,6 +6,8 @@ import com.sovdee.skriptparticles.util.DynamicLocation;
 import com.sovdee.skriptparticles.util.Quaternion;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 /**
  * Plugin-side rendering metadata attached to library shapes via {@link DrawContext}.
  * Holds particle, location, animation, and debug axis state.
@@ -22,8 +24,9 @@ public class DrawData implements DrawContext {
     private boolean drawGlobalAxes = false;
     /**
      * Set to true after a large-point-count warning has been emitted for this shape.
+     * Shared with copies of this DrawData, so a shape that is copied for every draw only warns once.
      */
-    private boolean largeSizeWarned = false;
+    private AtomicBoolean largeSizeWarned = new AtomicBoolean(false);
 
     /**
      * Creates a new {@code DrawData} with default settings: a FLAME particle with zero extra
@@ -210,7 +213,7 @@ public class DrawData implements DrawContext {
      * @return {@code true} if the large-size warning has been emitted
      */
     public boolean isLargeSizeWarned() {
-        return largeSizeWarned;
+        return largeSizeWarned.get();
     }
 
     /**
@@ -219,7 +222,16 @@ public class DrawData implements DrawContext {
      * @param warned {@code true} to mark the warning as already emitted
      */
     public void setLargeSizeWarned(boolean warned) {
-        this.largeSizeWarned = warned;
+        this.largeSizeWarned.set(warned);
+    }
+
+    /**
+     * Marks the large-size warning as emitted.
+     *
+     * @return {@code true} if it had not been emitted before, i.e. if the caller should emit it now
+     */
+    public boolean markLargeSizeWarned() {
+        return largeSizeWarned.compareAndSet(false, true);
     }
 
     // ---- DrawContext ----
@@ -227,7 +239,8 @@ public class DrawData implements DrawContext {
     /**
      * Creates a deep copy of this {@code DrawData}, duplicating the particle, location,
      * last location, last orientation, animation duration, and axis-draw flags. The
-     * {@link #isLargeSizeWarned()} flag is not copied and resets to {@code false} in the clone.
+     * {@link #isLargeSizeWarned()} flag is shared with the copy, so the warning is emitted once for a shape
+     * and all of its copies.
      *
      * @return a new {@code DrawData} with the same settings as this instance
      */
@@ -243,6 +256,7 @@ public class DrawData implements DrawContext {
         copy.animationDuration = this.animationDuration;
         copy.drawLocalAxes = this.drawLocalAxes;
         copy.drawGlobalAxes = this.drawGlobalAxes;
+        copy.largeSizeWarned = this.largeSizeWarned;
         return copy;
     }
 }

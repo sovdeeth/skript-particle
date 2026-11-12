@@ -126,66 +126,50 @@ public abstract class DrawShapeEffectSection extends EffectSection {
             locations.add(new DynamicLocation());
         }
 
-        // run the code and draw the shapes
-        // async drawing runs all the code sync prior to dispatching the drawing thread
+        // Prepare the shapes: each is copied, so the section's code and the drawing never affect the original,
+        // and the section's code runs once per shape, on this thread, whether drawing is sync or async.
+        List<Shape> preppedShapes = new ArrayList<>();
+        Shape preppedShape;
+        for (Shape shape : shapes.getArray(event)) {
+            preppedShape = shape.clone();
+            if (consumer != null)
+                consumer.accept(preppedShape);
+            preppedShapes.add(preppedShape);
+        }
+        if (preppedShapes.isEmpty()) return getNext();
+
+        // draw the shapes
         if (sync) {
-            executeSync(event, locations, consumer, recipients);
+            execute(locations, preppedShapes, recipients);
         } else {
-            List<Shape> preppedShapes = new ArrayList<>();
-            Shape preppedShape;
-            for (Shape shape : shapes.getArray(event)) {
-                preppedShape = shape.clone();
-                if (consumer != null)
-                    consumer.accept(preppedShape);
-                preppedShapes.add(preppedShape);
-            }
-
-            if (preppedShapes.isEmpty()) return getNext();
-
             setupAsync(event, locations, preppedShapes, recipients);
         }
         return getNext();
-    }
-
-    protected void executeSync(Event event, Collection<DynamicLocation> locations, @Nullable Consumer<Shape> consumer, Collection<Player> recipients) {
-        try {
-            for (DynamicLocation dynamicLocation : locations) {
-                for (Shape shape : shapes.getArray(event)) {
-                    Shape clone = shape.clone();
-                    if (consumer != null) {
-                        DrawManager.drawWithConsumer(clone, dynamicLocation, consumer, recipients);
-                    } else {
-                        DrawManager.draw(clone, dynamicLocation, recipients);
-                    }
-                }
-            }
-        } catch (IllegalArgumentException exception) {
-            SkriptParticle.severe("Unable to draw shape[s]! Please check that your particles are valid!");
-            SkriptParticle.severe("Exception: " + exception.getMessage());
-            SkriptParticle.severe("To see the full stack trace, set Skript's verbosity to very high or debug.");
-            if (Skript.logVeryHigh())
-                exception.printStackTrace();
-        }
     }
 
     protected void setupAsync(Event event, Collection<DynamicLocation> locations, Collection<Shape> shapes, Collection<Player> recipients) {
         BukkitRunnable runnable = new BukkitRunnable() {
             @Override
             public void run() {
-                executeAsync(locations, shapes, recipients);
+                execute(locations, shapes, recipients);
             }
         };
-        runnable.runTaskAsynchronously(Skript.getInstance());
+        runnable.runTaskAsynchronously(SkriptParticle.getInstance());
     }
 
-    protected void executeAsync(Collection<DynamicLocation> locations, Collection<Shape> shapes, Collection<Player> recipients) {
+    protected void execute(Collection<DynamicLocation> locations, Collection<Shape> shapes, Collection<Player> recipients) {
         try {
-            for (DynamicLocation dynamicLocation : locations) {
-                for (Shape shape : shapes) {
+            for (Shape shape : shapes) {
+                // Sample the prepared shape first, so that the copies below start with its cached points:
+                // the points are then only generated once, however many locations or iterations are drawn.
+                shape.getPointSampler().getPoints(shape);
+                for (DynamicLocation dynamicLocation : locations) {
+                    // each draw gets its own copy, so that draws which overlap in time (animations,
+                    // or iterations that take longer than their period) do not share modifier state
                     DrawManager.draw(shape.clone(), dynamicLocation, recipients);
                 }
             }
-        } catch (IllegalArgumentException exception) {
+        } catch (RuntimeException exception) {
             SkriptParticle.severe("Unable to draw shape[s]! Please check that your particles are valid!");
             SkriptParticle.severe("Exception: " + exception.getMessage());
             SkriptParticle.severe("To see the full stack trace, set Skript's verbosity to very high or debug.");

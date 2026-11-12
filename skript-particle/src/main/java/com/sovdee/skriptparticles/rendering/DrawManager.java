@@ -1,8 +1,10 @@
 package com.sovdee.skriptparticles.rendering;
 
-import ch.njol.skript.Skript;
+import com.sovdee.shapes.modifiers.ShapeBounds;
 import com.sovdee.shapes.sampling.RenderPass;
+import com.sovdee.shapes.sampling.ShapeRenderer;
 import com.sovdee.shapes.shapes.Shape;
+import com.sovdee.skriptparticles.SkriptParticle;
 import com.sovdee.skriptparticles.util.DynamicLocation;
 import com.sovdee.skriptparticles.util.MathUtil;
 import com.sovdee.skriptparticles.util.ParticleUtil;
@@ -10,8 +12,8 @@ import com.sovdee.skriptparticles.util.Quaternion;
 import com.sovdee.skriptparticles.util.VectorConversion;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.util.Vector;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
 
@@ -19,191 +21,132 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.function.Consumer;
-
 
 /**
  * Static draw methods for rendering library shapes with plugin DrawData.
+ * <p>
+ * Drawing does not modify the shape or its {@link DrawData}: everything a draw needs is resolved up front
+ * and kept local to that draw, so the same shape can safely be drawn from several threads or locations.
  */
 public class DrawManager {
 
     /**
-     * Maximum distance (squared) at which a player can see non-forced particles.
+     * Maximum distance at which a player can see non-forced particles.
      * Matches the vanilla client's particle render distance of 32 blocks.
      */
-    private static final double MAX_PARTICLE_DISTANCE_SQ = 32 * 32;
+    private static final double MAX_PARTICLE_DISTANCE = 32;
 
     /**
-     * Maximum distance (squared) at which a player can see forced particles (256 blocks).
+     * Maximum distance at which a player can see forced particles (256 blocks).
      */
-    private static final double MAX_FORCED_PARTICLE_DISTANCE_SQ = 256 * 256;
+    private static final double MAX_FORCED_PARTICLE_DISTANCE = 256;
 
     /**
-     * Draws {@code shape} at its own stored {@link DrawData} location using the shape's stored
-     * particle and the identity orientation. Equivalent to calling
-     * {@link #draw(Shape, DynamicLocation, Quaternion, Particle, Collection)} with the shape's
-     * own location and particle.
+     * Drawing more particles than this in one call earns a warning in the console.
+     */
+    private static final int LARGE_PARTICLE_THRESHOLD = 16_000;
+
+    private static final boolean USE_NMS = isNMSAvailable();
+
+    private static boolean isNMSAvailable() {
+        try {
+            return NMSParticleRenderer.isAvailable();
+        } catch (Throwable e) {
+            // The renderer's classes cannot even be loaded on this server (e.g. different mappings).
+            SkriptParticle.warning("Packet-based particle rendering is unavailable on this server (" + e + "). " +
+                    "Falling back to the Bukkit API, which is slower.");
+            return false;
+        }
+    }
+
+    /**
+     * Draws a shape at its own stored location (from {@link DrawData}).
+     * Does nothing if the shape has no location.
      *
      * @param shape      the shape to draw
-     * @param recipients the players who should receive the particles
+     * @param recipients the players who should see the particles
      */
     public static void draw(Shape shape, Collection<Player> recipients) {
-        DrawData dd = DrawData.of(shape);
-        DynamicLocation location = dd.getLocation();
-        if (location == null) return;
-        draw(shape, location, Quaternion.IDENTITY, dd.getParticleRaw(), recipients);
+        draw(shape, new DynamicLocation(), recipients);
     }
 
     /**
-     * Draws {@code shape} at the given {@code location} using the shape's stored particle and
-     * the identity orientation.
+     * Draws a shape at the given location, using the shape's own orientation and particle.
+     * If the location is {@linkplain DynamicLocation#isNull() null}, the shape's own stored location is used
+     * instead; if it has none, nothing is drawn.
+     * <p>
+     * If the shape's {@link DrawData} has an animation duration, the particles are spread out over that time
+     * on an asynchronous timer. Otherwise they are all sent immediately, on the calling thread.
      *
      * @param shape      the shape to draw
-     * @param location   the world-space location to draw at
-     * @param recipients the players who should receive the particles
+     * @param location   the location to draw the shape at
+     * @param recipients the players who should see the particles
      */
     public static void draw(Shape shape, DynamicLocation location, Collection<Player> recipients) {
-        draw(shape, location, Quaternion.IDENTITY, DrawData.of(shape).getParticleRaw(), recipients);
-    }
-
-    /**
-     * Applies {@code consumer} to {@code shape} (e.g. to set its orientation) and then draws it
-     * at the given {@code location} using the shape's stored particle.
-     * <br>
-     * The consumer runs synchronously before any rendering begins. The shape's orientation after
-     * the consumer returns is used as the base orientation for the draw call.
-     *
-     * @param shape      the shape to draw
-     * @param location   the world-space location to draw at
-     * @param consumer   a callback invoked on the shape immediately before rendering
-     * @param recipients the players who should receive the particles
-     */
-    public static void drawWithConsumer(Shape shape, DynamicLocation location, Consumer<Shape> consumer, Collection<Player> recipients) {
-        consumer.accept(shape);
-        DrawData dd = DrawData.of(shape);
-        Quaterniond shapeOrientation = shape.getOrientation();
-        Quaternion shapeOrientationQ = new Quaternion((float) shapeOrientation.x, (float) shapeOrientation.y, (float) shapeOrientation.z, (float) shapeOrientation.w);
-        draw(shape, location, shapeOrientationQ, dd.getParticleRaw(), recipients);
-    }
-
-    /**
-     * Draws {@code shape} at {@code location} with an explicit base orientation and particle.
-     * This is the primary draw method; all other overloads delegate to it.
-     * <br>
-     * If {@code location} is null the shape's stored location is used instead. Recipients are
-     * pre-filtered by distance from the shape centre before any per-point work is done. If
-     * {@link DrawData#getAnimationDuration()} is greater than zero the points are spread across
-     * multiple async ticks; otherwise all points are sent in a single pass.
-     *
-     * @param shape           the shape to draw
-     * @param location        the world-space location to draw at; falls back to the shape's own
-     *                        stored location if {@link DynamicLocation#isNull()} returns true
-     * @param baseOrientation additional rotation applied on top of the shape's own orientation
-     * @param particle        the particle to use for rendering; ignored when
-     *                        {@link Particle#override()} is false and the shape has its own particle
-     * @param recipients      the candidate players to send particles to (filtered by distance)
-     */
-    public static void draw(Shape shape, DynamicLocation location, Quaternion baseOrientation, Particle particle, Collection<Player> recipients) {
         DrawData dd = DrawData.of(shape);
 
         if (location.isNull()) {
             DynamicLocation shapeLocation = dd.getLocation();
-            if (shapeLocation == null) return;
-            location = shapeLocation.clone();
+            if (shapeLocation == null || shapeLocation.isNull()) return;
+            location = shapeLocation;
         }
-
-        dd.setLastLocation(location.clone());
-        Quaterniond shapeOrientation = shape.getOrientation();
-        Quaternion shapeOrientationQ = new Quaternion((float) shapeOrientation.x, (float) shapeOrientation.y, (float) shapeOrientation.z, (float) shapeOrientation.w);
-        dd.getLastOrientation().set(baseOrientation.clone().mul(shapeOrientationQ));
-
-        if (!particle.override()) {
-            dd.getParticleRaw().parent(shape);
-            particle = dd.getParticleRaw();
-        }
-
-        // Pre-filter recipients once instead of per-point.
         Location center = location.getLocation();
-        List<Player> filteredRecipients = filterRecipients(recipients, center, particle.force());
+        if (center.getWorld() == null) return;
 
-        if (filteredRecipients.isEmpty()) return;
+        // a private copy: rendering reads the particle's settings while other draws may be using it too
+        Particle particle = dd.getParticle();
+        Quaterniond orientation = shape.getOrientation();
+        List<Vector3d> points = shape.getPointSampler().getPoints(shape, orientation);
+        if (points.isEmpty()) return;
 
-        Quaterniond lastOrientationD = new Quaterniond(
-                dd.getLastOrientation().x, dd.getLastOrientation().y,
-                dd.getLastOrientation().z, dd.getLastOrientation().w);
-
-        long animationDuration = dd.getAnimationDuration();
-        boolean useNMS = NMSParticleRenderer.isAvailable();
-
-        if (animationDuration > 0) {
-            // Animated: get points list for batching, then use NMS/Bukkit per batch
-            List<Vector3d> jomlPoints = shape.getPointSampler().getPoints(shape, lastOrientationD);
-            drawAnimated(shape, jomlPoints, lastOrientationD, animationDuration, particle, dd,
-                    filteredRecipients, useNMS, center);
-        } else {
-            drawImmediate(shape, lastOrientationD, particle, dd, filteredRecipients, useNMS, center);
+        if (points.size() > LARGE_PARTICLE_THRESHOLD && dd.markLargeSizeWarned()) {
+            SkriptParticle.warning("A shape is drawing " + points.size() + " particles in one call. " +
+                    "This may cause lag. Consider reducing its particle density or size.");
         }
 
-        if (dd.showLocalAxes()) {
-            ParticleUtil.drawAxes(location.getLocation().add(VectorConversion.toBukkit(shape.getOffset())), dd.getLastOrientation(), filteredRecipients);
-        }
-        if (dd.showGlobalAxes()) {
-            ParticleUtil.drawAxes(location.getLocation().add(VectorConversion.toBukkit(shape.getOffset())), Quaternion.IDENTITY, filteredRecipients);
-        }
-    }
+        // Filter recipients once instead of per point. A player can see the shape if they are within
+        // particle range of any part of it, so the range is extended by how far the shape reaches.
+        double reach = ShapeBounds.compute(points).maxDistance();
+        List<Player> filteredRecipients = filterRecipients(recipients, center, particle.force(), reach);
 
-    /**
-     * Draws all points immediately (non-animated).
-     * NMS path: uses the library render loop via shape.render().
-     * Fallback path: converts JOML points to Bukkit Vectors one at a time.
-     */
-    private static void drawImmediate(Shape shape, Quaterniond orientation, Particle particle,
-                                      DrawData dd, List<Player> filteredRecipients, boolean useNMS,
-                                      Location baseLoc) {
-        try {
-            if (useNMS) {
-                NMSParticleRenderer renderer = new NMSParticleRenderer(particle, dd, filteredRecipients, baseLoc);
-                ParticleRenderContext ctx = renderer.getContext();
-                ctx.orientation = orientation;
-                ctx.scale = shape.getScale();
-                shape.render(orientation, renderer);
+        if (!filteredRecipients.isEmpty()) {
+            ShapeRenderer<ParticleRenderContext> renderer = USE_NMS
+                    ? new NMSParticleRenderer(particle, filteredRecipients, center)
+                    : new BukkitParticleRenderer(particle, filteredRecipients, center);
+            ParticleRenderContext context = renderer.getContext();
+            context.orientation = orientation;
+            context.scale = shape.getScale();
+            RenderPass<ParticleRenderContext> pass = shape.getPointSampler().preparePass(shape, points, context);
+
+            long animationDuration = dd.getAnimationDuration();
+            if (animationDuration > 0) {
+                drawAnimated(points, animationDuration, pass, renderer);
             } else {
-                List<Vector3d> jomlPoints = shape.getPointSampler().getPoints(shape, orientation);
-                for (Vector3d point : jomlPoints) {
-                    particle.prepareForPoint(dd, new Vector(point.x, point.y, point.z));
-                    particle.spawnToPlayers(filteredRecipients);
-                }
+                pass.renderBatch(points, renderer);
             }
-        } catch (IllegalArgumentException e) {
-            Skript.error("Failed to spawn particle! Error: " + e.getMessage());
+
+            if (dd.showLocalAxes() || dd.showGlobalAxes()) {
+                Location axesOrigin = center.clone().add(VectorConversion.toBukkit(shape.getOffset()));
+                if (dd.showLocalAxes())
+                    ParticleUtil.drawAxes(axesOrigin, new Quaternion(orientation.x, orientation.y, orientation.z, orientation.w), filteredRecipients);
+                if (dd.showGlobalAxes())
+                    ParticleUtil.drawAxes(axesOrigin, Quaternion.IDENTITY, filteredRecipients);
+            }
         }
     }
 
     /**
-     * Draws points over time using batched async ticks.
-     * NMS: uses the library render loop with sub-range batching; render modifiers are prepared
-     * once against the full point set and applied per batch with a continuous point index.
-     * Fallback: converts JOML points to Bukkit Vectors per batch (no render modifiers).
+     * Renders the points in batches, one batch per tick, so that the whole shape takes
+     * {@code animationDuration} milliseconds to appear. Stops at the first failure.
      */
-    private static void drawAnimated(Shape shape, List<Vector3d> jomlPoints, Quaterniond orientation,
-                                     long animationDuration, Particle particle, DrawData dd,
-                                     List<Player> filteredRecipients, boolean useNMS, Location baseLoc) {
-        int particleCount = jomlPoints.size();
-        double millisecondsPerPoint = animationDuration / (double) particleCount;
-        Iterator<List<Vector3d>> batchIterator = MathUtil.batch(jomlPoints, millisecondsPerPoint).iterator();
+    private static void drawAnimated(List<Vector3d> points, long animationDuration,
+                                     RenderPass<ParticleRenderContext> pass,
+                                     ShapeRenderer<ParticleRenderContext> renderer) {
+        Plugin plugin = SkriptParticle.getInstance();
+        if (plugin == null) return;
 
-        NMSParticleRenderer renderer;
-        RenderPass<ParticleRenderContext> pass;
-        if (useNMS) {
-            renderer = new NMSParticleRenderer(particle, dd, filteredRecipients, baseLoc);
-            ParticleRenderContext ctx = renderer.getContext();
-            ctx.orientation = orientation;
-            ctx.scale = shape.getScale();
-            pass = shape.getPointSampler().preparePass(shape, jomlPoints, ctx);
-        } else {
-            renderer = null;
-            pass = null;
-        }
+        double millisecondsPerPoint = animationDuration / (double) points.size();
+        Iterator<List<Vector3d>> batchIterator = MathUtil.batch(points, millisecondsPerPoint).iterator();
 
         BukkitRunnable runnable = new BukkitRunnable() {
             @Override
@@ -212,36 +155,34 @@ public class DrawManager {
                     this.cancel();
                     return;
                 }
-                List<Vector3d> batch = batchIterator.next();
                 try {
-                    if (pass != null) {
-                        pass.renderBatch(batch, renderer);
-                    } else {
-                        for (Vector3d point : batch) {
-                            particle.prepareForPoint(dd, new Vector(point.x, point.y, point.z));
-                            particle.spawnToPlayers(filteredRecipients);
-                        }
-                    }
-                } catch (IllegalArgumentException e) {
-                    Skript.error("Failed to spawn particle! Error: " + e.getMessage());
+                    pass.renderBatch(batchIterator.next(), renderer);
+                } catch (RuntimeException e) {
+                    // every remaining batch would fail the same way, so report it once and stop
+                    this.cancel();
+                    SkriptParticle.severe("Failed to draw an animated shape, stopping the animation: " + e.getMessage());
                 }
             }
         };
-        runnable.runTaskTimerAsynchronously(Skript.getInstance(), 0, 1);
+        runnable.runTaskTimerAsynchronously(plugin, 0, 1);
     }
 
     /**
-     * Filters recipients by distance from the shape center.
-     * This is done once per shape draw instead of per-point, eliminating redundant checks.
+     * Returns the online recipients, in the right world, who are close enough to see some part of a shape.
+     *
+     * @param center the location the shape is drawn around
+     * @param force  whether the particles are forced, which extends how far away they can be seen
+     * @param reach  how far the shape extends from its center
      */
-    private static List<Player> filterRecipients(Collection<Player> recipients, Location center, boolean force) {
-        double maxDistSq = force ? MAX_FORCED_PARTICLE_DISTANCE_SQ : MAX_PARTICLE_DISTANCE_SQ;
+    private static List<Player> filterRecipients(Collection<Player> recipients, Location center, boolean force, double reach) {
+        double maxDistance = (force ? MAX_FORCED_PARTICLE_DISTANCE : MAX_PARTICLE_DISTANCE) + reach;
+        double maxDistanceSquared = maxDistance * maxDistance;
         List<Player> filtered = new ArrayList<>(recipients.size());
         for (Player player : recipients) {
             if (!player.isOnline()) continue;
             Location playerLoc = player.getLocation();
             if (!center.getWorld().equals(playerLoc.getWorld())) continue;
-            if (center.distanceSquared(playerLoc) <= maxDistSq) {
+            if (center.distanceSquared(playerLoc) <= maxDistanceSquared) {
                 filtered.add(player);
             }
         }

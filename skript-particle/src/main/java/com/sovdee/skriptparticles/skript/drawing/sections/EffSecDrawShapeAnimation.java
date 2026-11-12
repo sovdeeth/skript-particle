@@ -20,7 +20,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
-import java.util.function.Consumer;
 
 @Name("Draw Shape Animation")
 @Description({
@@ -44,14 +43,6 @@ public class EffSecDrawShapeAnimation extends DrawShapeEffectSection {
     public boolean init(@Nullable Expression<?>[] expressions, int matchedPattern, Kleenean isDelayed, ParseResult parseResult, boolean hasSection) {
         duration = (Expression<Timespan>) expressions[4];
         return super.init(expressions, matchedPattern, isDelayed, parseResult, hasSection);
-    }
-
-    /**
-     * This method should not be called for this section.
-     */
-    @Override
-    protected void executeSync(Event event, Collection<DynamicLocation> locations, @Nullable Consumer<Shape> consumer, Collection<Player> recipients) {
-        // intentionally empty
     }
 
     @Override

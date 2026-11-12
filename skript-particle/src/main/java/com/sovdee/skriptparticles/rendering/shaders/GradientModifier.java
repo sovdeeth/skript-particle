@@ -5,6 +5,7 @@ import com.sovdee.shapes.modifiers.NormalizedInput;
 import com.sovdee.skriptparticles.rendering.ParticleRenderContext;
 import org.bukkit.Color;
 import org.bukkit.Particle;
+import org.bukkit.Particle.DustOptions;
 
 import java.util.List;
 
@@ -28,8 +29,10 @@ public class GradientModifier extends AbstractGradientModifier implements HasInp
 
     @Override
     public void modify(ParticleRenderContext point) {
+        // colouring needs dust particles, but keep the size if the shape was already using dust
+        float size = point.defaultData() instanceof DustOptions dust ? dust.getSize() : 1.0f;
         point.particle = Particle.DUST;
-        point.data = dustLookup(input.sample(point));
+        point.data = dustLookup(input.sample(point), size);
     }
 
     @Override

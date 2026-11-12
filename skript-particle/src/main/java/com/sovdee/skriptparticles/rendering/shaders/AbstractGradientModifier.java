@@ -27,6 +27,8 @@ public abstract class AbstractGradientModifier implements PointModifier<Particle
      * Pre-built DustOptions LUT, parallel to {@link #lut}. Built in {@link #buildLUT()}.
      */
     protected DustOptions[] dustLut;
+    // the dust size the dust lookup table was built for
+    private float dustLutSize = Float.NaN;
 
     protected AbstractGradientModifier() {}
 
@@ -59,11 +61,11 @@ public abstract class AbstractGradientModifier implements PointModifier<Particle
     protected void buildLUT() {
         stops.sort(Comparator.comparingDouble(ColorStop::position));
         lut = new Color[256];
-        dustLut = new DustOptions[256];
         for (int i = 0; i < 256; i++) {
             lut[i] = ColorStop.interpolate(stops, i / 255.0);
-            dustLut[i] = new DustOptions(lut[i], 1.0f);
         }
+        // built on demand, once the dust size is known
+        dustLut = null;
     }
 
     /**
@@ -71,6 +73,27 @@ public abstract class AbstractGradientModifier implements PointModifier<Particle
      * {@link EasingFunction} before the lookup.
      */
     protected DustOptions dustLookup(double t) {
+        return dustLookup(t, 1.0f);
+    }
+
+    /**
+     * Looks up the dust options for a normalised input, with the given dust size.
+     * The table of dust options is built on first use and reused while the size stays the same.
+     *
+     * @param t    the normalised input, before easing
+     * @param size the size of the dust particles
+     */
+    protected DustOptions dustLookup(double t, float size) {
+        if (dustLut == null || size != dustLutSize) {
+            if (lut == null)
+                buildLUT();
+            DustOptions[] table = new DustOptions[256];
+            for (int i = 0; i < 256; i++) {
+                table[i] = new DustOptions(lut[i], size);
+            }
+            dustLut = table;
+            dustLutSize = size;
+        }
         int idx = (int) (easing.apply(t) * 255.0 + 0.5);
         if (idx < 0) idx = 0;
         if (idx > 255) idx = 255;
