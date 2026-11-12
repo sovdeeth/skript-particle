@@ -27,6 +27,11 @@ public class DefaultPointSampler implements PointSampler {
     public static final double DEFAULT_DENSITY = 0.25;
 
     private static final int DEFAULT_MAX_POINTS = 10_000;
+    /**
+     * The most points any sampling may produce, explicit density or not. An explicit density that would exceed it
+     * is coarsened just enough to fit, so a single oversized shape can't exhaust the server's memory.
+     */
+    public static final int HARD_MAX_POINTS = 100_000;
     /** How many times a sampling may be retried at a coarser density to get under the cap. */
     private static final int MAX_CAP_ATTEMPTS = 48;
     /** How many samplings {@link #setParticleCount(Shape, int)} may use to home in on its target. */
@@ -88,9 +93,10 @@ public class DefaultPointSampler implements PointSampler {
         if (cache != null && cache.state.equals(state))
             return cache.points;
 
+        // explicit densities are honoured up to the hard limit; otherwise the (lower) max points cap applies
         Sample sample = densityExplicit
-                ? new Sample(generate(shape, style, density, Integer.MAX_VALUE), density)
-                : sampleWithinCap(shape);
+                ? sampleExplicit(shape)
+                : sampleWithinCap(shape, maxPoints);
         List<Vector3d> points = sample.points;
 
         applyGeometryModifiers(shape, points);
@@ -131,18 +137,30 @@ public class DefaultPointSampler implements PointSampler {
     }
 
     /**
-     * Samples a shape at the current density, coarsening the density as needed so that no more than
-     * {@link #getMaxPoints()} points are produced.
+     * Samples a shape at its explicit density, which is used exactly unless it would produce more than
+     * {@link #HARD_MAX_POINTS} points. Only then is it coarsened, just enough to fit.
      */
-    private Sample sampleWithinCap(Shape shape) {
+    private Sample sampleExplicit(Shape shape) {
+        try {
+            return new Sample(generate(shape, style, density, HARD_MAX_POINTS), density);
+        } catch (PointLimitExceededException e) {
+            return sampleWithinCap(shape, HARD_MAX_POINTS);
+        }
+    }
+
+    /**
+     * Samples a shape at the current density, coarsening the density as needed so that no more than
+     * {@code cap} points are produced.
+     */
+    private Sample sampleWithinCap(Shape shape, int cap) {
         double working = density;
         // the shape's own estimate is only a starting point: it is never trusted to be finer than the base density.
-        double estimate = shape.computeDensity(style, maxPoints);
+        double estimate = shape.computeDensity(style, cap);
         if (Double.isFinite(estimate) && estimate > working)
             working = estimate;
 
         // generating far more points than the cap is wasted work, so stop early and coarsen instead
-        int limit = (int) Math.min((long) maxPoints * 2 + 64, Integer.MAX_VALUE);
+        int limit = (int) Math.min((long) cap * 2 + 64, Integer.MAX_VALUE);
         double dimensions = switch (style) {
             case OUTLINE -> 1;
             case SURFACE -> 2;
@@ -157,16 +175,16 @@ public class DefaultPointSampler implements PointSampler {
                 working *= 2;
                 continue;
             }
-            if (points.size() <= maxPoints)
+            if (points.size() <= cap)
                 return new Sample(points, working);
             // slightly overshoot so shapes that respond as expected land under the cap in one step
-            working *= Math.pow((double) points.size() / maxPoints, 1 / dimensions) * 1.02;
+            working *= Math.pow((double) points.size() / cap, 1 / dimensions) * 1.02;
         }
         // The shape did not respond to density. Keep what fits rather than exceeding the cap.
         if (points == null)
             points = new ArrayList<>();
-        else if (points.size() > maxPoints)
-            points = new ArrayList<>(points.subList(0, maxPoints));
+        else if (points.size() > cap)
+            points = new ArrayList<>(points.subList(0, cap));
         return new Sample(points, working);
     }
 
@@ -201,7 +219,8 @@ public class DefaultPointSampler implements PointSampler {
 
     /**
      * Returns the density the shape is actually sampled at. This differs from {@link #getDensity()} when the
-     * density is not explicit and had to be coarsened to stay within {@link #getMaxPoints()}.
+     * density had to be coarsened to stay within {@link #getMaxPoints()} (density not explicit) or
+     * {@link #HARD_MAX_POINTS} (density explicit).
      */
     @Override
     public synchronized double getEffectiveDensity(Shape shape) {
@@ -217,7 +236,7 @@ public class DefaultPointSampler implements PointSampler {
      */
     @Override
     public synchronized void setParticleCount(Shape shape, int count) {
-        int target = Math.max(count, 1);
+        int target = Math.clamp(count, 1, HARD_MAX_POINTS);
         shape.refresh();
 
         // Start no finer than the density currently in use: the first sample then costs no more than drawing the
@@ -366,6 +385,8 @@ public class DefaultPointSampler implements PointSampler {
     /**
      * Sets the point spacing density explicitly, overriding any max-points-based auto-density.
      * Clamps the value to at least {@code Shape.EPSILON}. Invalidates the point cache.
+     * Sampling still never produces more than {@link #HARD_MAX_POINTS} points; a density that would is coarsened
+     * to fit (see {@link #getEffectiveDensity(Shape)}).
      *
      * @param density the desired point spacing; smaller values produce more points
      */
@@ -392,7 +413,7 @@ public class DefaultPointSampler implements PointSampler {
      */
     @Override
     public void setMaxPoints(int maxPoints) {
-        this.maxPoints = Math.max(1, maxPoints);
+        this.maxPoints = Math.clamp(maxPoints, 1, HARD_MAX_POINTS);
         this.densityExplicit = false;
     }
 

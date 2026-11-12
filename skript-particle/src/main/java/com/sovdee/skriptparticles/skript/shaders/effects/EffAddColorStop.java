@@ -7,14 +7,14 @@ import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Effect;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser;
+import ch.njol.skript.util.Color;
 import ch.njol.util.Kleenean;
-import org.skriptlang.skript.registration.SyntaxInfo;
-import org.skriptlang.skript.registration.SyntaxRegistry;
 import com.sovdee.shapes.modifiers.PointModifier;
 import com.sovdee.skriptparticles.rendering.shaders.AbstractGradientModifier;
-import org.bukkit.Color;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
+import org.skriptlang.skript.registration.SyntaxInfo;
+import org.skriptlang.skript.registration.SyntaxRegistry;
 
 /**
  * Skript effect that adds a color stop at a specific normalized position to a gradient modifier.
@@ -71,7 +71,7 @@ public class EffAddColorStop extends Effect {
         if (pos == null || col == null || mod == null) return;
 
         if (mod instanceof AbstractGradientModifier gradientModifier) {
-            gradientModifier.addStop(pos.doubleValue(), col);
+            gradientModifier.addStop(pos.doubleValue(), col.asBukkitColor());
         }
     }
 

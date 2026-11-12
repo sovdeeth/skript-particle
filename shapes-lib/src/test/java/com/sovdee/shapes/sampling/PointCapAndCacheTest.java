@@ -109,6 +109,59 @@ class PointCapAndCacheTest {
         assertEquals(DefaultPointSampler.DEFAULT_DENSITY, sampler.getDensity(), 1e-12);
     }
 
+    // ----- Hard limit -----
+
+    @Test
+    void explicitDensity_isCappedAtTheHardLimit() {
+        // a filled 12^3 cube at 1/12 spacing would be about 2.5 million points
+        Cuboid cube = new Cuboid(12, 12, 12);
+        DefaultPointSampler sampler = (DefaultPointSampler) cube.getPointSampler();
+        sampler.setStyle(SamplingStyle.FILL);
+        sampler.setDensity(1 / 12.0);
+        int count = sampler.getPoints(cube).size();
+        assertTrue(count <= DefaultPointSampler.HARD_MAX_POINTS, "hard limit exceeded: " + count);
+        assertTrue(count >= DefaultPointSampler.HARD_MAX_POINTS / 4, "hard limit should be approached, not wildly undershot: " + count);
+        assertTrue(sampler.isDensityExplicit(), "hitting the hard limit should not drop the explicit density");
+        assertEquals(1 / 12.0, sampler.getDensity(), 1e-12, "the requested density itself should be unchanged");
+        assertTrue(sampler.getEffectiveDensity(cube) > 1 / 12.0, "the density in use should be coarser than requested");
+    }
+
+    @Test
+    void explicitDensity_isExactUnderTheHardLimit() {
+        // a misleading estimate must not coarsen an explicit density that fits
+        Shape shape = new FixedEstimateCuboid(10, 5);
+        DefaultPointSampler sampler = (DefaultPointSampler) shape.getPointSampler();
+        sampler.setStyle(SamplingStyle.FILL);
+        sampler.setDensity(0.5); // 21^3 = 9 261 points
+        assertEquals(0.5, sampler.getEffectiveDensity(shape), 1e-12);
+        assertTrue(sampler.getPoints(shape).size() > 5_000, "explicit density should be used exactly");
+    }
+
+    @Test
+    void explicitDensity_isCappedWhenTheEstimateIsWrong() {
+        Shape shape = new FixedEstimateCuboid(40, 0.0001);
+        shape.getPointSampler().setStyle(SamplingStyle.FILL);
+        shape.getPointSampler().setDensity(0.1); // 401^3 is about 64 million points
+        int count = shape.getPointSampler().getPoints(shape).size();
+        assertTrue(count <= DefaultPointSampler.HARD_MAX_POINTS, "hard limit exceeded: " + count);
+    }
+
+    @Test
+    void setParticleCount_isCappedAtTheHardLimit() {
+        Cuboid cube = new Cuboid(12, 12, 12);
+        cube.getPointSampler().setStyle(SamplingStyle.FILL);
+        cube.getPointSampler().setParticleCount(cube, 1_000_000);
+        int count = cube.getPointSampler().getPointCount(cube);
+        assertTrue(count <= DefaultPointSampler.HARD_MAX_POINTS, "hard limit exceeded: " + count);
+    }
+
+    @Test
+    void setMaxPoints_isClampedToTheHardLimit() {
+        DefaultPointSampler sampler = new DefaultPointSampler();
+        sampler.setMaxPoints(5_000_000);
+        assertEquals(DefaultPointSampler.HARD_MAX_POINTS, sampler.getMaxPoints());
+    }
+
     // ----- Particle count -----
 
     @Test
