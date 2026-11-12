@@ -94,8 +94,9 @@ public class ExprShapeModifiers extends SimpleExpression<PointModifier> {
                 if (delta == null) return;
                 for (Shape shape : shapeArr) {
                     for (Object o : delta) {
+                        // each shape gets its own copy, as with set
                         if (o instanceof PointModifier<?> mod)
-                            shape.getPointSampler().addModifier(mod);
+                            shape.getPointSampler().addModifier(mod.clone());
                     }
                 }
             }
@@ -104,13 +105,28 @@ public class ExprShapeModifiers extends SimpleExpression<PointModifier> {
                 for (Shape shape : shapeArr) {
                     for (Object o : delta) {
                         if (o instanceof PointModifier<?> mod)
-                            shape.getPointSampler().removeModifier(mod);
+                            removeMatching(shape, mod);
                     }
                 }
             }
             case DELETE, RESET -> {
                 for (Shape shape : shapeArr)
                     shape.getPointSampler().clearModifiers();
+            }
+        }
+    }
+
+    /**
+     * Removes the first modifier of a shape that is equivalent to the given one.
+     * Shapes hold their own copies of the modifiers they are given, so the match is by type and settings
+     * rather than by identity.
+     */
+    private static void removeMatching(Shape shape, PointModifier<?> modifier) {
+        for (PointModifier<?> existing : shape.getPointSampler().getModifiers()) {
+            if (existing == modifier
+                    || (existing.getClass() == modifier.getClass() && existing.modifierHash() == modifier.modifierHash())) {
+                shape.getPointSampler().removeModifier(existing);
+                return;
             }
         }
     }

@@ -21,7 +21,7 @@ public class ExprCurrentShape extends SimpleExpression<Shape> {
         registry.register(
             SyntaxRegistry.EXPRESSION,
             SyntaxInfo.Expression.builder(ExprCurrentShape.class, Shape.class)
-                .addPattern("[the] [current] shape")
+                .addPattern("[the] current shape")
                 .supplier(ExprCurrentShape::new)
                 .build());
     }
@@ -51,6 +51,8 @@ public class ExprCurrentShape extends SimpleExpression<Shape> {
         } else {
             shape = eventExpr.getSingle(event);
         }
+        if (shape == null)
+            return new Shape[0];
         return new Shape[]{shape};
     }
 

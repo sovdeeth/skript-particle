@@ -35,7 +35,8 @@ public class ExprShapeCutoffAngle extends SimplePropertyExpression<CutoffShape, 
 
     @Override
     public @Nullable Number convert(CutoffShape shape) {
-        return shape.getCutoffAngle();
+        // degrees, like the values this expression accepts when changed
+        return Math.toDegrees(shape.getCutoffAngle());
     }
 
     @Override

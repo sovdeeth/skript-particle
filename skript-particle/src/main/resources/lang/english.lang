@@ -9,8 +9,4 @@ types:
     polyshape: polygonal shape¦s
     shapestyle: shape style¦s
     pointmodifier: point modifier¦s
-
-wave modifier axes:
-    x: x, x-axis
-    y: y, y-axis
-    z: z, z-axis
+    easing: easing¦s

@@ -62,8 +62,9 @@ public class ExprShapeParticle extends SimplePropertyExpression<Shape, Particle>
         switch (mode) {
             case SET:
                 if (delta == null || delta.length == 0) return;
+                // each shape gets its own copy, so changing one shape's particle later does not change the others
                 for (Shape shape : getExpr().getArray(event))
-                    DrawData.of(shape).setParticle((Particle) delta[0]);
+                    DrawData.of(shape).setParticle(((Particle) delta[0]).clone());
                 break;
             case RESET:
             case DELETE:

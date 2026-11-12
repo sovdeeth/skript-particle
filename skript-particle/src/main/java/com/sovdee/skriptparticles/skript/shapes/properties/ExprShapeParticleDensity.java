@@ -11,6 +11,7 @@ import org.skriptlang.skript.registration.SyntaxRegistry;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser;
 import ch.njol.util.Kleenean;
+import com.sovdee.shapes.sampling.PointLimitExceededException;
 import com.sovdee.shapes.sampling.PointSampler;
 import com.sovdee.shapes.shapes.Shape;
 import com.sovdee.skriptparticles.util.MathUtil;
@@ -60,11 +61,14 @@ public class ExprShapeParticleDensity extends SimplePropertyExpression<Shape, Nu
     @Override
     public @Nullable Number convert(Shape shape) {
         PointSampler sampler = shape.getPointSampler();
-        if (isDensity)
-            return 1 / sampler.getDensity();
-        else {
-            // Return approximate point count based on current density
-            return (int) Math.round(1 / sampler.getDensity());
+        try {
+            if (isDensity) {
+                // the density actually in use, which may be coarser than the one set if the point cap applies
+                return 1 / sampler.getEffectiveDensity(shape);
+            }
+            return sampler.getPointCount(shape);
+        } catch (PointLimitExceededException e) {
+            return null;
         }
     }
 
@@ -82,35 +86,45 @@ public class ExprShapeParticleDensity extends SimplePropertyExpression<Shape, Nu
         Shape[] shapes = getExpr().getArray(event);
         if (shapes.length == 0)
             return;
-        double change = (delta == null) ? 0.25 : ((Number) delta[0]).doubleValue();
+        if (mode == ChangeMode.DELETE || mode == ChangeMode.RESET) {
+            // back to the default density, limited by the shape's point cap
+            for (Shape shape : shapes)
+                shape.getPointSampler().resetDensity();
+            return;
+        }
+        if (delta == null || delta.length == 0)
+            return;
+        double change = ((Number) delta[0]).doubleValue();
         switch (mode) {
             case REMOVE:
                 change = -change;
             case ADD:
                 for (Shape shape : shapes) {
                     PointSampler sampler = shape.getPointSampler();
-                    if (isDensity) {
-                        // clamp to 0.001 and 1000, enough to kill the client but not enough to cause an actual error
-                        sampler.setDensity(MathUtil.clamp(1 / (1 / sampler.getDensity() + change), 0.001, 1000));
-                    } else
-                        // clamp to 1, the minimum amount of particles
-                        sampler.setParticleCount(shape, Math.max(1, (int) (1 / sampler.getDensity()) + (int) change));
-                }
-                break;
-            case DELETE:
-            case RESET:
-            case SET:
-                change = isDensity ? MathUtil.clamp(1 / change, 0.001, 1000) : Math.max(1, (int) change);
-                for (Shape shape : shapes) {
-                    PointSampler sampler = shape.getPointSampler();
-                    if (isDensity) {
-                        sampler.setDensity(change);
-                    } else {
-                        sampler.setParticleCount(shape, (int) change);
+                    try {
+                        if (isDensity) {
+                            // clamp to 0.001 and 1000, enough to kill the client but not enough to cause an actual error
+                            double particlesPerMeter = 1 / sampler.getEffectiveDensity(shape) + change;
+                            sampler.setDensity(particlesPerMeter <= 0 ? 1000 : MathUtil.clamp(1 / particlesPerMeter, 0.001, 1000));
+                        } else {
+                            // clamp to 1, the minimum amount of particles
+                            sampler.setParticleCount(shape, Math.max(1, sampler.getPointCount(shape) + (int) change));
+                        }
+                    } catch (PointLimitExceededException ignored) {
+                        // the shape cannot be sampled as it is, so there is nothing to add to
                     }
                 }
                 break;
-            case REMOVE_ALL:
+            case SET:
+                for (Shape shape : shapes) {
+                    PointSampler sampler = shape.getPointSampler();
+                    if (isDensity) {
+                        sampler.setDensity(change <= 0 ? 1000 : MathUtil.clamp(1 / change, 0.001, 1000));
+                    } else {
+                        sampler.setParticleCount(shape, Math.max(1, (int) change));
+                    }
+                }
+                break;
             default:
                 assert false;
         }

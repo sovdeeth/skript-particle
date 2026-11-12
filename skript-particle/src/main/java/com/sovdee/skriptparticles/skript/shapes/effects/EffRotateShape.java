@@ -86,10 +86,10 @@ public class EffRotateShape extends Effect {
             return true;
         }
         isAxisAngle = true;
+        relative = parseResult.hasTag("relative");
         if (parseResult.hasTag("v")) {
             vectorAxis = (Expression<Vector>) exprs[1 - offset];
         } else {
-            relative = parseResult.hasTag("relative");
             axis = parseResult.hasTag("x") ? "x" : parseResult.hasTag("y") ? "y" : "z";
         }
         angle = (Expression<Number>) exprs[2 - offset];
