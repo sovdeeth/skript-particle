@@ -169,6 +169,13 @@ public interface Shape extends Cloneable {
     void generateFilled(List<Vector3d> points, double density);
 
     /**
+     * Re-reads any external inputs (such as suppliers) and updates the geometry if they changed.
+     * Implementations must change {@link #getVersion()} if, and only if, the geometry changed.
+     * Called by the {@link PointSampler} before every sampling, so it should be cheap when nothing changed.
+     */
+    default void refresh() {}
+
+    /**
      * Called by PointSampler before point generation. Override for supplier refresh, step recalc, etc.
      */
     default void beforeSampling(double density) {}

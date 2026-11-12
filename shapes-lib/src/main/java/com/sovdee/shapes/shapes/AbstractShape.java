@@ -17,7 +17,7 @@ public abstract class AbstractShape implements Shape {
 
     private final Quaterniond orientation;
     private double scale;
-    private Vector3d offset;
+    private final Vector3d offset;
     private boolean dynamic = false;
     private long version = 0;
     private PointSampler pointSampler;
@@ -83,7 +83,7 @@ public abstract class AbstractShape implements Shape {
      */
     @Override
     public void setOffset(Vector3d offset) {
-        this.offset = offset;
+        this.offset.set(offset);
     }
 
     // --- Oriented axes ---
@@ -268,6 +268,10 @@ public abstract class AbstractShape implements Shape {
         shape.setDynamic(this.dynamic);
 
         shape.setPointSampler(this.pointSampler.clone());
+        // The copy has the same geometry, so give it the same version: the cloned sampler's cached points
+        // then stay valid until either shape actually changes.
+        if (shape instanceof AbstractShape abstractShape)
+            abstractShape.version = this.version;
 
         return shape;
     }

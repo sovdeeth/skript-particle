@@ -30,7 +30,7 @@ public interface PointSampler extends Cloneable {
 
     /**
      * Returns the explicit point spacing density, if one has been set.
-     * When density is not explicit, implementations derive it from {@link #getMaxPoints()}.
+     * When density is not explicit, implementations may coarsen it to stay within {@link #getMaxPoints()}.
      *
      * @return the current density value
      */
@@ -45,21 +45,21 @@ public interface PointSampler extends Cloneable {
     void setDensity(double density);
 
     /**
-     * @return the target maximum number of points used in auto-density mode
+     * @return the maximum number of points a sampling may produce while the density is not explicit
      */
     int getMaxPoints();
 
     /**
-     * Sets the target maximum number of points and enables auto-density mode,
-     * where the implementation derives an appropriate density from the shape geometry.
+     * Sets the maximum number of points and makes the density non-explicit, so that the cap applies:
+     * the shape is sampled at {@link #getDensity()}, or coarser if that would exceed the cap.
      *
-     * @param maxPoints the target maximum particle count
+     * @param maxPoints the maximum particle count
      */
     void setMaxPoints(int maxPoints);
 
     /**
      * Returns whether density was set explicitly via {@link #setDensity}.
-     * When {@code false}, density is auto-computed from the shape to target {@link #getMaxPoints()}.
+     * When {@code false}, the density is coarsened as needed to stay within {@link #getMaxPoints()}.
      *
      * @return {@code true} if density is explicit
      */
@@ -97,12 +97,36 @@ public interface PointSampler extends Cloneable {
     void setDrawContext(DrawContext context);
 
     /**
+     * Returns to the implementation's default density, limited by {@link #getMaxPoints()}.
+     */
+    default void resetDensity() {
+        setMaxPoints(getMaxPoints());
+    }
+
+    /**
+     * Returns the density the given shape is actually sampled at, which may be coarser than
+     * {@link #getDensity()} when the density is not explicit.
+     */
+    default double getEffectiveDensity(Shape shape) {
+        return getDensity();
+    }
+
+    /**
+     * @return the number of points the given shape currently samples to
+     */
+    default int getPointCount(Shape shape) {
+        return getPoints(shape).size();
+    }
+
+    /**
      * Samples points from the given shape using the shape's own orientation.
+     * The returned list is unmodifiable and may be cached and shared: callers must not modify its vectors.
      */
     List<Vector3d> getPoints(Shape shape);
 
     /**
      * Samples points from the given shape using the given orientation.
+     * The returned list is unmodifiable and may be cached and shared: callers must not modify its vectors.
      */
     List<Vector3d> getPoints(Shape shape, Quaterniond orientation);
 
@@ -110,7 +134,10 @@ public interface PointSampler extends Cloneable {
      * Computes and sets the density to achieve approximately the given particle count.
      */
     default void setParticleCount(Shape shape, int count) {
-        setDensity(shape.computeDensity(getStyle(), count));
+        double density = shape.computeDensity(getStyle(), Math.max(count, 1));
+        // an estimate of zero or less would mean an unbounded number of points
+        if (Double.isFinite(density) && density > Shape.EPSILON)
+            setDensity(density);
     }
 
     // ---- Modifier management ----
