@@ -22,8 +22,8 @@ import org.jetbrains.annotations.Nullable;
         "The expression returns a quaternion. You can use the quaternion and axis angle functions or the rotation expression to create an orientation."
 })
 @Examples({
-        "set {_shape}'s orientation to quaternion(0, 0, 0, 1)",
-        "set {_shape}'s orientation to axisAngle(90, 0, 1, 0)",
+        "set {_shape}'s orientation to quaternion(1, 0, 0, 0)",
+        "set {_shape}'s orientation to axisAngle(90, vector(0, 1, 0))",
         "set {_shape}'s orientation to {_shape2}'s orientation",
         "reset {_shape}'s orientation"
 })

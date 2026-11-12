@@ -32,3 +32,10 @@ test "shape scale property":
 test "shape points are sampled":
 	set {_c} to a circle with radius 3
 	assert size of points of {_c} is greater than 0 with "a circle should sample at least one point"
+
+test "skript quaternions work as shape orientations":
+	set {_q} to axisAngle(180, vector(0, 1, 0))
+	assert {_q} is set with "axisAngle did not return a quaternion"
+	set {_c} to a circle with radius 1
+	set orientation of {_c} to {_q}
+	assert orientation of {_c} is set with "quaternion from axisAngle could not be used as a shape orientation"
