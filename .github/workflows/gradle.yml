@@ -32,6 +32,17 @@ jobs:
     # 'build' runs the JUnit tests of shapes-lib and skript-particle before packaging the plugin
     - name: Build and test with Gradle
       run: ./gradlew build
+    # Shows the results on the job's summary page and annotates failing tests. annotate_only skips creating a
+    # separate check run, which would need 'checks: write' (and is unavailable to PRs from forks).
+    - name: Publish test results
+      uses: mikepenz/action-junit-report@v5
+      if: always()
+      with:
+        report_paths: '*/build/test-results/test/TEST-*.xml'
+        annotate_only: true
+        detailed_summary: true
+        include_passed: true
+        group_suite: true
     - name: Upload test reports
       uses: actions/upload-artifact@v6
       if: failure()
