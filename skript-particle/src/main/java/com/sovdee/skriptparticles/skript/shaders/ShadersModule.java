@@ -8,12 +8,15 @@ import com.sovdee.shapes.modifiers.EasingFunction;
 import com.sovdee.shapes.modifiers.PointModifier;
 import com.sovdee.skriptparticles.skript.shaders.effects.EffAddColorStop;
 import com.sovdee.skriptparticles.skript.shaders.expressions.ExprEasing;
-import com.sovdee.skriptparticles.skript.shaders.expressions.ExprGradientModifier;
-import com.sovdee.skriptparticles.skript.shaders.expressions.ExprModifier;
-import com.sovdee.skriptparticles.skript.shaders.expressions.ExprMotionModifier;
+import com.sovdee.skriptparticles.skript.shaders.constructors.ExprGradientModifier;
+import com.sovdee.skriptparticles.skript.shaders.constructors.ExprMotionModifier;
+import com.sovdee.skriptparticles.skript.shaders.constructors.ExprScaleModifier;
+import com.sovdee.skriptparticles.skript.shaders.constructors.ExprTwistModifier;
+import com.sovdee.skriptparticles.skript.shaders.constructors.ExprWaveModifier;
 import com.sovdee.skriptparticles.skript.shaders.expressions.ExprNewModifier;
 import com.sovdee.skriptparticles.skript.shaders.expressions.properties.ExprGradientColors;
 import com.sovdee.skriptparticles.skript.shaders.expressions.properties.ExprModifierEasing;
+import com.sovdee.skriptparticles.skript.shaders.expressions.properties.ExprMotionVelocity;
 import com.sovdee.skriptparticles.skript.shaders.expressions.properties.ExprScaleModifierRange;
 import com.sovdee.skriptparticles.skript.shaders.expressions.properties.ExprTwistAngle;
 import com.sovdee.skriptparticles.skript.shaders.expressions.properties.ExprWaveProperty;
@@ -95,13 +98,16 @@ public class ShadersModule extends HierarchicalAddonModule {
         register(addon,
                 ExprGradientModifier::register,
                 ExprMotionModifier::register,
-                ExprModifier::register,
+                ExprScaleModifier::register,
+                ExprTwistModifier::register,
+                ExprWaveModifier::register,
                 ExprNewModifier::register,
                 ExprWaveProperty::register,
                 ExprTwistAngle::register,
                 ExprScaleModifierRange::register,
                 ExprModifierEasing::register,
                 ExprGradientColors::register,
+                ExprMotionVelocity::register,
                 ExprEasing::register,
                 EffAddColorStop::register,
                 ExprPointCoordinate::register,

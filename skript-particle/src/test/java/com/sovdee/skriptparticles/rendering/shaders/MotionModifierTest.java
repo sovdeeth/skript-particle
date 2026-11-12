@@ -137,4 +137,60 @@ class MotionModifierTest {
         }
         assertEquals(Mode.values().length, hashes.size());
     }
+
+    private static Vector3d motion(Mode mode, Vector3d velocity, Quaterniond orientation, double x, double y, double z) {
+        MotionModifier modifier = new MotionModifier(mode, velocity);
+        modifier.prepare(null);
+        ParticleRenderContext ctx = context();
+        ctx.orientation = orientation;
+        return motion(modifier, ctx, x, y, z);
+    }
+
+    @Test
+    void globalVelocity_isTheSameEverywhere() {
+        Vector3d velocity = new Vector3d(0.5, 2, -1);
+        Quaterniond tilted = new Quaterniond().rotateX(Math.PI / 2);
+        assertVector(velocity, motion(Mode.GLOBAL, velocity, null, 3, 0, 4));
+        assertVector(velocity, motion(Mode.GLOBAL, velocity, tilted, -1, 5, 2));
+    }
+
+    @Test
+    void relativeVelocity_usesOutwardsUpAndAround() {
+        // at +x: outwards is +x, up is +y, and counterclockwise is -z
+        assertVector(new Vector3d(2, 0, 0), motion(Mode.RELATIVE, new Vector3d(2, 0, 0), null, 3, 1, 0));
+        assertVector(new Vector3d(0, 3, 0), motion(Mode.RELATIVE, new Vector3d(0, 3, 0), null, 3, 1, 0));
+        assertVector(new Vector3d(0, 0, -1), motion(Mode.RELATIVE, new Vector3d(0, 0, 1), null, 3, 1, 0));
+        // at +z: outwards is +z, and counterclockwise is +x
+        assertVector(new Vector3d(1, 0, -2), motion(Mode.RELATIVE, new Vector3d(-2, 0, 1), null, 0, 0, 5));
+    }
+
+    @Test
+    void relativeAround_matchesCounterclockwise() {
+        double[][] points = {{1, 0, 0}, {0, 2, 3}, {-4, -1, 1}};
+        for (double[] p : points)
+            assertVector(motion(Mode.COUNTERCLOCKWISE, p[0], p[1], p[2]),
+                    motion(Mode.RELATIVE, new Vector3d(0, 0, 1), null, p[0], p[1], p[2]));
+    }
+
+    @Test
+    void relativeVelocity_followsTheShapesOrientation() {
+        // tipped over so the shape's y axis points along +x: "up" is now +x, and a point at +y is "outwards" along +y
+        Quaterniond tipped = new Quaterniond().rotateZ(-Math.PI / 2);
+        assertVector(new Vector3d(1, 0, 0), motion(Mode.RELATIVE, new Vector3d(0, 1, 0), tipped, 0, 2, 0));
+        assertVector(new Vector3d(0, 1, 0), motion(Mode.RELATIVE, new Vector3d(1, 0, 0), tipped, 0, 2, 0));
+    }
+
+    @Test
+    void relativeVelocity_onTheAxis_onlyMovesAlongIt() {
+        assertVector(new Vector3d(0, 1, 0), motion(Mode.RELATIVE, new Vector3d(5, 1, 5), null, 0, 3, 0));
+    }
+
+    @Test
+    void velocity_isCopiedWithTheModifier() {
+        MotionModifier original = new MotionModifier(Mode.RELATIVE, new Vector3d(1, 2, 3));
+        MotionModifier copy = original.clone();
+        original.setVelocity(new Vector3d(0, 0, 0));
+        assertVector(new Vector3d(1, 2, 3), copy.getVelocity());
+        assertEquals(Mode.RELATIVE, copy.getMode());
+    }
 }

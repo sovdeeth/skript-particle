@@ -1,4 +1,4 @@
-package com.sovdee.skriptparticles.skript.shaders.sections;
+package com.sovdee.skriptparticles.skript.shaders.constructors;
 
 import ch.njol.skript.Skript;
 import ch.njol.skript.config.SectionNode;

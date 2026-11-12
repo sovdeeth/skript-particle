@@ -1,4 +1,4 @@
-package com.sovdee.skriptparticles.skript.shaders.expressions;
+package com.sovdee.skriptparticles.skript.shaders.constructors;
 
 import ch.njol.skript.doc.Description;
 import ch.njol.skript.doc.Example;
@@ -13,7 +13,6 @@ import com.sovdee.shapes.modifiers.StandardInput;
 import com.sovdee.skriptparticles.rendering.shaders.AbstractGradientModifier;
 import com.sovdee.skriptparticles.rendering.shaders.GradientModifier;
 import com.sovdee.skriptparticles.skript.shaders.ModifierInputs;
-import com.sovdee.skriptparticles.skript.shaders.sections.ModifierConstructorExpression;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
 import org.skriptlang.skript.registration.SyntaxInfo;
@@ -51,7 +50,7 @@ public class ExprGradientModifier extends ModifierConstructorExpression {
                 .supplier(ExprGradientModifier::new)
                 .addPatterns(
                         "[a] [colo[u]r] gradient " + COLORS + " [along [the] " + ModifierInputs.ALL_INPUTS + "]",
-                        "[a] (:radial|:angular|:spherical) [colo[u]r] gradient " + COLORS
+                        "[a[n]] (:radial|:angular|:spherical) [colo[u]r] gradient " + COLORS
                 )
                 .build());
     }

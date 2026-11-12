@@ -24,7 +24,7 @@ import java.util.Collection;
 @Name("Draw Shape Animation")
 @Description({
         "Draws the given shapes a few points at a time, spread evenly over the given time span, so the shape appears to be traced out.",
-        "Points are drawn in the shape's animation order (see Shape Animation Ordering). Each point is drawn once; " +
+        "Points are drawn in the shape's animation order (see Shape Draw Order). Each point is drawn once; " +
                 "the shape does not stay visible after the animation unless you draw it again.",
         "As with the draw shape section, the code inside the section runs once for each shape before drawing begins, " +
                 "and changes to `drawn shape` only affect this drawing. Animations are always drawn asynchronously, " +

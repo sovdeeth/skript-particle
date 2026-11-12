@@ -12,7 +12,7 @@ import ch.njol.skript.lang.parser.ParserInstance;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
 import com.sovdee.shapes.modifiers.PointModifier;
-import com.sovdee.skriptparticles.skript.shaders.sections.ModifierConstructorExpression;
+import com.sovdee.skriptparticles.skript.shaders.constructors.ModifierConstructorExpression;
 import com.sovdee.skriptparticles.util.SkriptUtil;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;

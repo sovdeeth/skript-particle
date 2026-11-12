@@ -35,6 +35,61 @@ parse:
 					set particle of drawn shape to red dust particle
 
 parse:
+	results: {sp::doc::ExprGradientModifier::*}
+	code:
+		command /spdoc-exprgradientmodifier:
+			trigger:
+				add a gradient from red to blue along the y axis to modifiers of {_shape}
+				add a colour gradient from red, yellow, green and blue along the angle to modifiers of {_shape}
+				add a radial gradient of white and black to modifiers of {_shape}
+				set modifiers of {_shape} to a spherical gradient of yellow and orange
+				set {_gradient} to a gradient of red and blue along the draw order:
+					set modifier easing to ease in-out sine
+					add color stop at 0.5 colored white to the new modifier
+
+parse:
+	results: {sp::doc::ExprMotionModifier::*}
+	code:
+		command /spdoc-exprmotionmodifier:
+			trigger:
+				add a motion modifier counterclockwise to modifiers of {_shape}
+				add a motion modifier inwards to modifiers of {_shape}
+				add a motion modifier with velocity vector(0, 1, 0) to modifiers of {_shape}
+				# souls that spiral inwards and up, like water going down a drain in reverse
+				set particle of {_ring} to sculk soul particle with extra value 0.1
+				add a motion modifier with relative velocity vector(-1, 0.5, 2) to modifiers of {_ring}
+
+parse:
+	results: {sp::doc::ExprScaleModifier::*}
+	code:
+		command /spdoc-exprscalemodifier:
+			trigger:
+				add a scale from 1 to 0 along the y axis to modifiers of {_shape}
+				add a scale from 1 to 2 along the radius scaling the xyz axes to modifiers of {_shape}
+				set {_taper} to a scale from 1 to 0 along the y axis:
+					set modifier easing to ease in quadratic
+				add {_taper} to modifiers of {_shape}
+
+parse:
+	results: {sp::doc::ExprTwistModifier::*}
+	code:
+		command /spdoc-exprtwistmodifier:
+			trigger:
+				add a twist of 360 degrees to modifiers of {_shape}
+				add a twist of 180 degrees along the radius in the xy plane to modifiers of {_shape}
+				add a twist of 3.14 radians to modifiers of {_shape}
+
+parse:
+	results: {sp::doc::ExprWaveModifier::*}
+	code:
+		command /spdoc-exprwavemodifier:
+			trigger:
+				add a wave with amplitude 0.5 and frequency 2 to modifiers of {_shape}
+				add a wave with amplitude 0.3 and frequency 4 along the x axis displacing the y axis to modifiers of {_shape}
+				add a wave with amplitude 0.5 and frequency 1 along the angle to modifiers of {_shape}:
+					set wave phase to 90
+
+parse:
 	results: {sp::doc::EffAddColorStop::*}
 	code:
 		command /spdoc-effaddcolorstop:
@@ -65,44 +120,6 @@ parse:
 				add a gradient from red to blue along the y axis to modifiers of {_shape}:
 					set modifier easing to ease in-out sine
 				set {_e} to custom easing from function "myEase"
-
-parse:
-	results: {sp::doc::ExprGradientModifier::*}
-	code:
-		command /spdoc-exprgradientmodifier:
-			trigger:
-				add a gradient from red to blue along the y axis to modifiers of {_shape}
-				add a colour gradient from red, yellow, green and blue along the angle to modifiers of {_shape}
-				add a radial gradient of white and black to modifiers of {_shape}
-				set modifiers of {_shape} to a spherical gradient of yellow and orange
-				set {_gradient} to a gradient of red and blue along the draw order:
-					set modifier easing to ease in-out sine
-					add color stop at 0.5 colored white to the new modifier
-
-parse:
-	results: {sp::doc::ExprModifier::*}
-	code:
-		command /spdoc-exprmodifier:
-			trigger:
-				add a scale from 1 to 0 along the y axis to modifiers of {_shape}
-				add a scale from 1 to 2 along the radius scaling the xyz axes to modifiers of {_shape}
-				add a twist of 360 degrees to modifiers of {_shape}
-				add a twist of 180 degrees along the radius in the xy plane to modifiers of {_shape}
-				add a twist of 3.14 radians to modifiers of {_shape}
-				add a wave with amplitude 0.5 and frequency 2 to modifiers of {_shape}
-				add a wave with amplitude 0.3 and frequency 4 along the x axis displacing the y axis to modifiers of {_shape}
-				set {_taper} to a scale from 1 to 0 along the y axis:
-					set modifier easing to ease in quadratic
-				add {_taper} to modifiers of {_shape}
-
-parse:
-	results: {sp::doc::ExprMotionModifier::*}
-	code:
-		command /spdoc-exprmotionmodifier:
-			trigger:
-				add a motion modifier counterclockwise to modifiers of {_shape}
-				add a motion modifier inwards to modifiers of {_shape}
-				set modifiers of {_shape} to a motion modifier clockwise
 
 parse:
 	results: {sp::doc::ExprNewModifier::*}
@@ -192,6 +209,14 @@ parse:
 				set {_twist} to a twist of 360 degrees along the y axis:
 					set modifier easing to ease in-out sine
 				reset modifier easing of {_twist}
+
+parse:
+	results: {sp::doc::ExprMotionVelocity::*}
+	code:
+		command /spdoc-exprmotionvelocity:
+			trigger:
+				set motion velocity of {_wind} to vector(1, 0, 0)
+				add vector(0, 0.5, 0) to motion velocity of modifiers of {_shape}
 
 parse:
 	results: {sp::doc::ExprScaleModifierRange::*}
@@ -641,6 +666,26 @@ test "docs of EffSecDrawShapeAnimation parse":
 	assert {sp::doc::EffSecDrawShapeAnimation::*} is not set with "%{sp::doc::EffSecDrawShapeAnimation::*}%"
 	delete {sp::doc::EffSecDrawShapeAnimation::*}
 
+test "docs of ExprGradientModifier parse":
+	assert {sp::doc::ExprGradientModifier::*} is not set with "%{sp::doc::ExprGradientModifier::*}%"
+	delete {sp::doc::ExprGradientModifier::*}
+
+test "docs of ExprMotionModifier parse":
+	assert {sp::doc::ExprMotionModifier::*} is not set with "%{sp::doc::ExprMotionModifier::*}%"
+	delete {sp::doc::ExprMotionModifier::*}
+
+test "docs of ExprScaleModifier parse":
+	assert {sp::doc::ExprScaleModifier::*} is not set with "%{sp::doc::ExprScaleModifier::*}%"
+	delete {sp::doc::ExprScaleModifier::*}
+
+test "docs of ExprTwistModifier parse":
+	assert {sp::doc::ExprTwistModifier::*} is not set with "%{sp::doc::ExprTwistModifier::*}%"
+	delete {sp::doc::ExprTwistModifier::*}
+
+test "docs of ExprWaveModifier parse":
+	assert {sp::doc::ExprWaveModifier::*} is not set with "%{sp::doc::ExprWaveModifier::*}%"
+	delete {sp::doc::ExprWaveModifier::*}
+
 test "docs of EffAddColorStop parse":
 	assert {sp::doc::EffAddColorStop::*} is not set with "%{sp::doc::EffAddColorStop::*}%"
 	delete {sp::doc::EffAddColorStop::*}
@@ -652,18 +697,6 @@ test "docs of ExprEasing-functions parse":
 test "docs of ExprEasing parse":
 	assert {sp::doc::ExprEasing::*} is not set with "%{sp::doc::ExprEasing::*}%"
 	delete {sp::doc::ExprEasing::*}
-
-test "docs of ExprGradientModifier parse":
-	assert {sp::doc::ExprGradientModifier::*} is not set with "%{sp::doc::ExprGradientModifier::*}%"
-	delete {sp::doc::ExprGradientModifier::*}
-
-test "docs of ExprModifier parse":
-	assert {sp::doc::ExprModifier::*} is not set with "%{sp::doc::ExprModifier::*}%"
-	delete {sp::doc::ExprModifier::*}
-
-test "docs of ExprMotionModifier parse":
-	assert {sp::doc::ExprMotionModifier::*} is not set with "%{sp::doc::ExprMotionModifier::*}%"
-	delete {sp::doc::ExprMotionModifier::*}
 
 test "docs of ExprNewModifier parse":
 	assert {sp::doc::ExprNewModifier::*} is not set with "%{sp::doc::ExprNewModifier::*}%"
@@ -704,6 +737,10 @@ test "docs of ExprGradientColors parse":
 test "docs of ExprModifierEasing parse":
 	assert {sp::doc::ExprModifierEasing::*} is not set with "%{sp::doc::ExprModifierEasing::*}%"
 	delete {sp::doc::ExprModifierEasing::*}
+
+test "docs of ExprMotionVelocity parse":
+	assert {sp::doc::ExprMotionVelocity::*} is not set with "%{sp::doc::ExprMotionVelocity::*}%"
+	delete {sp::doc::ExprMotionVelocity::*}
 
 test "docs of ExprScaleModifierRange parse":
 	assert {sp::doc::ExprScaleModifierRange::*} is not set with "%{sp::doc::ExprScaleModifierRange::*}%"

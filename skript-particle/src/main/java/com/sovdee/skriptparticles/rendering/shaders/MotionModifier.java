@@ -32,10 +32,21 @@ public class MotionModifier implements PointModifier<ParticleRenderContext> {
         /**
          * No velocity (zero motion).
          */
-        NONE
+        NONE,
+        /**
+         * The same velocity for every point, in world space.
+         */
+        GLOBAL,
+        /**
+         * A velocity relative to each point's place around the shape: x outwards from the shape's y axis,
+         * y along the shape's y axis, and z around it (positive is counterclockwise, like {@link #COUNTERCLOCKWISE}).
+         */
+        RELATIVE
     }
 
     private final Mode mode;
+    // the velocity for GLOBAL and RELATIVE; unused by the other modes
+    private final Vector3d velocity = new Vector3d();
     /**
      * Y axis in world space after orientation transform, cached in prepare().
      */
@@ -44,6 +55,15 @@ public class MotionModifier implements PointModifier<ParticleRenderContext> {
 
     public MotionModifier(Mode mode) {
         this.mode = mode;
+    }
+
+    /**
+     * @param mode     {@link Mode#GLOBAL} or {@link Mode#RELATIVE}
+     * @param velocity the velocity; its length is the speed, multiplied by the particle's speed when drawn
+     */
+    public MotionModifier(Mode mode, Vector3d velocity) {
+        this.mode = mode;
+        this.velocity.set(velocity);
     }
 
     @Override
@@ -110,6 +130,27 @@ public class MotionModifier implements PointModifier<ParticleRenderContext> {
                 if (len > 1e-6f) { mx = -px / len; my = -py / len; mz = -pz / len; }
                 else { mx = my = mz = 0; }
             }
+            case GLOBAL -> {
+                mx = (float) velocity.x;
+                my = (float) velocity.y;
+                mz = (float) velocity.z;
+            }
+            case RELATIVE -> {
+                // outwards: the point with its part along the y axis removed
+                float along = px * yAxisX + py * yAxisY + pz * yAxisZ;
+                float ox = px - along * yAxisX, oy = py - along * yAxisY, oz = pz - along * yAxisZ;
+                float len = (float) Math.sqrt(ox * ox + oy * oy + oz * oz);
+                if (len > 1e-6f) { ox /= len; oy /= len; oz /= len; }
+                else { ox = oy = oz = 0; }
+                // around: cross(yAxis, outwards), the counterclockwise direction
+                float ax = yAxisY * oz - yAxisZ * oy;
+                float ay = yAxisZ * ox - yAxisX * oz;
+                float az = yAxisX * oy - yAxisY * ox;
+                float vx = (float) velocity.x, vy = (float) velocity.y, vz = (float) velocity.z;
+                mx = vx * ox + vy * yAxisX + vz * ax;
+                my = vx * oy + vy * yAxisY + vz * ay;
+                mz = vx * oz + vy * yAxisZ + vz * az;
+            }
             default -> { return; }
         }
 
@@ -121,15 +162,33 @@ public class MotionModifier implements PointModifier<ParticleRenderContext> {
 
     @Override
     public int modifierHash() {
-        return mode.ordinal();
+        return 31 * mode.ordinal() + velocity.hashCode();
     }
 
     public Mode getMode() {
         return mode;
     }
 
+    /**
+     * @return whether this modifier's motion comes from {@link #getVelocity()}
+     */
+    public boolean hasVelocity() {
+        return mode == Mode.GLOBAL || mode == Mode.RELATIVE;
+    }
+
+    /**
+     * @return a copy of the velocity used by {@link Mode#GLOBAL} and {@link Mode#RELATIVE}
+     */
+    public Vector3d getVelocity() {
+        return new Vector3d(velocity);
+    }
+
+    public void setVelocity(Vector3d velocity) {
+        this.velocity.set(velocity);
+    }
+
     @Override
     public MotionModifier clone() {
-        return new MotionModifier(mode);
+        return new MotionModifier(mode, velocity);
     }
 }

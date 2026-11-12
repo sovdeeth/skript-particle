@@ -28,10 +28,19 @@ test "gradient modifier constructors":
 	assert {_g} is set with "colour list gradient constructor failed"
 	set {_g} to a radial gradient of white and black
 	assert {_g} is set with "radial gradient constructor failed"
-	set {_g} to angular gradient from red to blue
+	set {_g} to an angular gradient from red to blue
 	assert {_g} is set with "angular gradient constructor failed"
 	set {_g} to a spherical gradient from yellow to orange
 	assert {_g} is set with "spherical gradient constructor failed"
+
+test "motion modifier velocity":
+	set {_m} to a motion modifier with relative velocity vector(-1, 0.5, 2)
+	assert motion velocity of {_m} is vector(-1, 0.5, 2) with "a relative motion modifier should keep its velocity"
+	set {_m} to a motion modifier with velocity vector(0, 1, 0):
+		add vector(1, 0, 0) to motion velocity
+	assert motion velocity of {_m} is vector(1, 1, 0) with "changing the velocity in the section failed"
+	set {_m} to a motion modifier outwards
+	assert motion velocity of {_m} is not set with "a named motion has no velocity"
 
 test "easing constructors":
 	set {_e} to linear easing
