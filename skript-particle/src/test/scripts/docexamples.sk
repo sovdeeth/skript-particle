@@ -60,8 +60,10 @@ parse:
 				set {_e} to ease in-out sine
 				set {_e} to power ease in with exponent 4
 				set {_e} to power ease out with exponent 0.5
-				add scale from 0 to 1 eased with ease in quadratic to modifiers of {_shape}
-				add gradient from red to blue along y eased with ease in-out sine to modifiers of {_shape}
+				add a scale from 0 to 1 along the y axis to modifiers of {_shape}:
+					set modifier easing to ease in quadratic
+				add a gradient from red to blue along the y axis to modifiers of {_shape}:
+					set modifier easing to ease in-out sine
 				set {_e} to custom easing from function "myEase"
 
 parse:
@@ -69,35 +71,47 @@ parse:
 	code:
 		command /spdoc-exprgradientmodifier:
 			trigger:
-				add gradient from red to blue along the y axis to modifiers of {_shape}
-				add gradient from red, yellow, green and blue along the y axis to modifiers of {_shape}
-				add radial gradient from white to black to modifiers of {_shape}
-				add angular gradient from red to blue to modifiers of {_shape}
-				add spherical gradient from yellow to orange to modifiers of {_shape}
-				set modifiers of {_shape} to gradient from red to blue along the y axis
+				add a gradient from red to blue along the y axis to modifiers of {_shape}
+				add a colour gradient from red, yellow, green and blue along the angle to modifiers of {_shape}
+				add a radial gradient of white and black to modifiers of {_shape}
+				set modifiers of {_shape} to a spherical gradient of yellow and orange
+				set {_gradient} to a gradient of red and blue along the draw order:
+					set modifier easing to ease in-out sine
+					add color stop at 0.5 colored white to the new modifier
 
 parse:
 	results: {sp::doc::ExprModifier::*}
 	code:
 		command /spdoc-exprmodifier:
 			trigger:
-				set {_m} to a scale from 1 to 0
-				add scale from 1 to 0 along the y axis to modifiers of {_shape}
-				add scale from 1 to 0 driven by radius scaling xyz to modifiers of {_shape}
+				add a scale from 1 to 0 along the y axis to modifiers of {_shape}
+				add a scale from 1 to 2 along the radius scaling the xyz axes to modifiers of {_shape}
 				add a twist of 360 degrees to modifiers of {_shape}
-				add a twist of 180 degrees in the xz plane driven by radius to modifiers of {_shape}
-				add a wave with amplitude 0.5 and frequency 2 displacing y by t to modifiers of {_shape}
-				add a wave with amplitude 0.3 and frequency 4 displacing y by x to modifiers of {_shape}
-				add a wave with amplitude 0.5 and frequency 1 displacing x by radius to modifiers of {_shape}
+				add a twist of 180 degrees along the radius in the xy plane to modifiers of {_shape}
+				add a twist of 3.14 radians to modifiers of {_shape}
+				add a wave with amplitude 0.5 and frequency 2 to modifiers of {_shape}
+				add a wave with amplitude 0.3 and frequency 4 along the x axis displacing the y axis to modifiers of {_shape}
+				set {_taper} to a scale from 1 to 0 along the y axis:
+					set modifier easing to ease in quadratic
+				add {_taper} to modifiers of {_shape}
 
 parse:
 	results: {sp::doc::ExprMotionModifier::*}
 	code:
 		command /spdoc-exprmotionmodifier:
 			trigger:
-				add motion modifier counterclockwise to modifiers of {_shape}
-				add motion modifier inwards to modifiers of {_shape}
-				set modifiers of {_shape} to motion modifier clockwise
+				add a motion modifier counterclockwise to modifiers of {_shape}
+				add a motion modifier inwards to modifiers of {_shape}
+				set modifiers of {_shape} to a motion modifier clockwise
+
+parse:
+	results: {sp::doc::ExprNewModifier::*}
+	code:
+		command /spdoc-exprnewmodifier:
+			trigger:
+				set {_wave} to a wave with amplitude 0.3 and frequency 2 along the y axis:
+					set wave phase of the new modifier to 90
+					set modifier easing to ease in-out sine
 
 parse:
 	results: {sp::doc::ExprPointCoordinate::*}
@@ -159,6 +173,51 @@ parse:
 					set point's visibility to false
 					if point's visibility is true:
 						add 1 to point's y
+
+parse:
+	results: {sp::doc::ExprGradientColors::*}
+	code:
+		command /spdoc-exprgradientcolors:
+			trigger:
+				set gradient colours of {_gradient} to red, white and blue
+				add black to {_gradient}'s gradient colors
+				send "%gradient colours of {_gradient}%"
+
+parse:
+	results: {sp::doc::ExprModifierEasing::*}
+	code:
+		command /spdoc-exprmodifiereasing:
+			trigger:
+				set modifier easing of {_taper} to ease in quadratic
+				set {_twist} to a twist of 360 degrees along the y axis:
+					set modifier easing to ease in-out sine
+				reset modifier easing of {_twist}
+
+parse:
+	results: {sp::doc::ExprScaleModifierRange::*}
+	code:
+		command /spdoc-exprscalemodifierrange:
+			trigger:
+				set scale start of {_taper} to 2
+				set {_taper}'s scale end to 0.5
+
+parse:
+	results: {sp::doc::ExprTwistAngle::*}
+	code:
+		command /spdoc-exprtwistangle:
+			trigger:
+				set twist angle of {_twist} to 720
+				add 90 to {_twist}'s twist angle
+
+parse:
+	results: {sp::doc::ExprWaveProperty::*}
+	code:
+		command /spdoc-exprwaveproperty:
+			trigger:
+				set wave amplitude of {_wave} to 1.5
+				add 1 to {_wave}'s wave frequency
+				set {_wave} to a wave with amplitude 0.5 and frequency 1 along the y axis:
+					set wave phase to 90
 
 parse:
 	results: {sp::doc::ExprSecCustomModifier::*}
@@ -606,6 +665,10 @@ test "docs of ExprMotionModifier parse":
 	assert {sp::doc::ExprMotionModifier::*} is not set with "%{sp::doc::ExprMotionModifier::*}%"
 	delete {sp::doc::ExprMotionModifier::*}
 
+test "docs of ExprNewModifier parse":
+	assert {sp::doc::ExprNewModifier::*} is not set with "%{sp::doc::ExprNewModifier::*}%"
+	delete {sp::doc::ExprNewModifier::*}
+
 test "docs of ExprPointCoordinate parse":
 	assert {sp::doc::ExprPointCoordinate::*} is not set with "%{sp::doc::ExprPointCoordinate::*}%"
 	delete {sp::doc::ExprPointCoordinate::*}
@@ -633,6 +696,26 @@ test "docs of ExprPointScale parse":
 test "docs of ExprPointVisible parse":
 	assert {sp::doc::ExprPointVisible::*} is not set with "%{sp::doc::ExprPointVisible::*}%"
 	delete {sp::doc::ExprPointVisible::*}
+
+test "docs of ExprGradientColors parse":
+	assert {sp::doc::ExprGradientColors::*} is not set with "%{sp::doc::ExprGradientColors::*}%"
+	delete {sp::doc::ExprGradientColors::*}
+
+test "docs of ExprModifierEasing parse":
+	assert {sp::doc::ExprModifierEasing::*} is not set with "%{sp::doc::ExprModifierEasing::*}%"
+	delete {sp::doc::ExprModifierEasing::*}
+
+test "docs of ExprScaleModifierRange parse":
+	assert {sp::doc::ExprScaleModifierRange::*} is not set with "%{sp::doc::ExprScaleModifierRange::*}%"
+	delete {sp::doc::ExprScaleModifierRange::*}
+
+test "docs of ExprTwistAngle parse":
+	assert {sp::doc::ExprTwistAngle::*} is not set with "%{sp::doc::ExprTwistAngle::*}%"
+	delete {sp::doc::ExprTwistAngle::*}
+
+test "docs of ExprWaveProperty parse":
+	assert {sp::doc::ExprWaveProperty::*} is not set with "%{sp::doc::ExprWaveProperty::*}%"
+	delete {sp::doc::ExprWaveProperty::*}
 
 test "docs of ExprSecCustomModifier parse":
 	assert {sp::doc::ExprSecCustomModifier::*} is not set with "%{sp::doc::ExprSecCustomModifier::*}%"

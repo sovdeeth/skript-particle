@@ -30,8 +30,14 @@ import org.jetbrains.annotations.Nullable;
 @Example("set {_e} to ease in-out sine")
 @Example("set {_e} to power ease in with exponent 4")
 @Example("set {_e} to power ease out with exponent 0.5")
-@Example("add scale from 0 to 1 eased with ease in quadratic to modifiers of {_shape}")
-@Example("add gradient from red to blue along y eased with ease in-out sine to modifiers of {_shape}")
+@Example("""
+    add a scale from 0 to 1 along the y axis to modifiers of {_shape}:
+        set modifier easing to ease in quadratic
+    """)
+@Example("""
+    add a gradient from red to blue along the y axis to modifiers of {_shape}:
+        set modifier easing to ease in-out sine
+    """)
 @Example("""
     function myEase(t: number) :: number:
         return {_t} ^ 3

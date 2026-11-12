@@ -11,6 +11,12 @@ import com.sovdee.skriptparticles.skript.shaders.expressions.ExprEasing;
 import com.sovdee.skriptparticles.skript.shaders.expressions.ExprGradientModifier;
 import com.sovdee.skriptparticles.skript.shaders.expressions.ExprModifier;
 import com.sovdee.skriptparticles.skript.shaders.expressions.ExprMotionModifier;
+import com.sovdee.skriptparticles.skript.shaders.expressions.ExprNewModifier;
+import com.sovdee.skriptparticles.skript.shaders.expressions.properties.ExprGradientColors;
+import com.sovdee.skriptparticles.skript.shaders.expressions.properties.ExprModifierEasing;
+import com.sovdee.skriptparticles.skript.shaders.expressions.properties.ExprScaleModifierRange;
+import com.sovdee.skriptparticles.skript.shaders.expressions.properties.ExprTwistAngle;
+import com.sovdee.skriptparticles.skript.shaders.expressions.properties.ExprWaveProperty;
 import com.sovdee.skriptparticles.skript.shaders.expressions.point.ExprPointCoordinate;
 import com.sovdee.skriptparticles.skript.shaders.expressions.point.ExprPointCount;
 import com.sovdee.skriptparticles.skript.shaders.expressions.point.ExprPointDisplacement;
@@ -36,7 +42,9 @@ public class ShadersModule extends HierarchicalAddonModule {
         Classes.registerClass(new ClassInfo<>(PointModifier.class, "pointmodifier")
                 .user("point ?modifiers?")
                 .name("Point Modifier")
-                .description("A modifier applied to shape points. Geometry modifiers (taper, twist, wave) transform positions and are cached. Render modifiers (gradients, motion) run per-frame and affect color, motion, or visibility.")
+                .description("A modifier applied to shape points. Geometry modifiers (scale, twist, wave) move points and are cached with the shape. Render modifiers (gradients, motion, custom shaders) run each time the shape is drawn and change the particles' colour, motion or visibility.")
+                // inside a modifier constructor section, modifier properties default to the new modifier
+                .defaultExpression(new ExprNewModifier())
                 .parser(new Parser<>() {
                     @Override
                     public @Nullable PointModifier<?> parse(String s, ParseContext context) { return null; }
@@ -88,6 +96,12 @@ public class ShadersModule extends HierarchicalAddonModule {
                 ExprGradientModifier::register,
                 ExprMotionModifier::register,
                 ExprModifier::register,
+                ExprNewModifier::register,
+                ExprWaveProperty::register,
+                ExprTwistAngle::register,
+                ExprScaleModifierRange::register,
+                ExprModifierEasing::register,
+                ExprGradientColors::register,
                 ExprEasing::register,
                 EffAddColorStop::register,
                 ExprPointCoordinate::register,

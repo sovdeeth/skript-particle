@@ -5,165 +5,101 @@ import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Expression;
-import ch.njol.skript.lang.SkriptParser;
-import org.skriptlang.skript.registration.SyntaxInfo;
-import org.skriptlang.skript.registration.SyntaxRegistry;
-import ch.njol.skript.lang.util.SimpleExpression;
+import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.util.Color;
 import ch.njol.util.Kleenean;
-import com.sovdee.shapes.modifiers.EasingFunction;
-import com.sovdee.shapes.modifiers.NormalizedInput;
 import com.sovdee.shapes.modifiers.PointModifier;
 import com.sovdee.shapes.modifiers.StandardInput;
-import com.sovdee.skriptparticles.rendering.ParticleRenderContext;
 import com.sovdee.skriptparticles.rendering.shaders.AbstractGradientModifier;
-import com.sovdee.skriptparticles.rendering.shaders.ColorStop;
 import com.sovdee.skriptparticles.rendering.shaders.GradientModifier;
+import com.sovdee.skriptparticles.skript.shaders.ModifierInputs;
+import com.sovdee.skriptparticles.skript.shaders.sections.ModifierConstructorExpression;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
+import org.skriptlang.skript.registration.SyntaxInfo;
+import org.skriptlang.skript.registration.SyntaxRegistry;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 
 @Name("Gradient Modifier Constructor")
 @Description({
-        "Creates a gradient modifier for coloring shape points.",
-        "Two-color form: interpolates from the first color to the second.",
-        "Multi-color form: evenly spaces the provided colors across [0, 1].",
-        "Axes: x, y (default), z, or t (normalised draw order) for axis-aligned gradients.",
-        "Radial: gradient based on XZ distance from center.",
-        "Angular: gradient based on angle around the Y axis.",
-        "Spherical: gradient based on 3D distance from center.",
+        "Creates a modifier that colours a shape's points with a gradient. This only affects particles that can be coloured, like dust.",
+        "The colours, either a list or 'from red to blue', are spaced evenly along an input: the x, y (default) or z axis, the draw order, the radius " +
+                "(distance from the shape's y axis), the spherical distance (distance from its center), or the angle around its y axis. " +
+                "'radial', 'spherical' and 'angular' gradients are short for gradients along those inputs.",
+        "Use 'add color stop' for colours at uneven positions.",
+        "This can take a section to set the rest of the modifier's properties, like its easing. " +
+                "Inside it, 'the new modifier' is the gradient being created, and modifier properties use it by default."
 })
-@Example("add gradient from red to blue along the y axis to modifiers of {_shape}")
-@Example("add gradient from red, yellow, green and blue along the y axis to modifiers of {_shape}")
-@Example("add radial gradient from white to black to modifiers of {_shape}")
-@Example("add angular gradient from red to blue to modifiers of {_shape}")
-@Example("add spherical gradient from yellow to orange to modifiers of {_shape}")
-@Example("set modifiers of {_shape} to gradient from red to blue along the y axis")
+@Example("add a gradient from red to blue along the y axis to modifiers of {_shape}")
+@Example("add a colour gradient from red, yellow, green and blue along the angle to modifiers of {_shape}")
+@Example("add a radial gradient of white and black to modifiers of {_shape}")
+@Example("set modifiers of {_shape} to a spherical gradient of yellow and orange")
+@Example("""
+        set {_gradient} to a gradient of red and blue along the draw order:
+            set modifier easing to ease in-out sine
+            add color stop at 0.5 colored white to the new modifier
+        """)
 @Since("2.0.0")
-public class ExprGradientModifier extends SimpleExpression<PointModifier> {
+public class ExprGradientModifier extends ModifierConstructorExpression {
+
+    // a list of colours, or the two-colour "from red to blue"
+    private static final String COLORS = "((from|of) %-colors%|from %-color% to %-color%)";
 
     public static void register(SyntaxRegistry registry) {
         registry.register(SyntaxRegistry.EXPRESSION, SyntaxInfo.Expression.builder(ExprGradientModifier.class, PointModifier.class)
                 .supplier(ExprGradientModifier::new)
                 .addPatterns(
-                        // Pattern 0: two-color axis gradient
-                        "[a] [color] gradient from %color% to %color% along [the] (0¦x|1¦y|2¦z|3¦t) [axis] [eased with %-easing%]",
-                        // Pattern 1: multi-color axis gradient (evenly spaced)
-                        "[a] [color] gradient from %colors% along [the] (0¦x|1¦y|2¦z|3¦t) [axis] [eased with %-easing%]",
-                        // Pattern 2: radial gradient (two colors)
-                        "[a] radial [color] gradient from %color% to %color% [eased with %-easing%]",
-                        // Pattern 3: angular gradient (two colors)
-                        "[a] angular [color] gradient from %color% to %color% [eased with %-easing%]",
-                        // Pattern 4: spherical gradient (two colors)
-                        "[a] spherical [color] gradient from %color% to %color% [eased with %-easing%]"
+                        "[a] [colo[u]r] gradient " + COLORS + " [along [the] " + ModifierInputs.ALL_INPUTS + "]",
+                        "[a] (:radial|:angular|:spherical) [colo[u]r] gradient " + COLORS
                 )
                 .build());
     }
 
-    private int pattern;
-    private int parseMark;
-    private Expression<Color> color1, color2;
-    private Expression<Color> colors; // for multi-color
-    private @Nullable Expression<EasingFunction> easing;
+    private @Nullable Expression<Color> colors;
+    private @Nullable Expression<Color> from, to;
+    private StandardInput input;
 
+    @Override
     @SuppressWarnings("unchecked")
-    @Override
-    public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, SkriptParser.ParseResult parseResult) {
-        this.pattern = matchedPattern;
-        this.parseMark = parseResult.mark;
-        if (matchedPattern == 1) {
-            this.colors = (Expression<Color>) exprs[0];
-            this.easing = (Expression<EasingFunction>) exprs[1];
+    protected boolean initialize(Expression<?>[] expressions, int matchedPattern, Kleenean hasDelayBefore, ParseResult result) {
+        colors = (Expression<Color>) expressions[0];
+        from = (Expression<Color>) expressions[1];
+        to = (Expression<Color>) expressions[2];
+        if (result.hasTag("radial")) {
+            input = StandardInput.RADIUS;
+        } else if (result.hasTag("angular")) {
+            input = StandardInput.ANGLE;
+        } else if (result.hasTag("spherical")) {
+            input = StandardInput.SPHERICAL;
         } else {
-            this.color1 = (Expression<Color>) exprs[0];
-            this.color2 = (Expression<Color>) exprs[1];
-            this.easing = (Expression<EasingFunction>) exprs[2];
+            StandardInput chosen = ModifierInputs.fromTags(result);
+            input = chosen == null ? StandardInput.Y : chosen;
         }
         return true;
     }
 
     @Override
-    protected PointModifier<ParticleRenderContext> @Nullable [] get(Event event) {
-        AbstractGradientModifier mod = switch (pattern) {
-            case 0 -> { // two-color axis gradient
-                Color c1 = color1.getSingle(event);
-                Color c2 = color2.getSingle(event);
-                if (c1 == null || c2 == null) yield null;
-                yield new GradientModifier(c1.asBukkitColor(), c2.asBukkitColor(), axisFromMark(parseMark));
-            }
-            case 1 -> { // multi-color axis gradient (evenly spaced)
-                Color[] cs = colors.getArray(event);
-                if (cs == null || cs.length == 0) yield null;
-                yield new GradientModifier(evenlySpaced(cs), axisFromMark(parseMark));
-            }
-            case 2 -> { // radial
-                Color c1 = color1.getSingle(event);
-                Color c2 = color2.getSingle(event);
-                if (c1 == null || c2 == null) yield null;
-                yield new GradientModifier(c1.asBukkitColor(), c2.asBukkitColor(), StandardInput.RADIUS);
-            }
-            case 3 -> { // angular
-                Color c1 = color1.getSingle(event);
-                Color c2 = color2.getSingle(event);
-                if (c1 == null || c2 == null) yield null;
-                yield new GradientModifier(c1.asBukkitColor(), c2.asBukkitColor(), StandardInput.ANGLE);
-            }
-            case 4 -> { // spherical
-                Color c1 = color1.getSingle(event);
-                Color c2 = color2.getSingle(event);
-                if (c1 == null || c2 == null) yield null;
-                yield new GradientModifier(c1.asBukkitColor(), c2.asBukkitColor(), StandardInput.SPHERICAL);
-            }
-            default -> null;
-        };
-        if (mod == null) return null;
-        if (easing != null) { EasingFunction ef = easing.getSingle(event); if (ef != null) mod.setEasing(ef); }
-        return new PointModifier[]{mod};
-    }
-
-    private static NormalizedInput axisFromMark(int mark) {
-        return switch (mark) {
-            case 0 -> StandardInput.X;
-            case 2 -> StandardInput.Z;
-            case 3 -> StandardInput.T;
-            default -> StandardInput.Y;
-        };
-    }
-
-    private static List<ColorStop> evenlySpaced(Color[] colors) {
-        List<ColorStop> stops = new ArrayList<>(colors.length);
-        if (colors.length == 1) {
-            stops.add(new ColorStop(0.0, colors[0].asBukkitColor()));
-            stops.add(new ColorStop(1.0, colors[0].asBukkitColor()));
-            return stops;
+    protected @Nullable PointModifier<?> create(Event event) {
+        Color[] values;
+        if (colors != null) {
+            values = colors.getArray(event);
+        } else {
+            Color start = from.getSingle(event), end = to.getSingle(event);
+            if (start == null || end == null)
+                return null;
+            values = new Color[]{start, end};
         }
-        for (int i = 0; i < colors.length; i++) {
-            stops.add(new ColorStop((double) i / (colors.length - 1), colors[i].asBukkitColor()));
-        }
-        return stops;
-    }
-
-    @Override
-    public boolean isSingle() {
-        return true;
-    }
-
-    @Override
-    public Class<? extends PointModifier> getReturnType() {
-        return PointModifier.class;
+        if (values.length == 0)
+            return null;
+        return new GradientModifier(AbstractGradientModifier.evenlySpaced(
+                Arrays.stream(values).map(Color::asBukkitColor).toList()), input);
     }
 
     @Override
     public String toString(@Nullable Event event, boolean debug) {
-        return switch (pattern) {
-            case 0 -> "gradient from " + color1.toString(event, debug) + " to " + color2.toString(event, debug) + " along axis";
-            case 1 -> "gradient from colors along axis";
-            case 2 -> "radial gradient";
-            case 3 -> "angular gradient";
-            case 4 -> "spherical gradient";
-            default -> "gradient modifier";
-        };
+        String of = colors != null ? "of " + colors.toString(event, debug)
+                : "from " + from.toString(event, debug) + " to " + to.toString(event, debug);
+        return "a gradient " + of + " along the " + ModifierInputs.toString(input);
     }
 }

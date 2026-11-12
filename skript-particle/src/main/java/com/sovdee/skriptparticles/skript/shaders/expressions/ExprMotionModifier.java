@@ -5,32 +5,33 @@ import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Expression;
-import ch.njol.skript.lang.SkriptParser;
-import org.skriptlang.skript.registration.SyntaxInfo;
-import org.skriptlang.skript.registration.SyntaxRegistry;
-import ch.njol.skript.lang.util.SimpleExpression;
+import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.util.Kleenean;
 import com.sovdee.shapes.modifiers.PointModifier;
 import com.sovdee.skriptparticles.rendering.shaders.MotionModifier;
+import com.sovdee.skriptparticles.skript.shaders.sections.ModifierConstructorExpression;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
+import org.skriptlang.skript.registration.SyntaxInfo;
+import org.skriptlang.skript.registration.SyntaxRegistry;
 
 @Name("Motion Modifier Constructor")
 @Description({
-        "Creates a motion (velocity) modifier for particles.",
-        "Modes: clockwise, counterclockwise, inwards, outwards, none.",
-        "The velocity is normalized and based on each point's position relative to the shape origin.",
+        "Creates a modifier that sends particles moving, relative to the shape: " +
+                "clockwise or counterclockwise around its y axis, or inwards or outwards from its center.",
+        "Only particles that can move, like flames, are affected.",
+        "Like the other modifier constructors, this can take a section in which 'the new modifier' is the modifier being created."
 })
-@Example("add motion modifier counterclockwise to modifiers of {_shape}")
-@Example("add motion modifier inwards to modifiers of {_shape}")
-@Example("set modifiers of {_shape} to motion modifier clockwise")
+@Example("add a motion modifier counterclockwise to modifiers of {_shape}")
+@Example("add a motion modifier inwards to modifiers of {_shape}")
+@Example("set modifiers of {_shape} to a motion modifier clockwise")
 @Since("2.0.0")
-public class ExprMotionModifier extends SimpleExpression<PointModifier> {
+public class ExprMotionModifier extends ModifierConstructorExpression {
 
     public static void register(SyntaxRegistry registry) {
         registry.register(SyntaxRegistry.EXPRESSION, SyntaxInfo.Expression.builder(ExprMotionModifier.class, PointModifier.class)
                 .supplier(ExprMotionModifier::new)
-                .addPatterns("[a] motion modifier (0¦clockwise|1¦counterclockwise|2¦inwards|3¦outwards|4¦none)")
+                .addPatterns("[a] motion modifier (:clockwise|:counterclockwise|:inwards|:outwards)")
                 .priority(SyntaxInfo.SIMPLE)
                 .build());
     }
@@ -38,34 +39,18 @@ public class ExprMotionModifier extends SimpleExpression<PointModifier> {
     private MotionModifier.Mode mode;
 
     @Override
-    public boolean init(Expression<?>[] exprs, int matchedPattern, Kleenean isDelayed, SkriptParser.ParseResult parseResult) {
-        this.mode = switch (parseResult.mark) {
-            case 0 -> MotionModifier.Mode.CLOCKWISE;
-            case 1 -> MotionModifier.Mode.COUNTERCLOCKWISE;
-            case 2 -> MotionModifier.Mode.INWARDS;
-            case 3 -> MotionModifier.Mode.OUTWARDS;
-            default -> MotionModifier.Mode.NONE;
-        };
+    protected boolean initialize(Expression<?>[] expressions, int matchedPattern, Kleenean hasDelayBefore, ParseResult result) {
+        mode = MotionModifier.Mode.valueOf(result.tags.getFirst().toUpperCase());
         return true;
     }
 
     @Override
-    protected PointModifier @Nullable [] get(Event event) {
-        return new PointModifier[]{new MotionModifier(mode)};
-    }
-
-    @Override
-    public boolean isSingle() {
-        return true;
-    }
-
-    @Override
-    public Class<? extends PointModifier> getReturnType() {
-        return PointModifier.class;
+    protected @Nullable PointModifier<?> create(Event event) {
+        return new MotionModifier(mode);
     }
 
     @Override
     public String toString(@Nullable Event event, boolean debug) {
-        return "motion modifier " + mode.name().toLowerCase();
+        return "a motion modifier " + mode.name().toLowerCase();
     }
 }

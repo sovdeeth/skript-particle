@@ -288,8 +288,8 @@ command /modifier-test:
         # 3. Wave modifier on a rectangle
         set {_rect} to a solid rectangle with length 2 and width 2
         set particle of {_rect} to electric spark particle with extra value 0
-        add a wave with amplitude 0.5 and frequency 4 displacing y by x to modifiers of {_rect}
-        add a wave with amplitude 0.5 and frequency 4 displacing y by z to modifiers of {_rect}
+        add a wave with amplitude 0.5 and frequency 4 along the x axis displacing the y axis to modifiers of {_rect}
+        add a wave with amplitude 0.5 and frequency 4 along the z axis displacing the y axis to modifiers of {_rect}
         draw shape {_rect} at {_loc} ~ vector(8, 0, 0) for 5 seconds with refresh 2 ticks
         wait 1 tick
 
@@ -342,7 +342,7 @@ command /modifier-test:
         set {_combined} to a tube with radius 1 and height 2
         set particle of {_combined} to white dust particle
         add taper from 0.2 to 1.0 along the y axis to modifiers of {_combined}
-        add a wave with amplitude 0.3 and frequency 3 displacing y by t to modifiers of {_combined}
+        add a wave with amplitude 0.3 and frequency 3 along the draw order displacing the y axis to modifiers of {_combined}
         add gradient from orange to cyan along the y axis to modifiers of {_combined}
         draw shape {_combined} at {_loc} ~ vector(4, 0, 12) for 5 seconds with refresh 2 ticks
 

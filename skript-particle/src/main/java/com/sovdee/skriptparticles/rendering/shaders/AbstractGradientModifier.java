@@ -1,5 +1,6 @@
 package com.sovdee.skriptparticles.rendering.shaders;
 
+import com.sovdee.shapes.modifiers.Easable;
 import com.sovdee.shapes.modifiers.EasingFunction;
 import com.sovdee.shapes.modifiers.PointModifier;
 import com.sovdee.shapes.modifiers.ShapeBounds;
@@ -15,7 +16,7 @@ import java.util.List;
  * Base class for gradient modifiers. Manages a list of {@link ColorStop}s and provides
  * a pre-built 256-entry LUT for zero-alloc per-point colour lookup.
  */
-public abstract class AbstractGradientModifier implements PointModifier<ParticleRenderContext> {
+public abstract class AbstractGradientModifier implements PointModifier<ParticleRenderContext>, Easable {
 
     protected final List<ColorStop> stops = new ArrayList<>();
     protected EasingFunction easing = EasingFunction.LINEAR;
@@ -52,6 +53,33 @@ public abstract class AbstractGradientModifier implements PointModifier<Particle
 
     public List<ColorStop> getStops() {
         return stops;
+    }
+
+    /**
+     * Replaces every stop with the given colours, spaced evenly from 0 to 1. A single colour makes a solid gradient.
+     *
+     * @param colors the colours, in order; ignored if empty
+     */
+    public void setColors(List<Color> colors) {
+        if (colors.isEmpty())
+            return;
+        stops.clear();
+        stops.addAll(evenlySpaced(colors));
+    }
+
+    /**
+     * @return stops for the given colours, spaced evenly from 0 to 1; a single colour is used at both ends
+     */
+    public static List<ColorStop> evenlySpaced(List<Color> colors) {
+        List<ColorStop> result = new ArrayList<>(Math.max(2, colors.size()));
+        if (colors.size() == 1) {
+            result.add(new ColorStop(0.0, colors.getFirst()));
+            result.add(new ColorStop(1.0, colors.getFirst()));
+            return result;
+        }
+        for (int i = 0; i < colors.size(); i++)
+            result.add(new ColorStop((double) i / (colors.size() - 1), colors.get(i)));
+        return result;
     }
 
     /**
@@ -100,9 +128,11 @@ public abstract class AbstractGradientModifier implements PointModifier<Particle
         return dustLut[idx];
     }
 
+    @Override
     public EasingFunction getEasing() {
         return easing;
     }
+    @Override
     public void setEasing(EasingFunction easing) {
         this.easing = easing;
     }
