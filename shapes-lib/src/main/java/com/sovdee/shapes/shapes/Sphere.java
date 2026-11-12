@@ -82,15 +82,15 @@ public class Sphere extends AbstractShape implements RadialShape {
 
     @Override
     public void generateFilled(List<Vector3d> points, double density) {
-        if (points instanceof ArrayList<?> arrayList)
-            arrayList.ensureCapacity(points.size() + (int) (1.333 * Math.PI * radius * radius * radius / (density * density * density)));
-        int subSpheres = (int) (radius / density) - 1;
-        double radiusStep = radius / subSpheres;
-        for (int i = 1; i < subSpheres; i++) {
-            double subRadius = i * radiusStep;
-            int pointCount = 4 * (int) (Math.PI * subRadius * subRadius / (density * density));
+        // concentric shells from the surface inwards, plus the center
+        int shells = (int) Math.min(Math.ceil(radius / density), Integer.MAX_VALUE - 1);
+        if (shells < 1) shells = 1;
+        for (int i = 1; i <= shells; i++) {
+            double subRadius = radius * i / shells;
+            int pointCount = Math.max(4 * (int) (Math.PI * subRadius * subRadius / (density * density)), 1);
             calculateFibonacciSphere(points, pointCount, subRadius, cutoffAngle);
         }
+        points.add(new Vector3d(0, 0, 0));
     }
 
     @Override

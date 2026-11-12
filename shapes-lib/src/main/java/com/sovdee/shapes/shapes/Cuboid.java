@@ -14,17 +14,19 @@ import java.util.function.Supplier;
  * <br>
  * When constructed from two {@link java.util.function.Supplier Supplier&lt;Vector3d&gt;} corners the
  * cuboid is marked as {@link AbstractShape#setDynamic(boolean) dynamic}, meaning the corner
- * positions are re-evaluated each time {@link #beforeSampling(double)} is called.
+ * positions are re-evaluated each time the cuboid is sampled (see {@link #refresh()}).
  * <br>
  * For entity-following dynamic cuboids in the plugin layer, use the {@code DynamicCuboid} wrapper.
  */
 public class Cuboid extends AbstractShape implements LWHShape {
 
     private double halfLength, halfWidth, halfHeight;
-    private double lengthStep, widthStep, heightStep;
     private Vector3d centerOffset = new Vector3d(0, 0, 0);
     private Supplier<Vector3d> cornerASupplier;
     private Supplier<Vector3d> cornerBSupplier;
+    // the corners last read from the suppliers, to detect when they move
+    private Vector3d lastCornerA;
+    private Vector3d lastCornerB;
 
     /**
      * Constructs a cuboid centred at the local origin with the given dimensions.
@@ -56,16 +58,13 @@ public class Cuboid extends AbstractShape implements LWHShape {
         super();
         if (cornerA.equals(cornerB))
             throw new IllegalArgumentException("Cuboid corners cannot be equal.");
-        this.halfLength = Math.abs(cornerB.x - cornerA.x) / 2;
-        this.halfWidth = Math.abs(cornerB.z - cornerA.z) / 2;
-        this.halfHeight = Math.abs(cornerB.y - cornerA.y) / 2;
-        centerOffset = new Vector3d(cornerB).add(cornerA).mul(0.5);
+        setCorners(cornerA, cornerB);
     }
 
     /**
      * Constructs a dynamic cuboid whose corners are provided by {@link Supplier} functions.
      * The suppliers are called once during construction to compute initial dimensions,
-     * and again on every call to {@link #beforeSampling(double)} so that the cuboid tracks
+     * and again before every sampling (see {@link #refresh()}) so that the cuboid tracks
      * positions that change over time (e.g. entity locations).
      * <br>
      * This constructor marks the shape as {@link AbstractShape#setDynamic(boolean) dynamic}.
@@ -77,49 +76,37 @@ public class Cuboid extends AbstractShape implements LWHShape {
         super();
         this.cornerASupplier = cornerA;
         this.cornerBSupplier = cornerB;
-        Vector3d a = cornerA.get();
-        Vector3d b = cornerB.get();
-        this.halfLength = Math.max(Math.abs(b.x - a.x) / 2, Shape.EPSILON);
-        this.halfWidth = Math.max(Math.abs(b.z - a.z) / 2, Shape.EPSILON);
-        this.halfHeight = Math.max(Math.abs(b.y - a.y) / 2, Shape.EPSILON);
+        this.lastCornerA = new Vector3d(cornerA.get());
+        this.lastCornerB = new Vector3d(cornerB.get());
+        setCorners(lastCornerA, lastCornerB);
         setDynamic(true);
     }
 
-    private void calculateSteps(double density) {
-        widthStep = 2 * halfWidth / Math.round(2 * halfWidth / density);
-        lengthStep = 2 * halfLength / Math.round(2 * halfLength / density);
-        heightStep = 2 * halfHeight / Math.round(2 * halfHeight / density);
+    /**
+     * Sizes the cuboid to span the two corners, and centers it between them.
+     */
+    private void setCorners(Vector3d cornerA, Vector3d cornerB) {
+        this.halfLength = Math.max(Math.abs(cornerB.x - cornerA.x) / 2, Shape.EPSILON);
+        this.halfWidth = Math.max(Math.abs(cornerB.z - cornerA.z) / 2, Shape.EPSILON);
+        this.halfHeight = Math.max(Math.abs(cornerB.y - cornerA.y) / 2, Shape.EPSILON);
+        this.centerOffset = new Vector3d(cornerB).add(cornerA).mul(0.5);
     }
 
     /**
-     * Called before point sampling begins. If this cuboid was constructed with corner suppliers,
-     * re-evaluates those suppliers to update the half-dimensions to the current corner positions.
-     * Then pre-computes the per-axis step sizes used by the generation methods.
-     *
-     * @param density the target spacing between adjacent sample points
+     * Re-reads the corner suppliers, if any, and invalidates the cuboid when a corner moved.
      */
     @Override
-    public void beforeSampling(double density) {
-        if (cornerASupplier != null && cornerBSupplier != null) {
-            Vector3d a = cornerASupplier.get();
-            Vector3d b = cornerBSupplier.get();
-            this.halfLength = Math.max(Math.abs(b.x - a.x) / 2, Shape.EPSILON);
-            this.halfWidth = Math.max(Math.abs(b.z - a.z) / 2, Shape.EPSILON);
-            this.halfHeight = Math.max(Math.abs(b.y - a.y) / 2, Shape.EPSILON);
-        }
-        calculateSteps(density);
-    }
-
-    /**
-     * Called after all points have been generated. Translates every point by the {@code centerOffset}
-     * so that corner-defined cuboids are positioned correctly in world space rather than being
-     * centred at the local origin.
-     *
-     * @param points the mutable list of sampled points to translate in place
-     */
-    @Override
-    public void afterSampling(List<Vector3d> points) {
-        points.forEach(vector -> vector.add(centerOffset));
+    public void refresh() {
+        if (cornerASupplier == null || cornerBSupplier == null)
+            return;
+        Vector3d a = cornerASupplier.get();
+        Vector3d b = cornerBSupplier.get();
+        if (a.equals(lastCornerA) && b.equals(lastCornerB))
+            return;
+        lastCornerA = new Vector3d(a);
+        lastCornerB = new Vector3d(b);
+        setCorners(a, b);
+        invalidate();
     }
 
     /**
@@ -134,24 +121,33 @@ public class Cuboid extends AbstractShape implements LWHShape {
      */
     @Override
     public void generateOutline(List<Vector3d> points, double density) {
-        for (double x = -halfLength; x <= halfLength; x += lengthStep) {
+        int start = points.size();
+        int xSegments = segments(2 * halfLength, density);
+        int ySegments = segments(2 * halfHeight, density);
+        int zSegments = segments(2 * halfWidth, density);
+        // the four edges along x include the corners; the other edges only add the points between them
+        for (int i = 0; i <= xSegments; i++) {
+            double x = -halfLength + 2 * halfLength * i / xSegments;
             points.add(new Vector3d(x, -halfHeight, -halfWidth));
             points.add(new Vector3d(x, -halfHeight, halfWidth));
             points.add(new Vector3d(x, halfHeight, -halfWidth));
             points.add(new Vector3d(x, halfHeight, halfWidth));
         }
-        for (double y = -halfHeight + heightStep; y < halfHeight; y += heightStep) {
+        for (int i = 1; i < ySegments; i++) {
+            double y = -halfHeight + 2 * halfHeight * i / ySegments;
             points.add(new Vector3d(-halfLength, y, -halfWidth));
             points.add(new Vector3d(-halfLength, y, halfWidth));
             points.add(new Vector3d(halfLength, y, -halfWidth));
             points.add(new Vector3d(halfLength, y, halfWidth));
         }
-        for (double z = -halfWidth + widthStep; z < halfWidth; z += widthStep) {
+        for (int i = 1; i < zSegments; i++) {
+            double z = -halfWidth + 2 * halfWidth * i / zSegments;
             points.add(new Vector3d(-halfLength, -halfHeight, z));
             points.add(new Vector3d(-halfLength, halfHeight, z));
             points.add(new Vector3d(halfLength, -halfHeight, z));
             points.add(new Vector3d(halfLength, halfHeight, z));
         }
+        applyCenterOffset(points, start);
     }
 
     /**
@@ -165,24 +161,34 @@ public class Cuboid extends AbstractShape implements LWHShape {
      */
     @Override
     public void generateSurface(List<Vector3d> points, double density) {
-        for (double x = -halfLength; x <= halfLength; x += lengthStep) {
-            for (double z = -halfWidth; z <= halfWidth; z += widthStep) {
+        int start = points.size();
+        int xSegments = segments(2 * halfLength, density);
+        int ySegments = segments(2 * halfHeight, density);
+        int zSegments = segments(2 * halfWidth, density);
+        // top and bottom faces, including their edges
+        for (int i = 0; i <= xSegments; i++) {
+            double x = -halfLength + 2 * halfLength * i / xSegments;
+            for (int k = 0; k <= zSegments; k++) {
+                double z = -halfWidth + 2 * halfWidth * k / zSegments;
                 points.add(new Vector3d(x, -halfHeight, z));
                 points.add(new Vector3d(x, halfHeight, z));
             }
         }
-        for (double y = -halfHeight + heightStep; y < halfHeight; y += heightStep) {
-            for (double z = -halfWidth; z <= halfWidth; z += widthStep) {
+        // the remaining faces, without the edges already covered
+        for (int j = 1; j < ySegments; j++) {
+            double y = -halfHeight + 2 * halfHeight * j / ySegments;
+            for (int k = 0; k <= zSegments; k++) {
+                double z = -halfWidth + 2 * halfWidth * k / zSegments;
                 points.add(new Vector3d(-halfLength, y, z));
                 points.add(new Vector3d(halfLength, y, z));
             }
-        }
-        for (double x = -halfLength + lengthStep; x < halfLength; x += lengthStep) {
-            for (double y = -halfHeight + heightStep; y < halfHeight; y += heightStep) {
+            for (int i = 1; i < xSegments; i++) {
+                double x = -halfLength + 2 * halfLength * i / xSegments;
                 points.add(new Vector3d(x, y, -halfWidth));
                 points.add(new Vector3d(x, y, halfWidth));
             }
         }
+        applyCenterOffset(points, start);
     }
 
     /**
@@ -196,12 +202,31 @@ public class Cuboid extends AbstractShape implements LWHShape {
      */
     @Override
     public void generateFilled(List<Vector3d> points, double density) {
-        for (double x = -halfLength; x <= halfLength; x += lengthStep) {
-            for (double y = -halfHeight; y <= halfHeight; y += heightStep) {
-                for (double z = -halfWidth; z <= halfWidth; z += widthStep) {
+        int start = points.size();
+        int xSegments = segments(2 * halfLength, density);
+        int ySegments = segments(2 * halfHeight, density);
+        int zSegments = segments(2 * halfWidth, density);
+        for (int i = 0; i <= xSegments; i++) {
+            double x = -halfLength + 2 * halfLength * i / xSegments;
+            for (int j = 0; j <= ySegments; j++) {
+                double y = -halfHeight + 2 * halfHeight * j / ySegments;
+                for (int k = 0; k <= zSegments; k++) {
+                    double z = -halfWidth + 2 * halfWidth * k / zSegments;
                     points.add(new Vector3d(x, y, z));
                 }
             }
+        }
+        applyCenterOffset(points, start);
+    }
+
+    /**
+     * Moves the points generated since {@code start} from around the origin to around the cuboid's center.
+     */
+    private void applyCenterOffset(List<Vector3d> points, int start) {
+        if (centerOffset.x == 0 && centerOffset.y == 0 && centerOffset.z == 0)
+            return;
+        for (int i = start; i < points.size(); i++) {
+            points.get(i).add(centerOffset);
         }
     }
 
@@ -330,13 +355,13 @@ public class Cuboid extends AbstractShape implements LWHShape {
      */
     @Override
     public Shape clone() {
-        Cuboid cuboid;
-        if (cornerASupplier != null && cornerBSupplier != null) {
-            cuboid = new Cuboid(cornerASupplier, cornerBSupplier);
-        } else {
-            cuboid = new Cuboid(getLength(), getWidth(), getHeight());
-        }
+        // copy the current state rather than re-reading the suppliers, so the copy has identical geometry
+        Cuboid cuboid = new Cuboid(getLength(), getWidth(), getHeight());
         cuboid.centerOffset = new Vector3d(this.centerOffset);
+        cuboid.cornerASupplier = this.cornerASupplier;
+        cuboid.cornerBSupplier = this.cornerBSupplier;
+        cuboid.lastCornerA = this.lastCornerA;
+        cuboid.lastCornerB = this.lastCornerB;
         return this.copyTo(cuboid);
     }
 }

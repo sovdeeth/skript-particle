@@ -32,6 +32,8 @@ import java.util.List;
  */
 public class Circle extends AbstractShape implements RadialShape, LWHShape {
 
+    private static final double FULL_CIRCLE = 2 * Math.PI;
+
     private double radius;
     protected double cutoffAngle;
     private double height;
@@ -72,10 +74,15 @@ public class Circle extends AbstractShape implements RadialShape, LWHShape {
      * @param cutoffAngle the angular span to cover, in radians ({@code [0, 2π]})
      */
     public static void calculateCircle(List<Vector3d> points, double radius, double density, double cutoffAngle) {
-        double stepSize = density / radius;
+        boolean full = cutoffAngle >= FULL_CIRCLE - Shape.EPSILON;
+        double angle = full ? FULL_CIRCLE : cutoffAngle;
+        int steps = segments(angle * radius, density);
+        // a full circle closes on itself, so its last point would repeat the first; an arc includes both ends
+        int last = full ? steps - 1 : steps;
         if (points instanceof ArrayList<?> al)
-            al.ensureCapacity(points.size() + (int) (cutoffAngle / stepSize) + 1);
-        for (double theta = 0; theta < cutoffAngle; theta += stepSize) {
+            al.ensureCapacity(points.size() + last + 1);
+        for (int i = 0; i <= last; i++) {
+            double theta = angle * i / steps;
             points.add(new Vector3d(Math.cos(theta) * radius, 0, Math.sin(theta) * radius));
         }
     }
@@ -91,12 +98,11 @@ public class Circle extends AbstractShape implements RadialShape, LWHShape {
      * @param cutoffAngle the angular span of the sector, in radians ({@code [0, 2π]})
      */
     public static void calculateDisc(List<Vector3d> points, double radius, double density, double cutoffAngle) {
-        if (points instanceof ArrayList<?> al)
-            al.ensureCapacity(points.size() + (int) (cutoffAngle * radius * radius / (density * density * Math.PI)));
-        for (double subRadius = density; subRadius < radius; subRadius += density) {
-            calculateCircle(points, subRadius, density, cutoffAngle);
+        points.add(new Vector3d(0, 0, 0));
+        int rings = segments(radius, density);
+        for (int i = 1; i <= rings; i++) {
+            calculateCircle(points, radius * i / rings, density, cutoffAngle);
         }
-        calculateCircle(points, radius, density, cutoffAngle);
     }
 
     /**
@@ -118,15 +124,17 @@ public class Circle extends AbstractShape implements RadialShape, LWHShape {
         int discStart = points.size();
         calculateDisc(points, radius, density, cutoffAngle);
         int discEnd = points.size();
+        // Wall: copies of the outer ring between the two discs. The discs already contain the rings at the
+        // bottom and top, so the base ring is only generated to be copied, and is then removed.
+        calculateCircle(points, radius, density, cutoffAngle);
+        int ringEnd = points.size();
+        fillVertically(points, discEnd, height, density, false);
+        points.subList(discEnd, ringEnd).clear();
         // Top disc - copy bottom disc at height
         for (int i = discStart; i < discEnd; i++) {
             Vector3d v = points.get(i);
             points.add(new Vector3d(v.x, height, v.z));
         }
-        // Wall
-        int wallStart = points.size();
-        calculateCircle(points, radius, density, cutoffAngle);
-        fillVertically(points, wallStart, height, density);
     }
 
     // --- Generation methods ---
@@ -160,19 +168,23 @@ public class Circle extends AbstractShape implements RadialShape, LWHShape {
     @Override
     public double computeDensity(SamplingStyle style, int targetPointCount) {
         int count = Math.max(targetPointCount, 1);
+        double arcLength = cutoffAngle * radius;
+        double discArea = cutoffAngle * 0.5 * radius * radius;
         return switch (style) {
             case OUTLINE -> {
-                if (height == 0) yield cutoffAngle * radius / count;
-                double circumference = cutoffAngle * radius;
-                double wallArea = circumference * height;
-                yield Math.sqrt((circumference + wallArea) / count);
+                if (height == 0) yield arcLength / count;
+                // with a height, the outline is the wall
+                yield Math.sqrt(arcLength * height / count);
             }
             case SURFACE -> {
-                double discArea = cutoffAngle * 0.5 * radius * radius;
-                double wallArea = cutoffAngle * radius * height;
-                yield Math.sqrt((discArea + wallArea) / count);
+                if (height == 0) yield Math.sqrt(discArea / count);
+                yield Math.sqrt((2 * discArea + arcLength * height) / count);
             }
-            case FILL -> Math.cbrt(cutoffAngle * 0.5 * radius * radius * height / count);
+            case FILL -> {
+                // a flat circle has no volume: it is filled as a disc
+                if (height == 0) yield Math.sqrt(discArea / count);
+                yield Math.cbrt(discArea * height / count);
+            }
         };
     }
 

@@ -20,14 +20,34 @@ public class Heart extends AbstractShape implements LWHShape {
     }
 
     private static void calculateHeart(List<Vector3d> points, double length, double width, double eccentricity, double density) {
-        double angleStep = 4 / 3.0 * density / (width + length);
+        int steps = Math.max(segments(Math.PI * 2 * (width + length) * 3 / 4, density), 3);
         if (points instanceof ArrayList<?> al)
-            al.ensureCapacity(points.size() + (int) (Math.PI * 2 / angleStep) + 1);
-        for (double theta = 0; theta < Math.PI * 2; theta += angleStep) {
-            double x = width * Math.pow(Math.sin(theta), 3);
-            double y = length * (Math.cos(theta) - 1 / eccentricity * Math.cos(2 * theta) - 1.0 / 6 * Math.cos(3 * theta) - 1.0 / 16 * Math.cos(4 * theta));
-            points.add(new Vector3d(x, 0, y));
+            al.ensureCapacity(points.size() + steps);
+        for (int i = 0; i < steps; i++) {
+            points.add(heartPoint(length, width, eccentricity, Math.PI * 2 * i / steps));
         }
+    }
+
+    /**
+     * @return the point on the heart curve at the given parametric angle
+     */
+    private static Vector3d heartPoint(double length, double width, double eccentricity, double theta) {
+        double x = width * Math.pow(Math.sin(theta), 3);
+        double y = length * (Math.cos(theta) - 1 / eccentricity * Math.cos(2 * theta) - 1.0 / 6 * Math.cos(3 * theta) - 1.0 / 16 * Math.cos(4 * theta));
+        return new Vector3d(x, 0, y);
+    }
+
+    /**
+     * Traces the outline of this heart as a closed polygon.
+     *
+     * @param resolution the number of vertices
+     */
+    List<Vector3d> outlinePolygon(int resolution) {
+        List<Vector3d> polygon = new ArrayList<>(resolution);
+        for (int i = 0; i < resolution; i++) {
+            polygon.add(heartPoint(length / 2, width / 2, eccentricity, Math.PI * 2 * i / resolution));
+        }
+        return polygon;
     }
 
     @Override
@@ -44,7 +64,18 @@ public class Heart extends AbstractShape implements LWHShape {
 
     @Override
     public double computeDensity(SamplingStyle style, int targetPointCount) {
-        return 0.25; // No good formula available
+        int count = Math.max(targetPointCount, 1);
+        return switch (style) {
+            // the outline is stepped by angle, at this many points per unit of density
+            case OUTLINE -> Math.PI * 2 * (width / 2 + length / 2) * 3 / 4 / count;
+            case SURFACE, FILL -> {
+                // The surface is drawn as concentric outlines 1.5 densities apart, shrinking to nothing,
+                // so on average each has half the points of the outermost one.
+                double outline = Math.PI * 2 * (width / 2 + length / 2) * 3 / 4;
+                double rings = Math.min(width, length) / 1.5;
+                yield Math.sqrt(outline * rings / 2 / count);
+            }
+        };
     }
 
     @Override

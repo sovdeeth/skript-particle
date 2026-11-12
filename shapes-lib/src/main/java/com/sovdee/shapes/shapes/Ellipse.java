@@ -21,6 +21,8 @@ import java.util.List;
  */
 public class Ellipse extends AbstractShape implements LWHShape {
 
+    private static final double FULL_CIRCLE = 2 * Math.PI;
+
     private double xRadius;
     private double zRadius;
     private double height;
@@ -57,9 +59,11 @@ public class Ellipse extends AbstractShape implements LWHShape {
 
     // --- Static calculation methods ---
 
-    private static double ellipseCircumference(double r1, double r2) {
+    static double ellipseCircumference(double r1, double r2) {
         double a = Math.max(r1, r2);
         double b = Math.min(r1, r2);
+        if (!(a + b > 0))
+            return 0;
         double h = Math.pow(a - b, 2) / Math.pow(a + b, 2);
         return Math.PI * (a + b) * (1 + 3 * h / (10 + Math.sqrt(4 - 3 * h)));
     }
@@ -80,14 +84,16 @@ public class Ellipse extends AbstractShape implements LWHShape {
      */
     public static void calculateEllipse(List<Vector3d> points, double r1, double r2, double density, double cutoffAngle) {
         double circumference = ellipseCircumference(r1, r2);
+        boolean full = cutoffAngle >= FULL_CIRCLE - Shape.EPSILON;
 
-        int steps = (int) Math.round(circumference / density);
+        long steps = Math.round(circumference / density);
         if (points instanceof ArrayList<?> al)
-            al.ensureCapacity(points.size() + (int) (steps * cutoffAngle / (2 * Math.PI)) + 1);
+            al.ensureCapacity(points.size() + (int) Math.min(steps * Math.min(cutoffAngle, FULL_CIRCLE) / FULL_CIRCLE + 1, Integer.MAX_VALUE - 8));
         double theta = 0;
         double angleStep = 0;
-        for (int i = 0; i < steps; i++) {
-            if (theta > cutoffAngle) {
+        for (long i = 0; i < steps; i++) {
+            // a full ellipse stops before wrapping onto its first point; an arc stops once past its end
+            if (full ? theta >= FULL_CIRCLE - angleStep / 2 : theta > cutoffAngle) {
                 break;
             }
             points.add(new Vector3d(r1 * Math.cos(theta), 0, r2 * Math.sin(theta)));
@@ -110,12 +116,10 @@ public class Ellipse extends AbstractShape implements LWHShape {
      * @param cutoffAngle  angular cutoff applied to each ring ({@code 2π} for a full disc)
      */
     public static void calculateEllipticalDisc(List<Vector3d> points, double r1, double r2, double density, double cutoffAngle) {
-        if (points instanceof ArrayList<?> al)
-            al.ensureCapacity(points.size() + (int) (cutoffAngle * r1 * r2 / (density * density)));
-        int steps = (int) Math.round(Math.max(r1, r2) / density);
-        double r;
-        for (double i = 1; i <= steps; i += 1) {
-            r = i / steps;
+        points.add(new Vector3d(0, 0, 0));
+        int rings = segments(Math.max(r1, r2), density);
+        for (int i = 1; i <= rings; i++) {
+            double r = (double) i / rings;
             calculateEllipse(points, r1 * r, r2 * r, density, cutoffAngle);
         }
     }
@@ -140,15 +144,17 @@ public class Ellipse extends AbstractShape implements LWHShape {
         int discStart = points.size();
         calculateEllipticalDisc(points, r1, r2, density, cutoffAngle);
         int discEnd = points.size();
+        // Wall: copies of the outer ring between the two discs. The discs already contain the rings at the
+        // bottom and top, so the base ring is only generated to be copied, and is then removed.
+        calculateEllipse(points, r1, r2, density, cutoffAngle);
+        int ringEnd = points.size();
+        fillVertically(points, discEnd, height, density, false);
+        points.subList(discEnd, ringEnd).clear();
         // Top disc - copy bottom disc at height
         for (int i = discStart; i < discEnd; i++) {
             Vector3d v = points.get(i);
             points.add(new Vector3d(v.x, height, v.z));
         }
-        // Wall
-        int wallStart = points.size();
-        calculateEllipse(points, r1, r2, density, cutoffAngle);
-        fillVertically(points, wallStart, height, density);
     }
 
     // --- Generation methods ---
@@ -220,13 +226,24 @@ public class Ellipse extends AbstractShape implements LWHShape {
     @Override
     public double computeDensity(SamplingStyle style, int targetPointCount) {
         int count = Math.max(targetPointCount, 1);
+        double fraction = Math.min(cutoffAngle, FULL_CIRCLE) / FULL_CIRCLE;
+        double arcLength = ellipseCircumference(xRadius, zRadius) * fraction;
+        double discArea = Math.PI * xRadius * zRadius * fraction;
         return switch (style) {
             case OUTLINE -> {
-                double h = (xRadius - zRadius) * (xRadius - zRadius) / ((xRadius + zRadius) + (xRadius + zRadius));
-                double circumference = Math.PI * (xRadius + zRadius) * (1 + (3 * h / (10 + Math.sqrt(4 - 3 * h))));
-                yield circumference / count;
+                if (height == 0) yield arcLength / count;
+                // with a height, the outline is the wall
+                yield Math.sqrt(arcLength * height / count);
             }
-            case SURFACE, FILL -> Math.sqrt((Math.PI * xRadius * zRadius) / count);
+            case SURFACE -> {
+                if (height == 0) yield Math.sqrt(discArea / count);
+                yield Math.sqrt((2 * discArea + arcLength * height) / count);
+            }
+            case FILL -> {
+                // a flat ellipse has no volume: it is filled as a disc
+                if (height == 0) yield Math.sqrt(discArea / count);
+                yield Math.cbrt(discArea * height / count);
+            }
         };
     }
 

@@ -34,12 +34,14 @@ public class Helix extends AbstractShape implements RadialShape, LWHShape {
         if (radius <= 0 || height <= 0) {
             return;
         }
-        double loops = Math.abs(height / slope);
-        double length = slope * slope + radius * radius;
-        double stepSize = density / length;
+        // the helix is parameterised by its angle: one radian covers this much arc length
+        double totalAngle = Math.abs(height / slope);
+        double lengthPerRadian = Math.sqrt(slope * slope + radius * radius);
+        int steps = segments(totalAngle * lengthPerRadian, density);
         if (points instanceof ArrayList<?> al)
-            al.ensureCapacity(points.size() + (int) (loops / stepSize) + 1);
-        for (double t = 0; t < loops; t += stepSize) {
+            al.ensureCapacity(points.size() + steps + 1);
+        for (int i = 0; i <= steps; i++) {
+            double t = totalAngle * i / steps;
             double x = radius * Math.cos(direction * t);
             double z = radius * Math.sin(direction * t);
             points.add(new Vector3d(x, t * slope, z));
@@ -53,17 +55,24 @@ public class Helix extends AbstractShape implements RadialShape, LWHShape {
 
     @Override
     public void generateSurface(List<Vector3d> points, double density) {
-        for (double r = radius; r > 0; r -= density) {
-            calculateHelix(points, r, height, slope, direction, density);
+        int rings = segments(radius, density);
+        for (int i = rings; i >= 1; i--) {
+            calculateHelix(points, radius * i / rings, height, slope, direction, density);
         }
     }
 
     @Override
     public double computeDensity(SamplingStyle style, int targetPointCount) {
         int count = Math.max(targetPointCount, 1);
+        double totalAngle = height / slope;
         return switch (style) {
-            case OUTLINE -> Math.sqrt(slope * slope + radius * radius) * (height / slope) / count;
-            case FILL, SURFACE -> Math.sqrt(slope * slope + radius * radius * (height / slope) / count);
+            case OUTLINE -> Math.sqrt(slope * slope + radius * radius) * totalAngle / count;
+            case FILL, SURFACE -> {
+                // area of the helicoid swept between the axis and the helix
+                double area = totalAngle * 0.5 * (radius * Math.sqrt(slope * slope + radius * radius)
+                        + slope * slope * Math.log((radius + Math.sqrt(slope * slope + radius * radius)) / slope));
+                yield Math.sqrt(area / count);
+            }
         };
     }
 

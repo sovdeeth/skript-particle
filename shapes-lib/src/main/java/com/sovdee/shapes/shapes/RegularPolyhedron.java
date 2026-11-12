@@ -1,6 +1,7 @@
 package com.sovdee.shapes.shapes;
 
 import com.sovdee.shapes.sampling.SamplingStyle;
+import com.sovdee.shapes.util.VectorUtil;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
 
@@ -56,7 +57,10 @@ public class RegularPolyhedron extends AbstractShape implements RadialShape, Pol
             new Quaterniond(0.8090169943749475, 0.0, -0.46708617948135794, 0.35682208977309),
             new Quaterniond(-0.5, -0.5, -0.6454972243679027, 0.288675134594813),
             new Quaterniond(0.0, 0.0, 0.9341723589627157, 0.35682208977309),
-            new Quaterniond(-0.8090169943749475, 0.5, 0.110264089708268, -0.288675134594813)
+            new Quaterniond(-0.8090169943749475, 0.5, 0.110264089708268, -0.288675134594813),
+            new Quaterniond(0.8090169943749477, 0.0, 0.11026408970826802, 0.5773502691896257),
+            new Quaterniond(-0.8090169943749475, -0.5, -0.110264089708268, 0.288675134594813),
+            new Quaterniond(0.8090169943749475, -0.5, 0.110264089708268, -0.288675134594813)
     };
     private static final Quaterniond[] DODECAHEDRON_FACES = {
             new Quaterniond(0.0, 0.3090169943749475, 0.0, 0.9510565162951536),
@@ -138,12 +142,14 @@ public class RegularPolyhedron extends AbstractShape implements RadialShape, Pol
      */
     @Override
     public void generateFilled(List<Vector3d> points, double density) {
-        double step = radius / Math.round(radius / density);
         Quaterniond[] rotations = getFaceRotations();
         if (rotations == null) return;
-        for (double i = radius; i > 0; i -= step) {
-            generatePolyhedron(points, rotations, i, density, SamplingStyle.SURFACE);
+        // concentric shells from the surface inwards, plus the center
+        int shells = segments(radius, density);
+        for (int shell = shells; shell >= 1; shell--) {
+            generatePolyhedron(points, rotations, radius * shell / shells, density, SamplingStyle.SURFACE);
         }
+        points.add(new Vector3d(0, 0, 0));
     }
 
     private Quaterniond[] getFaceRotations() {
@@ -172,6 +178,7 @@ public class RegularPolyhedron extends AbstractShape implements RadialShape, Pol
             case 20 -> sideLength * ICOSA_INSC;
             default -> 1;
         };
+        int polyhedronStart = points.size();
         Vector3d offset = new Vector3d(0, inscribedRadius, 0);
         double faceRadius = sideLength / (2 * Math.sin(Math.PI / sides));
         for (Quaterniond rotation : rotations) {
@@ -184,20 +191,35 @@ public class RegularPolyhedron extends AbstractShape implements RadialShape, Pol
                 rotation.transform(points.get(i).add(offset));
             }
         }
+        // neighbouring faces share their edges, so those points were generated once per face
+        VectorUtil.removeDuplicates(points, polyhedronStart, Math.min(density, radius) / 100);
     }
 
     private void generateFaceSurface(List<Vector3d> points, int sides, double radius, double density) {
-        double apothem = radius * Math.cos(Math.PI / sides);
-        double radiusStep = radius / Math.round(apothem / density);
-        for (double subRadius = radius; subRadius > 0; subRadius -= radiusStep) {
-            RegularPolygon.calculateRegularPolygon(points, subRadius, 2 * Math.PI / sides, density, false);
-        }
-        points.add(new Vector3d(0, 0, 0));
+        // a non-wireframe polygon is already filled from its outline down to its center
+        RegularPolygon.calculateRegularPolygon(points, radius, 2 * Math.PI / sides, density, false);
     }
 
     @Override
     public double computeDensity(SamplingStyle style, int targetPointCount) {
-        return 0.25; // No good formula available
+        int count = Math.max(targetPointCount, 1);
+        int faceSides = faces == 12 ? 5 : 3;
+        double sideLength = getSideLength();
+        double inscribedRadius = sideLength * switch (faces) {
+            case 4 -> TETRA_INSC;
+            case 8 -> OCTA_INSC;
+            case 12 -> DODECA_INSC;
+            case 20 -> ICOSA_INSC;
+            default -> 0;
+        };
+        // every edge is shared by exactly two faces
+        int edges = faces * faceSides / 2;
+        double faceArea = faceSides * sideLength * sideLength / (4 * Math.tan(Math.PI / faceSides));
+        return switch (style) {
+            case OUTLINE -> edges * sideLength / count;
+            case SURFACE -> Math.sqrt(faces * faceArea / count);
+            case FILL -> Math.cbrt(faces * faceArea * inscribedRadius / 3 / count);
+        };
     }
 
     @Override

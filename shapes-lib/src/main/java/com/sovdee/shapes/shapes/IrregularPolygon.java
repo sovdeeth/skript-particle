@@ -47,16 +47,23 @@ public class IrregularPolygon extends AbstractShape implements LWHShape {
     @Override
     public void generateOutline(List<Vector3d> points, double density) {
         int start = points.size();
-        Line.connectPoints(points, vertices, density);
-        Line.calculateLine(points, vertices.get(0), vertices.get(vertices.size() - 1), density);
+        // one edge per vertex, each without its end point, so every vertex appears exactly once
+        int count = vertices.size();
+        for (int i = 0; i < count; i++) {
+            Line.calculateLine(points, vertices.get(i), vertices.get((i + 1) % count), density, false);
+        }
         if (height != 0) {
             int end = points.size();
             for (int i = start; i < end; i++) {
                 Vector3d v = points.get(i);
                 points.add(new Vector3d(v.x, height, v.z));
             }
+            // vertical edges, without the vertices that the two outlines already contain
+            int layers = segments(height, density);
             for (Vector3d v : vertices) {
-                Line.calculateLine(points, v, new Vector3d(v.x, height, v.z), density);
+                for (int layer = 1; layer < layers; layer++) {
+                    points.add(new Vector3d(v.x, height * layer / layers, v.z));
+                }
             }
         }
     }
@@ -65,13 +72,13 @@ public class IrregularPolygon extends AbstractShape implements LWHShape {
     public double computeDensity(SamplingStyle style, int targetPointCount) {
         int count = Math.max(targetPointCount, 1);
         double perimeter = 0;
-        for (int i = 0; i < vertices.size() - 1; i++) {
-            perimeter += vertices.get(i).distance(vertices.get(i + 1));
+        for (int i = 0; i < vertices.size(); i++) {
+            perimeter += vertices.get(i).distance(vertices.get((i + 1) % vertices.size()));
         }
-        perimeter += vertices.get(0).distance(vertices.get(vertices.size() - 1));
-        perimeter *= 2;
-        perimeter += vertices.size() * height;
-        return perimeter / count;
+        if (height == 0)
+            return perimeter / count;
+        // both outlines plus one vertical edge per vertex
+        return (2 * perimeter + vertices.size() * height) / count;
     }
 
     @Override

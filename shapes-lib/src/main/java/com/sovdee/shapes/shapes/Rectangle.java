@@ -26,11 +26,12 @@ public class Rectangle extends AbstractShape implements LWHShape {
     private Plane plane;
     private double halfLength;
     private double halfWidth;
-    private double lengthStep = 1.0;
-    private double widthStep = 1.0;
     private Vector3d centerOffset = new Vector3d(0, 0, 0);
     private Supplier<Vector3d> cornerASupplier;
     private Supplier<Vector3d> cornerBSupplier;
+    // the corners last read from the suppliers, to detect when they move
+    private Vector3d lastCornerA;
+    private Vector3d lastCornerB;
 
     /**
      * Constructs a rectangle centred at the local origin with explicit dimensions.
@@ -61,13 +62,7 @@ public class Rectangle extends AbstractShape implements LWHShape {
         if (cornerA.equals(cornerB))
             throw new IllegalArgumentException("Corners cannot be the same.");
         this.plane = plane;
-        setLengthWidth(cornerA, cornerB);
-        centerOffset = new Vector3d(cornerB).add(cornerA).mul(0.5);
-        switch (plane) {
-            case XZ -> centerOffset.y = 0;
-            case XY -> centerOffset.z = 0;
-            case YZ -> centerOffset.x = 0;
-        }
+        setCorners(cornerA, cornerB);
     }
 
     /**
@@ -84,10 +79,40 @@ public class Rectangle extends AbstractShape implements LWHShape {
         this.plane = plane;
         this.cornerASupplier = cornerA;
         this.cornerBSupplier = cornerB;
-        Vector3d a = cornerA.get();
-        Vector3d b = cornerB.get();
-        setLengthWidth(a, b);
+        this.lastCornerA = new Vector3d(cornerA.get());
+        this.lastCornerB = new Vector3d(cornerB.get());
+        setCorners(lastCornerA, lastCornerB);
         setDynamic(true);
+    }
+
+    /**
+     * Sizes the rectangle to span the two corners, and centers it between them within its plane.
+     */
+    private void setCorners(Vector3d cornerA, Vector3d cornerB) {
+        setLengthWidth(cornerA, cornerB);
+        centerOffset = new Vector3d(cornerB).add(cornerA).mul(0.5);
+        switch (plane) {
+            case XZ -> centerOffset.y = 0;
+            case XY -> centerOffset.z = 0;
+            case YZ -> centerOffset.x = 0;
+        }
+    }
+
+    /**
+     * Re-reads the corner suppliers, if any, and invalidates the rectangle when a corner moved.
+     */
+    @Override
+    public void refresh() {
+        if (cornerASupplier == null || cornerBSupplier == null)
+            return;
+        Vector3d a = cornerASupplier.get();
+        Vector3d b = cornerBSupplier.get();
+        if (a.equals(lastCornerA) && b.equals(lastCornerB))
+            return;
+        lastCornerA = new Vector3d(a);
+        lastCornerB = new Vector3d(b);
+        setCorners(a, b);
+        invalidate();
     }
 
     private void setLengthWidth(Vector3d cornerA, Vector3d cornerB) {
@@ -99,8 +124,8 @@ public class Rectangle extends AbstractShape implements LWHShape {
             case XZ, YZ -> Math.abs(cornerA.z - cornerB.z);
             case XY -> Math.abs(cornerA.y - cornerB.y);
         };
-        this.halfWidth = Math.abs(width) / 2;
-        this.halfLength = Math.abs(length) / 2;
+        this.halfWidth = Math.max(Math.abs(width) / 2, Shape.EPSILON);
+        this.halfLength = Math.max(Math.abs(length) / 2, Shape.EPSILON);
     }
 
     private Vector3d vectorFromLengthWidth(double length, double width) {
@@ -111,57 +136,30 @@ public class Rectangle extends AbstractShape implements LWHShape {
         };
     }
 
-    private void calculateSteps(double density) {
-        lengthStep = 2 * halfWidth / Math.round(2 * halfWidth / density);
-        widthStep = 2 * halfLength / Math.round(2 * halfLength / density);
-    }
-
-    /**
-     * Called before each sampling pass. If dynamic corner suppliers are present, refreshes the
-     * half-length and half-width from their current values. Then pre-computes the per-axis step
-     * sizes used by {@link #generateOutline} and {@link #generateSurface}.
-     *
-     * @param density the target spacing between sampled points
-     */
-    @Override
-    public void beforeSampling(double density) {
-        if (cornerASupplier != null && cornerBSupplier != null) {
-            Vector3d a = cornerASupplier.get();
-            Vector3d b = cornerBSupplier.get();
-            setLengthWidth(a, b);
-        }
-        calculateSteps(density);
-    }
-
-    /**
-     * Called after each sampling pass to apply the centre offset to all generated points.
-     * This translates the points (which are generated relative to the local origin) into the
-     * correct world position when the rectangle was constructed from corners.
-     *
-     * @param points the list of sampled points to translate in-place
-     */
-    @Override
-    public void afterSampling(List<Vector3d> points) {
-        points.forEach(vector -> vector.add(centerOffset));
-    }
-
     /**
      * Generates outline (perimeter) points for the rectangle. Points are placed along all four
-     * edges at the step sizes calculated in {@link #beforeSampling}.
+     * edges, roughly {@code density} apart.
      *
      * @param points  the list to which outline points are appended
      * @param density the approximate spacing between consecutive points (used implicitly via step sizes)
      */
     @Override
     public void generateOutline(List<Vector3d> points, double density) {
-        for (double l = -halfLength + widthStep; l < halfLength; l += widthStep) {
+        int start = points.size();
+        int lengthSegments = segments(2 * halfLength, density);
+        int widthSegments = segments(2 * halfWidth, density);
+        // the two sides along the width include the corners; the other two only add the points between them
+        for (int i = 1; i < lengthSegments; i++) {
+            double l = -halfLength + 2 * halfLength * i / lengthSegments;
             points.add(vectorFromLengthWidth(l, -halfWidth));
             points.add(vectorFromLengthWidth(l, halfWidth));
         }
-        for (double w = -halfWidth; w <= halfWidth; w += lengthStep) {
+        for (int i = 0; i <= widthSegments; i++) {
+            double w = -halfWidth + 2 * halfWidth * i / widthSegments;
             points.add(vectorFromLengthWidth(-halfLength, w));
             points.add(vectorFromLengthWidth(halfLength, w));
         }
+        applyCenterOffset(points, start);
     }
 
     /**
@@ -173,10 +171,27 @@ public class Rectangle extends AbstractShape implements LWHShape {
      */
     @Override
     public void generateSurface(List<Vector3d> points, double density) {
-        for (double w = -halfWidth; w <= halfWidth; w += lengthStep) {
-            for (double l = -halfLength; l <= halfLength; l += widthStep) {
+        int start = points.size();
+        int lengthSegments = segments(2 * halfLength, density);
+        int widthSegments = segments(2 * halfWidth, density);
+        for (int i = 0; i <= widthSegments; i++) {
+            double w = -halfWidth + 2 * halfWidth * i / widthSegments;
+            for (int j = 0; j <= lengthSegments; j++) {
+                double l = -halfLength + 2 * halfLength * j / lengthSegments;
                 points.add(vectorFromLengthWidth(l, w));
             }
+        }
+        applyCenterOffset(points, start);
+    }
+
+    /**
+     * Moves the points generated since {@code start} from around the origin to around the rectangle's center.
+     */
+    private void applyCenterOffset(List<Vector3d> points, int start) {
+        if (centerOffset.x == 0 && centerOffset.y == 0 && centerOffset.z == 0)
+            return;
+        for (int i = start; i < points.size(); i++) {
+            points.get(i).add(centerOffset);
         }
     }
 
@@ -308,13 +323,13 @@ public class Rectangle extends AbstractShape implements LWHShape {
      */
     @Override
     public Shape clone() {
-        Rectangle rectangle;
-        if (cornerASupplier != null && cornerBSupplier != null) {
-            rectangle = new Rectangle(cornerASupplier, cornerBSupplier, plane);
-        } else {
-            rectangle = new Rectangle(this.getLength(), this.getWidth(), plane);
-        }
+        // copy the current state rather than re-reading the suppliers, so the copy has identical geometry
+        Rectangle rectangle = new Rectangle(this.getLength(), this.getWidth(), plane);
         rectangle.centerOffset = new Vector3d(this.centerOffset);
+        rectangle.cornerASupplier = this.cornerASupplier;
+        rectangle.cornerBSupplier = this.cornerBSupplier;
+        rectangle.lastCornerA = this.lastCornerA;
+        rectangle.lastCornerB = this.lastCornerB;
         return this.copyTo(rectangle);
     }
 

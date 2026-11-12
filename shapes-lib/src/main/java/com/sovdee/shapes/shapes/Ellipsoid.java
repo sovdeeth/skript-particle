@@ -115,7 +115,10 @@ public class Ellipsoid extends AbstractShape implements LWHShape {
     private void generateEllipsoid(List<Vector3d> points, List<Vector3d> ellipse, double radius, double density) {
         for (int i = 0; i < Math.ceil(ellipse.size() / 4.0); i++) {
             double y = ellipse.get(i).y;
-            double theta = Math.asin(y / (yRadius * radius));
+            // the equator is added once, after the loop
+            if (Math.abs(y) <= EPSILON)
+                continue;
+            double theta = Math.asin(Math.clamp(y / (yRadius * radius), -1.0, 1.0));
             // Add ring points, setting y in-place and adding mirrored copies
             int ringStart = points.size();
             Ellipse.calculateEllipse(points, radius * xRadius * Math.cos(theta), radius * zRadius * Math.cos(theta), density, 2 * Math.PI);
@@ -135,15 +138,9 @@ public class Ellipsoid extends AbstractShape implements LWHShape {
     public double computeDensity(SamplingStyle style, int targetPointCount) {
         int count = Math.max(targetPointCount, 1);
         return switch (style) {
-            case OUTLINE -> {
-                double h = (xRadius - yRadius) * (xRadius - yRadius) / ((xRadius + yRadius) + (xRadius + yRadius));
-                double circumferenceXY = Math.PI * (xRadius + yRadius) * (1 + (3 * h / (10 + Math.sqrt(4 - 3 * h))));
-                h = (xRadius - zRadius) * (xRadius - zRadius) / ((xRadius + zRadius) + (xRadius + zRadius));
-                double circumferenceXZ = Math.PI * (xRadius + zRadius) * (1 + (3 * h / (10 + Math.sqrt(4 - 3 * h))));
-                h = (yRadius - zRadius) * (yRadius - zRadius) / ((yRadius + zRadius) + (yRadius + zRadius));
-                double circumferenceYZ = Math.PI * (yRadius + zRadius) * (1 + (3 * h / (10 + Math.sqrt(4 - 3 * h))));
-                yield (circumferenceXY + circumferenceXZ + circumferenceYZ) / count;
-            }
+            case OUTLINE -> (Ellipse.ellipseCircumference(xRadius, yRadius)
+                    + Ellipse.ellipseCircumference(xRadius, zRadius)
+                    + Ellipse.ellipseCircumference(yRadius, zRadius)) / count;
             case SURFACE -> {
                 double surfaceArea = 4 * Math.PI * Math.pow((Math.pow(xRadius * yRadius, 1.6) + Math.pow(xRadius * zRadius, 1.6) + Math.pow(zRadius * yRadius, 1.6)) / 3, 1 / 1.6);
                 yield Math.sqrt(surfaceArea / count);

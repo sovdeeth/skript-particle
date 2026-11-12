@@ -6,7 +6,6 @@ import com.sovdee.shapes.sampling.SamplingStyle;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -220,8 +219,7 @@ public abstract class AbstractShape implements Shape {
      * layer spacing is as uniform as possible.
      * <p>
      * The method reads all points in the range {@code [startIndex, points.size())} at the time
-     * of the call and appends copies translated by {@code y = density, 2*density, ...} up to
-     * (but not including) {@code height}.
+     * of the call and appends copies of them in evenly spaced layers, up to and including {@code height}.
      *
      * @param points     the list of points to extend; the existing slice is treated as the base layer
      * @param startIndex the index of the first point in the base layer
@@ -229,17 +227,42 @@ public abstract class AbstractShape implements Shape {
      * @param density    the desired spacing between vertical layers
      */
     protected static void fillVertically(List<Vector3d> points, int startIndex, double height, double density) {
-        int baseSize = points.size() - startIndex;
-        double heightStep = height / Math.round(height / density);
-        if (points instanceof ArrayList<?> pointList) {
-            pointList.ensureCapacity(points.size() + baseSize * (int) ((height - heightStep) / heightStep + 1));
-        }
-        for (double y = heightStep; y < height; y += heightStep) {
-            for (int i = startIndex; i < startIndex + baseSize; i++) {
+        fillVertically(points, startIndex, height, density, true);
+    }
+
+    /**
+     * Duplicates an existing slice of {@code points} in evenly spaced layers along the y-axis.
+     * The existing slice is the base layer and is not duplicated.
+     *
+     * @param points     the list of points to extend
+     * @param startIndex the index of the first point in the base layer
+     * @param height     the total vertical extent to fill; must be positive
+     * @param density    the desired spacing between vertical layers
+     * @param includeTop whether to add a layer at exactly {@code height}. Pass {@code false} when the top
+     *                   is generated separately, to avoid duplicate points.
+     */
+    protected static void fillVertically(List<Vector3d> points, int startIndex, double height, double density, boolean includeTop) {
+        int end = points.size();
+        int layers = segments(height, density);
+        int last = includeTop ? layers : layers - 1;
+        for (int layer = 1; layer <= last; layer++) {
+            double y = height * layer / layers;
+            for (int i = startIndex; i < end; i++) {
                 Vector3d v = points.get(i);
-                points.add(new Vector3d(v.x, y, v.z));
+                points.add(new Vector3d(v.x, v.y + y, v.z));
             }
         }
+    }
+
+    /**
+     * Returns how many segments of roughly {@code density} length fit into {@code length}.
+     * Always at least 1, so that dividing a length by the result is safe.
+     */
+    protected static int segments(double length, double density) {
+        double count = Math.round(Math.abs(length) / density);
+        if (!(count >= 1)) // also covers NaN
+            return 1;
+        return (int) Math.min(count, Integer.MAX_VALUE - 1);
     }
 
     // --- Replication ---

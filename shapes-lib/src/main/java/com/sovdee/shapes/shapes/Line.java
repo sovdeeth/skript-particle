@@ -19,6 +19,9 @@ import java.util.function.Supplier;
  */
 public class Line extends AbstractShape implements LWHShape {
 
+    // The current endpoints. For a dynamic line these are the values last read from the suppliers.
+    private final Vector3d start = new Vector3d();
+    private final Vector3d end = new Vector3d();
     private Supplier<Vector3d> startSupplier;
     private Supplier<Vector3d> endSupplier;
 
@@ -43,10 +46,8 @@ public class Line extends AbstractShape implements LWHShape {
         super();
         if (start.equals(end))
             throw new IllegalArgumentException("Start and end locations cannot be the same.");
-        final Vector3d s = new Vector3d(start);
-        final Vector3d e = new Vector3d(end);
-        this.startSupplier = () -> new Vector3d(s);
-        this.endSupplier = () -> new Vector3d(e);
+        this.start.set(start);
+        this.end.set(end);
     }
 
     /**
@@ -61,7 +62,21 @@ public class Line extends AbstractShape implements LWHShape {
         super();
         this.startSupplier = start;
         this.endSupplier = end;
+        this.start.set(start.get());
+        this.end.set(end.get());
         setDynamic(true);
+    }
+
+    /**
+     * Copies the endpoints and suppliers of another line without re-reading the suppliers,
+     * so the copy describes exactly the same geometry as the original.
+     */
+    private Line(Line line) {
+        super();
+        this.start.set(line.start);
+        this.end.set(line.end);
+        this.startSupplier = line.startSupplier;
+        this.endSupplier = line.endSupplier;
     }
 
     /**
@@ -69,18 +84,34 @@ public class Line extends AbstractShape implements LWHShape {
      * adding them directly to the provided list.
      */
     public static void calculateLine(List<Vector3d> points, Vector3d start, Vector3d end, double density) {
-        Vector3d direction = new Vector3d(end).sub(start);
-        double length = direction.length();
-        double step = length / Math.round(length / density);
-        direction.normalize().mul(step);
+        calculateLine(points, start, end, density, true);
+    }
 
-        Vector3d current = new Vector3d(start);
-        int count = (int) (length / step);
+    /**
+     * Appends evenly spaced points along the segment from {@code start} to {@code end}, roughly
+     * {@code density} apart. The start point is always included.
+     *
+     * @param points     the list to append the generated points to
+     * @param start      the start of the segment
+     * @param end        the end of the segment
+     * @param density    the desired spacing between consecutive points
+     * @param includeEnd whether to include the end point. Pass {@code false} when chaining segments,
+     *                   so shared corners are not generated twice.
+     */
+    public static void calculateLine(List<Vector3d> points, Vector3d start, Vector3d end, double density, boolean includeEnd) {
+        double length = start.distance(end);
+        if (!(length > 0)) {
+            // a degenerate segment is a single point
+            if (includeEnd)
+                points.add(new Vector3d(start));
+            return;
+        }
+        int segments = segments(length, density);
+        int last = includeEnd ? segments : segments - 1;
         if (points instanceof ArrayList<?> al)
-            al.ensureCapacity(points.size() + count + 1);
-        for (int i = 0; i <= count; i++) {
-            points.add(new Vector3d(current));
-            current.add(direction);
+            al.ensureCapacity(points.size() + last + 1);
+        for (int i = 0; i <= last; i++) {
+            points.add(new Vector3d(start).lerp(end, (double) i / segments));
         }
     }
 
@@ -89,14 +120,35 @@ public class Line extends AbstractShape implements LWHShape {
      * directly to the provided list. Duplicate points at junctions are removed.
      */
     public static void connectPoints(List<Vector3d> result, List<Vector3d> controlPoints, double density) {
-        for (int i = 0; i < controlPoints.size() - 1; i++) {
-            int before = result.size();
-            calculateLine(result, controlPoints.get(i), controlPoints.get(i + 1), density);
-            // Remove duplicate junction point (first point of non-first segments)
-            if (i > 0 && result.size() > before) {
-                result.remove(before);
+        int last = controlPoints.size() - 2;
+        for (int i = 0; i <= last; i++) {
+            // only the final segment contributes its end point, so each junction appears once
+            calculateLine(result, controlPoints.get(i), controlPoints.get(i + 1), density, i == last);
+        }
+    }
+
+    /**
+     * Re-reads the endpoint suppliers, if any, and invalidates the line when an endpoint moved.
+     */
+    @Override
+    public void refresh() {
+        boolean changed = false;
+        if (startSupplier != null) {
+            Vector3d value = startSupplier.get();
+            if (!start.equals(value)) {
+                start.set(value);
+                changed = true;
             }
         }
+        if (endSupplier != null) {
+            Vector3d value = endSupplier.get();
+            if (!end.equals(value)) {
+                end.set(value);
+                changed = true;
+            }
+        }
+        if (changed)
+            invalidate();
     }
 
     /**
@@ -108,7 +160,7 @@ public class Line extends AbstractShape implements LWHShape {
      */
     @Override
     public void generateOutline(List<Vector3d> points, double density) {
-        calculateLine(points, getStart(), getEnd(), density);
+        calculateLine(points, start, end, density);
     }
 
     /**
@@ -117,7 +169,8 @@ public class Line extends AbstractShape implements LWHShape {
      * @return the start endpoint vector (a fresh copy for dynamic lines)
      */
     public Vector3d getStart() {
-        return startSupplier.get();
+        refresh();
+        return new Vector3d(start);
     }
 
     /**
@@ -127,8 +180,9 @@ public class Line extends AbstractShape implements LWHShape {
      * @param start the new start position
      */
     public void setStart(Vector3d start) {
-        final Vector3d s = new Vector3d(start);
-        this.startSupplier = () -> new Vector3d(s);
+        this.start.set(start);
+        this.startSupplier = null;
+        setDynamic(endSupplier != null);
         invalidate();
     }
 
@@ -138,7 +192,8 @@ public class Line extends AbstractShape implements LWHShape {
      * @return the end endpoint vector (a fresh copy for dynamic lines)
      */
     public Vector3d getEnd() {
-        return endSupplier.get();
+        refresh();
+        return new Vector3d(end);
     }
 
     /**
@@ -148,8 +203,9 @@ public class Line extends AbstractShape implements LWHShape {
      * @param end the new end position
      */
     public void setEnd(Vector3d end) {
-        final Vector3d e = new Vector3d(end);
-        this.endSupplier = () -> new Vector3d(e);
+        this.end.set(end);
+        this.endSupplier = null;
+        setDynamic(startSupplier != null);
         invalidate();
     }
 
@@ -171,6 +227,7 @@ public class Line extends AbstractShape implements LWHShape {
      */
     public void setStartSupplier(Supplier<Vector3d> startSupplier) {
         this.startSupplier = startSupplier;
+        setDynamic(startSupplier != null || endSupplier != null);
     }
 
     /**
@@ -191,6 +248,7 @@ public class Line extends AbstractShape implements LWHShape {
      */
     public void setEndSupplier(Supplier<Vector3d> endSupplier) {
         this.endSupplier = endSupplier;
+        setDynamic(startSupplier != null || endSupplier != null);
     }
 
     /**
@@ -203,8 +261,9 @@ public class Line extends AbstractShape implements LWHShape {
      */
     @Override
     public double computeDensity(SamplingStyle style, int targetPointCount) {
-        int count = Math.max(targetPointCount, 1);
-        return new Vector3d(getEnd()).sub(getStart()).length() / count;
+        // n segments produce n + 1 points
+        int segments = Math.max(targetPointCount - 1, 1);
+        return getLength() / segments;
     }
 
     /**
@@ -236,7 +295,8 @@ public class Line extends AbstractShape implements LWHShape {
      */
     @Override
     public double getLength() {
-        return new Vector3d(getStart()).sub(getEnd()).length();
+        refresh();
+        return start.distance(end);
     }
 
     /**
@@ -249,10 +309,10 @@ public class Line extends AbstractShape implements LWHShape {
     public void setLength(double length) {
         length = Math.max(length, Shape.EPSILON);
         Vector3d start = getStart();
-        Vector3d end = getEnd();
-        Vector3d direction = new Vector3d(end).sub(start).normalize();
-        Vector3d newEnd = new Vector3d(start).add(direction.mul(length));
-        setEnd(newEnd);
+        Vector3d direction = getEnd().sub(start);
+        if (direction.lengthSquared() == 0)
+            return;
+        setEnd(start.add(direction.normalize().mul(length)));
     }
 
     /**
@@ -295,13 +355,7 @@ public class Line extends AbstractShape implements LWHShape {
      */
     @Override
     public Shape clone() {
-        Line clone;
-        if (isDynamic()) {
-            clone = new Line(this.startSupplier, this.endSupplier);
-        } else {
-            clone = new Line(getStart(), getEnd());
-        }
-        return this.copyTo(clone);
+        return this.copyTo(new Line(this));
     }
 
     /**

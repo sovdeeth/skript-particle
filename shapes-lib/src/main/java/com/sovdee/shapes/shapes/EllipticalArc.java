@@ -1,5 +1,6 @@
 package com.sovdee.shapes.shapes;
 
+import com.sovdee.shapes.sampling.SamplingStyle;
 import org.joml.Vector3d;
 
 import java.util.List;
@@ -18,6 +19,14 @@ public class EllipticalArc extends Ellipse implements CutoffShape {
     @Override
     public void generateSurface(List<Vector3d> points, double density) {
         generateFilled(points, density);
+    }
+
+    /**
+     * The surface of an arc is drawn filled, so its density is estimated the same way.
+     */
+    @Override
+    public double computeDensity(SamplingStyle style, int targetPointCount) {
+        return super.computeDensity(style == SamplingStyle.SURFACE ? SamplingStyle.FILL : style, targetPointCount);
     }
 
     @Override

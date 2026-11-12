@@ -3,7 +3,9 @@ package com.sovdee.shapes.util;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Helper methods for JOML Vector3d operations that mirror Bukkit Vector convenience methods.
@@ -44,4 +46,27 @@ public class VectorUtil {
         }
     }
 
+
+    /**
+     * Removes points from index {@code fromIndex} onwards that lie within roughly {@code precision} of an
+     * earlier point in that same range. The first occurrence is kept, and the order of the remaining points
+     * is unchanged.
+     *
+     * @param points    the list to remove duplicates from
+     * @param fromIndex the index of the first point to consider
+     * @param precision the size of the grid that points are snapped to when compared
+     */
+    public static void removeDuplicates(List<Vector3d> points, int fromIndex, double precision) {
+        Set<Key> seen = new HashSet<>();
+        int write = fromIndex;
+        for (int read = fromIndex; read < points.size(); read++) {
+            Vector3d v = points.get(read);
+            Key key = new Key(Math.round(v.x / precision), Math.round(v.y / precision), Math.round(v.z / precision));
+            if (seen.add(key))
+                points.set(write++, v);
+        }
+        points.subList(write, points.size()).clear();
+    }
+
+    private record Key(long x, long y, long z) {}
 }

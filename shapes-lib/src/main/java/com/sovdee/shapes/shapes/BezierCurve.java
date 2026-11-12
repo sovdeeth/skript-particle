@@ -47,8 +47,29 @@ public class BezierCurve extends AbstractShape {
         List<Vector3d> pts = controlPointsSupplier.get();
         if (pts.size() < 2)
             throw new IllegalArgumentException("A bezier curve must have at least 2 control points.");
-        this.controlPoints = new ArrayList<>(pts);
+        this.controlPoints = copyOf(pts);
         setDynamic(true);
+    }
+
+    private static List<Vector3d> copyOf(List<Vector3d> points) {
+        List<Vector3d> copy = new ArrayList<>(points.size());
+        for (Vector3d point : points)
+            copy.add(new Vector3d(point));
+        return copy;
+    }
+
+    /**
+     * Re-reads the control point supplier, if any, and invalidates the curve when a control point moved.
+     */
+    @Override
+    public void refresh() {
+        if (controlPointsSupplier == null)
+            return;
+        List<Vector3d> pts = controlPointsSupplier.get();
+        if (pts.size() < 2 || pts.equals(controlPoints))
+            return;
+        this.controlPoints = copyOf(pts);
+        invalidate();
     }
 
     /**
@@ -77,18 +98,15 @@ public class BezierCurve extends AbstractShape {
      */
     @Override
     public void generateOutline(List<Vector3d> points, double density) {
-        if (controlPointsSupplier != null) {
-            List<Vector3d> pts = controlPointsSupplier.get();
-            this.controlPoints = new ArrayList<>(pts);
-        }
-        int steps = (int) (estimateLength() / density);
+        int steps = segments(estimateLength(), density);
         int n = controlPoints.size();
 
         Vector3d[] temp = new Vector3d[n];
         for (int i = 0; i < n; i++)
             temp[i] = new Vector3d();
 
-        for (int step = 0; step < steps; step++) {
+        // include both ends of the curve
+        for (int step = 0; step <= steps; step++) {
             double t = (double) step / steps;
             double nt = 1 - t;
             for (int i = 0; i < n; i++)
@@ -121,8 +139,9 @@ public class BezierCurve extends AbstractShape {
      */
     @Override
     public double computeDensity(SamplingStyle style, int targetPointCount) {
-        int count = Math.max(targetPointCount, 1);
-        return estimateLength() / count;
+        // n segments produce n + 1 points
+        int segments = Math.max(targetPointCount - 1, 1);
+        return estimateLength() / segments;
     }
 
     /**
@@ -198,12 +217,9 @@ public class BezierCurve extends AbstractShape {
      */
     @Override
     public Shape clone() {
-        BezierCurve clone;
-        if (controlPointsSupplier != null) {
-            clone = new BezierCurve(controlPointsSupplier);
-        } else {
-            clone = new BezierCurve(this);
-        }
+        // copy the current control points rather than re-reading the supplier, so the copy has identical geometry
+        BezierCurve clone = new BezierCurve(this);
+        clone.controlPointsSupplier = this.controlPointsSupplier;
         return this.copyTo(clone);
     }
 }
