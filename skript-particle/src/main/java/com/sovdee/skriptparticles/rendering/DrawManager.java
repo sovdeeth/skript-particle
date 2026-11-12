@@ -1,6 +1,5 @@
 package com.sovdee.skriptparticles.rendering;
 
-import com.sovdee.shapes.modifiers.ShapeBounds;
 import com.sovdee.shapes.sampling.RenderPass;
 import com.sovdee.shapes.sampling.ShapeRenderer;
 import com.sovdee.shapes.shapes.Shape;
@@ -106,7 +105,7 @@ public class DrawManager {
 
         // Filter recipients once instead of per point. A player can see the shape if they are within
         // particle range of any part of it, so the range is extended by how far the shape reaches.
-        double reach = ShapeBounds.compute(points).maxDistance();
+        double reach = shape.getPointSampler().boundsOf(points).maxDistance();
         List<Player> filteredRecipients = filterRecipients(recipients, center, particle.force(), reach);
 
         if (!filteredRecipients.isEmpty()) {

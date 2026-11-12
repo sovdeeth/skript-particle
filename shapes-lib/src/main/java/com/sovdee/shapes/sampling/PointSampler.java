@@ -2,6 +2,7 @@ package com.sovdee.shapes.sampling;
 
 import com.sovdee.shapes.modifiers.PointContext;
 import com.sovdee.shapes.modifiers.PointModifier;
+import com.sovdee.shapes.modifiers.ShapeBounds;
 import com.sovdee.shapes.shapes.Shape;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
@@ -180,6 +181,17 @@ public interface PointSampler extends Cloneable {
      * @param renderer    client-provided renderer
      */
     <Context extends PointContext>  void render(Shape shape, Quaterniond orientation, ShapeRenderer<Context> renderer);
+
+    /**
+     * Returns the bounds of a point list, typically one returned by {@link #getPoints}.
+     * Implementations may cache the bounds of their own cached points; the default computes them.
+     *
+     * @param points the points to bound
+     * @return the bounds of the points
+     */
+    default ShapeBounds boundsOf(List<Vector3d> points) {
+        return ShapeBounds.compute(points);
+    }
 
     /**
      * Collects and prepares this sampler's render modifiers against the given (already sampled)

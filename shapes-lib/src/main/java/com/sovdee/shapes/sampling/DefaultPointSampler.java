@@ -42,7 +42,7 @@ public class DefaultPointSampler implements PointSampler {
     private int maxPoints = DEFAULT_MAX_POINTS;
     private boolean densityExplicit = false;
     private Comparator<Vector3d> ordering;
-    private UUID uuid;
+    private volatile UUID uuid;
     private DrawContext drawContext;
     private List<PointModifier<?>> modifiers = new ArrayList<>();
 
@@ -53,10 +53,9 @@ public class DefaultPointSampler implements PointSampler {
      * Creates a new {@code DefaultPointSampler} with default settings:
      * {@link SamplingStyle#OUTLINE}, density {@code 0.25}, max points {@code 10 000},
      * no ordering, no modifiers, and an empty point cache.
-     * A fresh {@link UUID} is assigned at construction time.
+     * The sampler's {@link UUID} is generated when it is first requested.
      */
     public DefaultPointSampler() {
-        this.uuid = UUID.randomUUID();
     }
 
 
@@ -313,6 +312,18 @@ public class DefaultPointSampler implements PointSampler {
         preparePass(shape, points, renderer.getContext()).renderBatch(points, renderer);
     }
 
+    /**
+     * Returns the bounds of the given points. When they are this sampler's cached points, the bounds are
+     * computed once and reused for as long as the cache is valid.
+     */
+    @Override
+    public ShapeBounds boundsOf(List<Vector3d> points) {
+        Cache cache = this.cache;
+        if (cache != null && cache.points == points)
+            return cache.bounds();
+        return ShapeBounds.compute(points);
+    }
+
     @Override
     public <Context extends PointContext> RenderPass<Context> preparePass(Shape shape, List<Vector3d> points, Context context) {
         // Collect render modifiers (everything that is not a pre-render/geometry modifier)
@@ -332,7 +343,7 @@ public class DefaultPointSampler implements PointSampler {
         }
 
         // Prepare render modifiers against the full point set
-        ShapeBounds bounds = ShapeBounds.compute(points);
+        ShapeBounds bounds = boundsOf(points);
         context.bounds = bounds;
         context.totalPoints = points.size();
         context.shape = shape;
@@ -459,13 +470,21 @@ public class DefaultPointSampler implements PointSampler {
 
     /**
      * Returns the unique identifier for this sampler instance.
-     * The UUID is generated at construction time and never changes.
+     * The UUID is generated on first request and never changes afterwards.
      *
      * @return the immutable UUID of this sampler
      */
     @Override
     public UUID getUUID() {
-        return uuid;
+        UUID id = uuid;
+        if (id == null) {
+            synchronized (this) {
+                id = uuid;
+                if (id == null)
+                    uuid = id = UUID.randomUUID();
+            }
+        }
+        return id;
     }
 
     /**
@@ -547,7 +566,7 @@ public class DefaultPointSampler implements PointSampler {
      * Returns a deep copy of this sampler. The clone has an empty point cache
      * (forcing a fresh sample on first use) but otherwise copies all configuration,
      * including a deep-copied modifier list and a copied {@link DrawContext}.
-     * The UUID is <em>not</em> shared; the clone inherits the same UUID value.
+     * The UUID is <em>not</em> shared: the clone gets its own when it is first requested.
      *
      * @return a new {@code DefaultPointSampler} with the same configuration
      */
@@ -557,7 +576,7 @@ public class DefaultPointSampler implements PointSampler {
             DefaultPointSampler copy = (DefaultPointSampler) super.clone();
             // The copy is its own sampler, but keeps the cached points: they are immutable, and stay valid for
             // as long as the copy's configuration and shape match the ones they were sampled with.
-            copy.uuid = UUID.randomUUID();
+            copy.uuid = null;
             // maxPoints and densityExplicit are primitives — copied by super.clone()
             if (drawContext != null)
                 copy.drawContext = drawContext.copy();
@@ -579,7 +598,26 @@ public class DefaultPointSampler implements PointSampler {
     /**
      * @param density the density the points were actually sampled at
      */
-    private record Cache(CacheState state, List<Vector3d> points, double density) {}
+    private static final class Cache {
+        final CacheState state;
+        final List<Vector3d> points;
+        final double density;
+        // computed on first use; the points never change, so neither do their bounds
+        private volatile ShapeBounds bounds;
+
+        Cache(CacheState state, List<Vector3d> points, double density) {
+            this.state = state;
+            this.points = points;
+            this.density = density;
+        }
+
+        ShapeBounds bounds() {
+            ShapeBounds b = bounds;
+            if (b == null)
+                bounds = b = ShapeBounds.compute(points);
+            return b;
+        }
+    }
 
     private record Sample(List<Vector3d> points, double density) {}
 

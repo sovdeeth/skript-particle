@@ -14,6 +14,7 @@ import org.joml.Vector3d;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -160,6 +161,61 @@ class PointCapAndCacheTest {
         DefaultPointSampler sampler = new DefaultPointSampler();
         sampler.setMaxPoints(5_000_000);
         assertEquals(DefaultPointSampler.HARD_MAX_POINTS, sampler.getMaxPoints());
+    }
+
+    // ----- UUID -----
+
+    @Test
+    void uuid_isStableAndNotSharedWithClones() {
+        DefaultPointSampler sampler = new DefaultPointSampler();
+        UUID id = sampler.getUUID();
+        assertNotNull(id);
+        assertSame(id, sampler.getUUID(), "a sampler's UUID must not change once generated");
+
+        DefaultPointSampler copy = sampler.clone();
+        assertNotEquals(id, copy.getUUID(), "a clone must get its own UUID");
+        assertSame(copy.getUUID(), copy.getUUID());
+        assertSame(id, sampler.getUUID(), "cloning must not change the original's UUID");
+    }
+
+    @Test
+    void uuid_isUniqueWhenClonedBeforeFirstUse() {
+        DefaultPointSampler sampler = new DefaultPointSampler();
+        DefaultPointSampler copy = sampler.clone();
+        assertNotEquals(sampler.getUUID(), copy.getUUID());
+    }
+
+    // ----- Bounds -----
+
+    @Test
+    void boundsOf_reusesTheBoundsOfCachedPoints() {
+        Circle circle = new Circle(2.0);
+        PointSampler sampler = circle.getPointSampler();
+        List<Vector3d> points = sampler.getPoints(circle);
+        ShapeBounds bounds = sampler.boundsOf(points);
+        assertSame(bounds, sampler.boundsOf(points), "bounds of the cached points should be computed once");
+        assertSame(bounds, sampler.boundsOf(sampler.getPoints(circle)), "a cache hit should reuse the bounds");
+        assertEquals(2.0, bounds.maxDistance(), 1e-9);
+    }
+
+    @Test
+    void boundsOf_computesOtherPointLists() {
+        Circle circle = new Circle(2.0);
+        PointSampler sampler = circle.getPointSampler();
+        sampler.getPoints(circle);
+        assertEquals(5.0, sampler.boundsOf(List.of(new Vector3d(5, 0, 0))).maxDistance(), 1e-12,
+                "a list that isn't the cached one must not be given the cached bounds");
+    }
+
+    @Test
+    void boundsOf_followsTheCacheWhenItIsInvalidated() {
+        Circle circle = new Circle(2.0);
+        PointSampler sampler = circle.getPointSampler();
+        ShapeBounds before = sampler.boundsOf(sampler.getPoints(circle));
+        circle.setRadius(4.0);
+        ShapeBounds after = sampler.boundsOf(sampler.getPoints(circle));
+        assertNotSame(before, after);
+        assertEquals(4.0, after.maxDistance(), 1e-9);
     }
 
     // ----- Particle count -----
