@@ -2,7 +2,7 @@ package com.sovdee.skriptparticles.skript.shapes.properties;
 
 import ch.njol.skript.classes.Changer.ChangeMode;
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Expression;
@@ -21,18 +21,16 @@ import java.util.List;
 
 @Name("Shape Modifiers")
 @Description({
-        "The modifiers of a shape. Modifiers transform geometry (taper, twist, wave) or render properties (gradients, motion).",
+        "The modifiers of a shape. Modifiers transform geometry (scale, twist, wave) or render properties (gradients, motion).",
         "Geometry modifiers are cached; render modifiers run per-frame.",
         "SET replaces all modifiers. ADD appends a modifier. REMOVE removes a specific modifier. DELETE/RESET clears all modifiers."
 })
-@Examples({
-        "add taper from 1 to 0 to modifiers of {_shape}",
-        "add a twist of 90 degrees to modifiers of {_helix}",
-        "add gradient from red to blue along the y axis to modifiers of {_shape}",
-        "add motion modifier counterclockwise to modifiers of {_shape}",
-        "set modifiers of {_shape} to gradient from red to blue along the y axis",
-        "delete modifiers of {_shape}",
-})
+@Example("add scale from 1 to 0 to modifiers of {_shape}")
+@Example("add a twist of 90 degrees to modifiers of {_helix}")
+@Example("add gradient from red to blue along the y axis to modifiers of {_shape}")
+@Example("add motion modifier counterclockwise to modifiers of {_shape}")
+@Example("set modifiers of {_shape} to gradient from red to blue along the y axis")
+@Example("delete modifiers of {_shape}")
 @Since("2.0.0")
 @SuppressWarnings("rawtypes")
 public class ExprShapeModifiers extends SimpleExpression<PointModifier> {

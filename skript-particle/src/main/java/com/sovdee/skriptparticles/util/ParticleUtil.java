@@ -7,6 +7,7 @@ import org.bukkit.Particle;
 import org.bukkit.Particle.DustOptions;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
+import org.skriptlang.skript.bukkit.particles.particleeffects.ParticleEffect;
 
 import java.util.Collection;
 import java.util.List;
@@ -16,8 +17,11 @@ public class ParticleUtil {
     private static final ParticleBuilder X_AXIS = new ParticleBuilder(Particle.DUST).data(new DustOptions(DyeColor.RED.getColor(), 0.5f));
     private static final ParticleBuilder Z_AXIS = new ParticleBuilder(Particle.DUST).data(new DustOptions(DyeColor.BLUE.getColor(), 0.5f));
 
-    public static com.sovdee.skriptparticles.rendering.Particle getDefaultParticle() {
-        return new com.sovdee.skriptparticles.rendering.Particle(Particle.FLAME).count(1).extra(0);
+    public static ParticleEffect getDefaultParticle() {
+        ParticleEffect particle = ParticleEffect.of(Particle.FLAME).count(1);
+        // not chained: ParticleEffect only returns itself from speed() on Skript 2.17+
+        particle.speed(0);
+        return particle;
     }
 
     public static void drawAxes(Location location, Quaternion orientation, Collection<Player> recipients) {

@@ -2,7 +2,7 @@ package com.sovdee.skriptparticles.skript.shaders.expressions.point;
 
 import ch.njol.skript.classes.Changer.ChangeMode;
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import com.sovdee.skriptparticles.rendering.ParticleRenderContext;
@@ -13,10 +13,12 @@ import org.skriptlang.skript.registration.SyntaxRegistry;
 
 @Name("Point Visibility")
 @Description("Whether the current point should be rendered. Set to false to skip rendering this point entirely.")
-@Examples({
-        "set point's visibility to false",
-        "if point's visibility is true:",
-})
+@Example("""
+    set {_shader} to a custom shader:
+        set point's visibility to false
+        if point's visibility is true:
+            add 1 to point's y
+    """)
 @Since("2.0.0")
 public class ExprPointVisible extends PointPropertyExpression<Boolean> {
 

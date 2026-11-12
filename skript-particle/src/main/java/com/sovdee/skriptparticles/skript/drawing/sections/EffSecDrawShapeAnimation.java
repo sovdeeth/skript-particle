@@ -1,7 +1,7 @@
 package com.sovdee.skriptparticles.skript.drawing.sections;
 
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Expression;
@@ -23,9 +23,18 @@ import java.util.Collection;
 
 @Name("Draw Shape Animation")
 @Description({
+        "Draws the given shapes a few points at a time, spread evenly over the given time span, so the shape appears to be traced out.",
+        "Points are drawn in the shape's animation order (see Shape Animation Ordering). Each point is drawn once; " +
+                "the shape does not stay visible after the animation unless you draw it again.",
+        "As with the draw shape section, the code inside the section runs once for each shape before drawing begins, " +
+                "and changes to `drawn shape` only affect this drawing. Animations are always drawn asynchronously, " +
+                "so the code after this section runs right away, before the animation is finished."
 })
-@Examples({
-})
+@Example("draw an animation of the shape of a circle with radius 3 at player over 2 seconds")
+@Example("""
+    draw an animated shape of {_helix} at player to all players over 1 second:
+        set particle of drawn shape to red dust particle
+    """)
 @Since("1.2.0")
 public class EffSecDrawShapeAnimation extends DrawShapeEffectSection {
 

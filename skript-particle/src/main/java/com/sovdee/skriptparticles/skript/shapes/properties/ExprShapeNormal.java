@@ -2,7 +2,7 @@ package com.sovdee.skriptparticles.skript.shapes.properties;
 
 import ch.njol.skript.classes.Changer.ChangeMode;
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.expressions.base.PropertyExpression;
@@ -22,11 +22,11 @@ import org.jetbrains.annotations.Nullable;
                 "If the shape is rotated, this will be the vector that is pointing up after the rotation. Treat it as what the shape thinks is \"up\".",
         "Changing this will rotate the shape accordingly. Resetting or deleting it will set it back to the default orientation.",
 })
-@Examples({
-        "set {_shape}'s normal vector to vector(1, 0, 0)",
-        "set {_v} to {_shape}'s normal",
-        "reset {_shape}'s normal vector"
-})
+@Example("""
+    set {_shape}'s normal vector to vector(1, 0, 0)
+    set {_v} to {_shape}'s normal
+    reset {_shape}'s normal vector
+    """)
 @Since("1.0.0")
 public class ExprShapeNormal extends SimplePropertyExpression<Shape, Vector> {
 

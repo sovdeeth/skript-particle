@@ -5,6 +5,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 import java.util.List;
+import org.skriptlang.skript.bukkit.particles.particleeffects.ParticleEffect;
 
 /**
  * A {@link ShapeRenderer} that spawns particles through the Bukkit API, one call per player per point.
@@ -27,7 +28,7 @@ public class BukkitParticleRenderer implements ShapeRenderer<ParticleRenderConte
      * @param recipients the players to spawn the particles for, already filtered by distance
      * @param baseLoc    the location the points are relative to
      */
-    public BukkitParticleRenderer(Particle particle, List<Player> recipients, Location baseLoc) {
+    public BukkitParticleRenderer(ParticleEffect particle, List<Player> recipients, Location baseLoc) {
         this.recipients = recipients;
         this.baseX = baseLoc.getX();
         this.baseY = baseLoc.getY();
@@ -36,7 +37,7 @@ public class BukkitParticleRenderer implements ShapeRenderer<ParticleRenderConte
         this.defaultOffsetY = particle.offsetY();
         this.defaultOffsetZ = particle.offsetZ();
         this.defaultCount = particle.count();
-        this.speed = particle.extra();
+        this.speed = particle.speedX();
         this.force = particle.force();
         this.context = new ParticleRenderContext(particle);
     }

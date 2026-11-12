@@ -3,7 +3,6 @@ package com.sovdee.skriptparticles.skript.shapes;
 import ch.njol.skript.classes.ClassInfo;
 import ch.njol.skript.classes.Parser;
 import ch.njol.skript.lang.ParseContext;
-import ch.njol.skript.lang.util.ContextlessEvent;
 import ch.njol.skript.registrations.Classes;
 import com.sovdee.shapes.sampling.SamplingStyle;
 import com.sovdee.shapes.shapes.CutoffShape;
@@ -14,7 +13,6 @@ import com.sovdee.shapes.shapes.Shape;
 import com.sovdee.skriptparticles.skript.shapes.expressions.ExprCurrentShape;
 import com.sovdee.skriptparticles.skript.shapes.expressions.ExprRotation;
 import com.sovdee.skriptparticles.skript.shapes.expressions.ExprShapeCopy;
-import com.sovdee.skriptparticles.rendering.Particle;
 import com.sovdee.skriptparticles.skript.shapes.constructors.ExprArc;
 import com.sovdee.skriptparticles.skript.shapes.constructors.ExprBezierCurve;
 import com.sovdee.skriptparticles.skript.shapes.constructors.ExprCircle;
@@ -48,20 +46,19 @@ import com.sovdee.skriptparticles.skript.shapes.properties.ExprShapeParticleDens
 import com.sovdee.skriptparticles.skript.shapes.properties.ExprShapePoints;
 import com.sovdee.skriptparticles.skript.shapes.properties.ExprShapeRadius;
 import com.sovdee.skriptparticles.skript.shapes.properties.ExprShapeRelativeAxis;
-import com.sovdee.skriptparticles.skript.shapes.properties.ExprShapeScale;
 import com.sovdee.skriptparticles.skript.shapes.properties.ExprShapeSideLength;
 import com.sovdee.skriptparticles.skript.shapes.properties.ExprShapeSides;
-import com.sovdee.skriptparticles.skript.shapes.properties.ExprShapeStyle;
 import com.sovdee.skriptparticles.skript.shapes.properties.ExprStarPoints;
 import com.sovdee.skriptparticles.skript.shapes.properties.ExprStarRadii;
 import com.sovdee.skriptparticles.util.Quaternion;
+import org.bukkit.boss.BarStyle;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 import org.skriptlang.skript.addon.AddonModule;
 import org.skriptlang.skript.addon.HierarchicalAddonModule;
 import org.skriptlang.skript.addon.SkriptAddon;
-import org.skriptlang.skript.bukkit.particles.particleeffects.ParticleEffect;
 import org.skriptlang.skript.lang.converter.Converters;
+import org.skriptlang.skript.lang.properties.Property;
 
 public class ShapesModule extends HierarchicalAddonModule {
 
@@ -71,12 +68,11 @@ public class ShapesModule extends HierarchicalAddonModule {
 
     @Override
     protected void initSelf(SkriptAddon addon) {
-        registerShapeTypes();
-        registerParticleTypes();
+        registerShapeTypes(addon);
         registerRotationTypes();
     }
 
-    private static void registerShapeTypes() {
+    private static void registerShapeTypes(SkriptAddon addon) {
         Classes.registerClass(new ClassInfo<>(Shape.class, "shape")
                 .user("shapes?")
                 .name("Shape")
@@ -92,6 +88,8 @@ public class ShapesModule extends HierarchicalAddonModule {
                     public String toVariableNameString(Shape shape) { return "shape:" + shape.getPointSampler().getUUID(); }
                 })
                 .cloner(Shape::clone)
+                .property(Property.STYLE, ShapeProperties.STYLE_DESCRIPTION, addon, new ShapeProperties.StyleHandler())
+                .property(Property.SCALE, ShapeProperties.SCALE_DESCRIPTION, addon, new ShapeProperties.ScaleHandler())
         );
 
         Classes.registerClass(new ClassInfo<>(RadialShape.class, "radialshape")
@@ -192,31 +190,11 @@ public class ShapesModule extends HierarchicalAddonModule {
                     @Override
                     public String toVariableNameString(SamplingStyle style) { return "shapestyle:" + style; }
                 }));
-    }
 
-    private static void registerParticleTypes() {
-        Classes.registerClass(new ClassInfo<>(Particle.class, "customparticle")
-                .user("customparticles?")
-                .name("Custom Particle")
-                .description("Represents a particle with extra shape-related data.")
-                .parser(new Parser<>() {
-                    @Nullable
-                    @Override
-                    public Particle parse(String s, ParseContext context) { return null; }
-                    @Override
-                    public boolean canParse(ParseContext context) { return false; }
-                    @Override
-                    public String toString(Particle particle, int flags) {
-                        return particle.toString(ContextlessEvent.get(), false);
-                    }
-                    @Override
-                    public String toVariableNameString(Particle particle) {
-                        return "particle:" + toString(particle, 0);
-                    }
-                })
-        );
-
-        Converters.registerConverter(ParticleEffect.class, Particle.class, Particle::of);
+        // 'solid' is also a boss bar style, and when the type being changed isn't known until runtime
+        // (e.g. 'set style of {_shape} to solid') Skript may parse the literal as the boss bar style
+        Converters.registerConverter(BarStyle.class, SamplingStyle.class,
+                style -> style == BarStyle.SOLID ? SamplingStyle.FILL : null);
     }
 
     private static void registerRotationTypes() {
@@ -252,8 +230,6 @@ public class ShapesModule extends HierarchicalAddonModule {
                 // shape property expressions
                 ExprShapeRadius::register,
                 ExprShapeParticle::register,
-                ExprShapeStyle::register,
-                ExprShapeScale::register,
                 ExprShapeOffset::register,
                 ExprShapeOrientation::register,
                 ExprShapeNormal::register,

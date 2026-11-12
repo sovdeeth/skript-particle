@@ -16,14 +16,14 @@ import java.util.logging.Logger;
  * central hub for registering the Skript addon, loading all element classes, and providing
  * static logging helpers.
  * <br>
- * On enable, the plugin verifies that Skript 2.15.0 or later is present, registers itself as a
+ * On enable, the plugin verifies that Skript 2.16.0 or later is present, registers itself as a
  * {@link SkriptAddon}, loads all Skript element classes under {@code com.sovdee.skriptparticles},
  * and initialises bStats metrics. The static {@link #getInstance()} and {@link #getAddonInstance()}
  * accessors return {@code null} after the plugin has been disabled.
  */
 public class SkriptParticle extends JavaPlugin {
 
-    private static final Version MINIMUM_SKRIPT_VERSION = new Version(2, 15, 0);
+    private static final Version MINIMUM_SKRIPT_VERSION = new Version(2, 16, 0);
 
     private static SkriptParticle instance;
     private static SkriptAddon addon;
@@ -113,7 +113,7 @@ public class SkriptParticle extends JavaPlugin {
     }
 
     /**
-     * Initialises the plugin. Verifies that Skript 2.15.0+ is present, registers the
+     * Initialises the plugin. Verifies that Skript 2.16.0+ is present, registers the
      * {@link SkriptAddon}, loads all element classes under {@code com.sovdee.skriptparticles},
      * and starts bStats metrics collection. Disables the plugin if any prerequisite check fails.
      */

@@ -2,7 +2,7 @@ package com.sovdee.skriptparticles.skript.shapes.properties;
 
 import ch.njol.skript.classes.Changer.ChangeMode;
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.expressions.base.PropertyExpression;
@@ -19,11 +19,11 @@ import org.jetbrains.annotations.Nullable;
         "Note that custom polygons will return their side count, but will not be affected by this expression. ",
         "Polyhedrons will return their face count, and can only be set to 4, 8, 12, or 20."
 })
-@Examples({
-        "set sides of {_shape} to 5",
-        "set {_shape}'s side count to 6",
-        "send sides of {_shape}"
-})
+@Example("set sides of {_shape} to 5")
+@Example("""
+    set {_shape}'s side count to 6
+    send sides of {_shape}
+    """)
 @Since("1.0.0")
 public class ExprShapeSides extends SimplePropertyExpression<PolyShape, Integer> {
 

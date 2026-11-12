@@ -1,7 +1,7 @@
 package com.sovdee.skriptparticles.skript.shaders.expressions.point;
 
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import com.sovdee.skriptparticles.rendering.ParticleRenderContext;
@@ -12,7 +12,10 @@ import org.skriptlang.skript.registration.SyntaxRegistry;
 
 @Name("Point Count")
 @Description("The total number of points being drawn this pass. Read-only.")
-@Examples("set {_t} to point's index / point count")
+@Example("""
+    set {_shader} to a custom shader:
+        set {_t} to point's index / point count
+    """)
 @Since("2.0.0")
 public class ExprPointCount extends PointPropertyExpression<Number> {
 

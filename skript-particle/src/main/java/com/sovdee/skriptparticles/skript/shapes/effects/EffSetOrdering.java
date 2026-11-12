@@ -1,7 +1,7 @@
 package com.sovdee.skriptparticles.skript.shapes.effects;
 
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Effect;
@@ -26,9 +26,7 @@ import java.util.Comparator;
         "Controls the order in which the draw animation effect will draw points. Currently WIP, only supports 2 special orderings.",
         "lowest-to-highest, which draws from -x -y -z to x y z, and the reverse."
 })
-@Examples(
-        "set the animation order of {_circle} to lowest-to-highest"
-)
+@Example("set the animation order of {_circle} to lowest-to-highest")
 @Since("1.3.0")
 public class EffSetOrdering extends Effect {
 

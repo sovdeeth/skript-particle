@@ -1,6 +1,6 @@
 package com.sovdee.skriptparticles.rendering.shaders;
 
-import com.sovdee.skriptparticles.rendering.Particle;
+import com.destroystokyo.paper.ParticleBuilder;
 import com.sovdee.skriptparticles.rendering.ParticleRenderContext;
 import com.sovdee.skriptparticles.rendering.shaders.MotionModifier.Mode;
 import org.joml.Quaterniond;
@@ -17,7 +17,7 @@ class MotionModifierTest {
     private static final double EPS = 1e-5;
 
     private static ParticleRenderContext context() {
-        return new ParticleRenderContext(new Particle(org.bukkit.Particle.FLAME));
+        return new ParticleRenderContext(new ParticleBuilder(org.bukkit.Particle.FLAME));
     }
 
     private static Vector3d motion(MotionModifier modifier, ParticleRenderContext ctx, double x, double y, double z) {

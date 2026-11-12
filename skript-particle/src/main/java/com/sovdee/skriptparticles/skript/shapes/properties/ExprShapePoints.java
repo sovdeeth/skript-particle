@@ -1,7 +1,7 @@
 package com.sovdee.skriptparticles.skript.shapes.properties;
 
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.expressions.base.PropertyExpression;
@@ -23,12 +23,11 @@ import java.util.List;
         "Returns all the vectors from the center of the shape to the various points particles would be drawn at.",
         "If you want the locations of the particles, it's advised use the 'shape locations' expression rather than doing it yourself."
 })
-@Examples({
-        "set {_vectors::*} to points of (circle of radius 10)",
-        "teleport player to (player ~ random element of {_vectors::*})",
-        "",
-        "set {_randomVectorInEllipsoid} to random element of points of (solid ellipsoid of radius 10, 5, 2)"
-})
+@Example("""
+    set {_vectors::*} to points of (circle of radius 10)
+    teleport player to (player ~ random element of {_vectors::*})
+    """)
+@Example("set {_randomVectorInEllipsoid} to random element of points of (solid ellipsoid with radii 10, 5 and 2)")
 @Since("1.0.0")
 public class ExprShapePoints extends PropertyExpression<Shape, Vector> {
 

@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.skriptlang.skript.bukkit.particles.particleeffects.ParticleEffect;
 
 /**
  * Sends particles via NMS packets, using direct ByteBuf pipeline injection for optimal performance.
@@ -151,7 +152,7 @@ public class NMSParticleRenderer implements ShapeRenderer<ParticleRenderContext>
      * @param recipients pre-filtered list of players
      * @param baseLoc    world-space base location for point offsets
      */
-    public NMSParticleRenderer(Particle particle, List<Player> recipients, Location baseLoc) {
+    public NMSParticleRenderer(ParticleEffect particle, List<Player> recipients, Location baseLoc) {
         this.baseX = baseLoc.getX();
         this.baseY = baseLoc.getY();
         this.baseZ = baseLoc.getZ();
@@ -161,7 +162,7 @@ public class NMSParticleRenderer implements ShapeRenderer<ParticleRenderContext>
         this.defaultOffsetY = (float) particle.offsetY();
         this.defaultOffsetZ = (float) particle.offsetZ();
         this.defaultCount = particle.count();
-        this.speed = (float) particle.extra();
+        this.speed = (float) particle.speedX();
         this.defaultOptions = CraftParticle.createParticleParam(particle.particle(), particle.data());
 
         this.serverPlayers = new ArrayList<>(recipients.size());

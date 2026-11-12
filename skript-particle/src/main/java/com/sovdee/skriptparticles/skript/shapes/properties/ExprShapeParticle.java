@@ -2,49 +2,45 @@ package com.sovdee.skriptparticles.skript.shapes.properties;
 
 import ch.njol.skript.classes.Changer.ChangeMode;
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.expressions.base.PropertyExpression;
 import ch.njol.skript.expressions.base.SimplePropertyExpression;
 import com.sovdee.shapes.shapes.Shape;
 import org.skriptlang.skript.registration.SyntaxRegistry;
-import com.sovdee.skriptparticles.rendering.Particle;
 import com.sovdee.skriptparticles.rendering.DrawData;
 import com.sovdee.skriptparticles.util.ParticleUtil;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
+import org.skriptlang.skript.bukkit.particles.particleeffects.ParticleEffect;
 
 @Name("Shape Particle")
 @Description({
         "The particle of a shape. This is the particle that the shape uses to draw itself.",
         "Changing this will change the particle of the shape. Resetting or deleting it will set it back to the default particle (flame).",
-        "You can set the particle to any base or custom particle."
+        "You can set it to any particle Skript can describe, including its data, offset, and extra value.",
+        "Each shape keeps its own copy, so changing the particle of one shape never changes another."
 })
-@Examples({
-        "set {_shape}'s particle to flame particle",
-        "set {_shape}'s particle to 1 of electric spark particle with extra 0",
-        "reset {_shape}'s particle",
-        "",
-        "create a custom soul fire flame particle:",
-            "\tvelocity: inwards",
-            "\textra: 0.5",
-            "\tforce: true",
-        "set {_shape}'s particle to the last created particle"
-})
+@Example("set {_shape}'s particle to flame particle")
+@Example("""
+    set {_shape}'s particle to red dust particle
+    set particle of {_shape} to 5 electric spark particles
+    reset {_shape}'s particle
+    """)
 @Since("1.0.0")
-public class ExprShapeParticle extends SimplePropertyExpression<Shape, Particle> {
+public class ExprShapeParticle extends SimplePropertyExpression<Shape, ParticleEffect> {
 
     public static void register(SyntaxRegistry registry) {
         registry.register(SyntaxRegistry.EXPRESSION,
-                PropertyExpression.infoBuilder(ExprShapeParticle.class, Particle.class, "[custom] particle", "shapes", false)
+                PropertyExpression.infoBuilder(ExprShapeParticle.class, ParticleEffect.class, "[shape] particle", "shapes", false)
                         .supplier(ExprShapeParticle::new)
                         .build());
     }
 
     @Override
     @Nullable
-    public Particle convert(Shape shape) {
+    public ParticleEffect convert(Shape shape) {
         return DrawData.of(shape).getParticle();
     }
 
@@ -52,7 +48,7 @@ public class ExprShapeParticle extends SimplePropertyExpression<Shape, Particle>
     @Nullable
     public Class<?>[] acceptChange(ChangeMode mode) {
         return switch (mode) {
-            case SET, RESET, DELETE -> new Class[]{Particle.class};
+            case SET, RESET, DELETE -> new Class[]{ParticleEffect.class};
             case ADD, REMOVE, REMOVE_ALL -> new Class[0];
         };
     }
@@ -64,7 +60,7 @@ public class ExprShapeParticle extends SimplePropertyExpression<Shape, Particle>
                 if (delta == null || delta.length == 0) return;
                 // each shape gets its own copy, so changing one shape's particle later does not change the others
                 for (Shape shape : getExpr().getArray(event))
-                    DrawData.of(shape).setParticle(((Particle) delta[0]).clone());
+                    DrawData.of(shape).setParticle(((ParticleEffect) delta[0]).copy());
                 break;
             case RESET:
             case DELETE:
@@ -80,13 +76,13 @@ public class ExprShapeParticle extends SimplePropertyExpression<Shape, Particle>
     }
 
     @Override
-    public Class<? extends Particle> getReturnType() {
-        return Particle.class;
+    public Class<? extends ParticleEffect> getReturnType() {
+        return ParticleEffect.class;
     }
 
     @Override
     protected String getPropertyName() {
-        return "custom particle";
+        return "shape particle";
     }
 
 }

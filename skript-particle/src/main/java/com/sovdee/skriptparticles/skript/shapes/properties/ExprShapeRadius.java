@@ -2,7 +2,7 @@ package com.sovdee.skriptparticles.skript.shapes.properties;
 
 import ch.njol.skript.classes.Changer.ChangeMode;
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.expressions.base.PropertyExpression;
@@ -18,11 +18,11 @@ import org.jetbrains.annotations.Nullable;
                 "For shapes like regular polygons, this is the distance from the center to a corner.",
         "Changing this will change the size of the shape. Resetting or deleting it will set it back to the default radius of 1."
 })
-@Examples({
-        "set {_shape}'s radius to 5",
-        "set radius of {_shape} to 10",
-        "reset {_shape}'s radius"
-})
+@Example("""
+    set {_shape}'s radius to 5
+    set radius of {_shape} to 10
+    reset {_shape}'s radius
+    """)
 @Since("1.0.0")
 public class ExprShapeRadius extends SimplePropertyExpression<RadialShape, Number> {
 

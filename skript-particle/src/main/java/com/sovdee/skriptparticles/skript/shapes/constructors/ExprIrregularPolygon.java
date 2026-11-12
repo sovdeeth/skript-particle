@@ -33,7 +33,7 @@ import java.util.List;
     Irregular polygons currently only support the wireframe style. Also, they do not currently support Dynamic Locations like lines and cuboids do.
     """)
 @Example("set {_shape} to a polygon with points vector(0, 0, 0), vector(1, 0, 0), and vector(1, 1, 1)")
-@Example("set {_shape} to a 2d polygon from points vector(0,0,1), vector(1,0,1), vector(0,0,-1) and height 0.5")
+@Example("set {_shape} to a 2d polygon from points vector(0,0,1), vector(1,0,1) and vector(0,0,-1) and height 0.5")
 @Since("1.0.0")
 public class ExprIrregularPolygon extends ShapeConstructorExpression {
 

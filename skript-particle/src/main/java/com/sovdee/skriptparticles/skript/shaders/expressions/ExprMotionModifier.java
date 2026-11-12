@@ -1,7 +1,7 @@
 package com.sovdee.skriptparticles.skript.shaders.expressions;
 
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Expression;
@@ -21,11 +21,9 @@ import org.jetbrains.annotations.Nullable;
         "Modes: clockwise, counterclockwise, inwards, outwards, none.",
         "The velocity is normalized and based on each point's position relative to the shape origin.",
 })
-@Examples({
-        "add motion modifier counterclockwise to modifiers of {_shape}",
-        "add motion modifier inwards to modifiers of {_shape}",
-        "set modifiers of {_shape} to motion modifier clockwise",
-})
+@Example("add motion modifier counterclockwise to modifiers of {_shape}")
+@Example("add motion modifier inwards to modifiers of {_shape}")
+@Example("set modifiers of {_shape} to motion modifier clockwise")
 @Since("2.0.0")
 public class ExprMotionModifier extends SimpleExpression<PointModifier> {
 

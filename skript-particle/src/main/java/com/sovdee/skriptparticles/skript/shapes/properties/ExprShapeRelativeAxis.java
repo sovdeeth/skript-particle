@@ -1,7 +1,7 @@
 package com.sovdee.skriptparticles.skript.shapes.properties;
 
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.expressions.base.PropertyExpression;
@@ -20,14 +20,16 @@ import org.jetbrains.annotations.Nullable;
         "Returns the relative axis of a shape. These are the x, y, z axis of the shape AFTER rotation.",
         "These are meant to be used to work within the rotated frame of reference of the shape."
 })
-@Examples({
-        "set {_vX} to {_shape}'s relative x axis",
-        "set {_vY} to {_shape}'s relative y axis",
-        "set {_vZ} to {_shape}'s relative z axis",
-        "rotate shape {_shape} around {_vy} by 90 degrees",
-        "set {_vY-offset} to {_shape}'s relative y axis ++ {_shape}'s relative z axis",
-        "rotate shape {_shape} around {_vY-offset} by 60 degrees"
-})
+@Example("set {_vX} to {_shape}'s relative x axis")
+@Example("""
+    set {_vY} to {_shape}'s relative y axis
+    set {_vZ} to {_shape}'s relative z axis
+    rotate shape {_shape} around {_vY} by 90 degrees
+    """)
+@Example("""
+    set {_vY-offset} to {_shape}'s relative y axis + {_shape}'s relative z axis
+    rotate shape {_shape} around {_vY-offset} by 60 degrees
+    """)
 @Since("1.0.0")
 public class ExprShapeRelativeAxis extends SimplePropertyExpression<Shape, Vector> {
 

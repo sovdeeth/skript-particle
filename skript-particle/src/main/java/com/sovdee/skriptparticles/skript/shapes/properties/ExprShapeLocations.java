@@ -1,7 +1,7 @@
 package com.sovdee.skriptparticles.skript.shapes.properties;
 
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Expression;
@@ -25,13 +25,14 @@ import java.util.ArrayList;
         "Returns all the locations that particles would be spawned at if the shape was centered at the given location.",
         "If you want the vectors relative to the center of the shape, use the 'shape points' expression."
 })
-@Examples({
-        "set {_locations::*} to point locations of (circle of radius 10) centered at player",
-        "teleport player to random element of {_locations::*}",
-        "",
-        "# drawing the shape yourself: (skbee particle syntax)",
-        "draw 1 red dust at (particle locations of (circle of radius 10) centered at player)"
-})
+@Example("""
+    set {_locations::*} to point locations of (circle of radius 10) centered at player
+    teleport player to random element of {_locations::*}
+    """)
+@Example("""
+    # drawing the shape yourself
+    draw red dust particle at (particle locations of (circle of radius 10) centered at player)
+    """)
 @Since("1.0.0")
 public class ExprShapeLocations extends SimpleExpression<Location> {
 

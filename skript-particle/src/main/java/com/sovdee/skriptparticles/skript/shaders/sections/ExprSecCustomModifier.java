@@ -3,7 +3,7 @@ package com.sovdee.skriptparticles.skript.shaders.sections;
 import ch.njol.skript.Skript;
 import ch.njol.skript.config.SectionNode;
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.expressions.base.SectionExpression;
@@ -34,13 +34,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
         "Warning: the section runs off the main thread and once per point per frame - keep it lightweight and never",
         "access worlds, entities, or other game state from it. Delays are not allowed."
 })
-@Examples({
-        "set {_shader} to a custom point modifier:",
-        "\tadd 0.3 * sin(point's index * 20) to point's y",
-        "\tif mod(point's index, 4) = 0:",
-        "\t\tset point's visibility to false",
-        "add {_shader} to modifiers of {_shape}"
-})
+@Example("""
+    set {_shader} to a custom point modifier:
+        add 0.3 * sin(point's index * 20) to point's y
+        if mod(point's index, 4) = 0:
+            set point's visibility to false
+    add {_shader} to modifiers of {_shape}
+    """)
 @Since("2.0.0")
 public class ExprSecCustomModifier extends SectionExpression<PointModifier> {
 

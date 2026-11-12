@@ -2,6 +2,7 @@ package com.sovdee.skriptparticles.rendering;
 
 import org.bukkit.Color;
 import org.bukkit.Particle.DustOptions;
+import com.destroystokyo.paper.ParticleBuilder;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -15,7 +16,7 @@ class ParticleRenderContextTest {
     @Test
     void startsWithTheDrawnParticle() {
         DustOptions dust = new DustOptions(Color.RED, 2f);
-        Particle particle = new Particle(org.bukkit.Particle.DUST);
+        ParticleBuilder particle = new ParticleBuilder(org.bukkit.Particle.DUST);
         particle.data(dust);
         ParticleRenderContext ctx = new ParticleRenderContext(particle);
         assertEquals(org.bukkit.Particle.DUST, ctx.particle);
@@ -28,7 +29,7 @@ class ParticleRenderContextTest {
 
     @Test
     void isDefaultParticle_tracksChanges() {
-        ParticleRenderContext ctx = new ParticleRenderContext(new Particle(org.bukkit.Particle.FLAME));
+        ParticleRenderContext ctx = new ParticleRenderContext(new ParticleBuilder(org.bukkit.Particle.FLAME));
         ctx.particle = org.bukkit.Particle.DUST;
         assertFalse(ctx.isDefaultParticle());
         ctx.reset();
@@ -39,7 +40,7 @@ class ParticleRenderContextTest {
 
     @Test
     void reset_clearsEverythingAModifierCanWrite() {
-        ParticleRenderContext ctx = new ParticleRenderContext(new Particle(org.bukkit.Particle.FLAME));
+        ParticleRenderContext ctx = new ParticleRenderContext(new ParticleBuilder(org.bukkit.Particle.FLAME));
         ctx.particle = org.bukkit.Particle.DUST;
         ctx.data = new DustOptions(Color.GREEN, 3f);
         ctx.visible = false;

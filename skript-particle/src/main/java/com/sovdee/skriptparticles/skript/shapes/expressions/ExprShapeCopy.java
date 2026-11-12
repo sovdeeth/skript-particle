@@ -1,7 +1,7 @@
 package com.sovdee.skriptparticles.skript.shapes.expressions;
 
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Expression;
@@ -20,10 +20,8 @@ import java.util.List;
 
 @Name("Shape Copy")
 @Description("Returns a copy of the given shape. This is useful if you want a modified version of a shape without changing the original.")
-@Examples({
-        "set {_shape-2} to a copy of {_shape}",
-        "set {_shape} to a copy of a sphere with radius 1"
-})
+@Example("set {_shape-2} to a shape copy of {_shape}")
+@Example("set {_shapes::*} to shape copies of {_shapes::*}")
 @Since("1.0.0")
 public class ExprShapeCopy extends SimpleExpression<Shape> {
 

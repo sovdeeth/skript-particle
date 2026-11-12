@@ -25,9 +25,38 @@ test "cylinder constructor and lwh properties":
 
 test "shape scale property":
 	set {_c} to a circle with radius 1
-	assert shape scale of {_c} is 1 with "default shape scale should be 1"
-	set shape scale of {_c} to 2
-	assert shape scale of {_c} is 2 with "setting shape scale failed"
+	assert scale of {_c} is 1 with "default shape scale should be 1"
+	set scale of {_c} to 2
+	assert scale of {_c} is 2 with "setting shape scale failed"
+	add 0.5 to {_c}'s scale
+	assert scale of {_c} is 2.5 with "adding to shape scale failed"
+
+test "shape style property":
+	# the shape is in a variable, so this must not be taken for a boss bar style
+	set {_s} to a sphere with radius 2
+	set style of {_s} to solid
+	set {_solid} to size of points of {_s}
+	set {_s}'s style to wireframe
+	set {_wireframe} to size of points of {_s}
+	assert {_solid} is greater than {_wireframe} with "changing the style of a shape in a variable had no effect (solid %{_solid}%, wireframe %{_wireframe}%)"
+
+test "shape scale reset":
+	set {_c} to a circle with radius 1
+	set scale of {_c} to 3
+	delete scale of {_c}
+	assert scale of {_c} is 1 with "deleting shape scale failed"
+	# 'reset' does not reach shapes on Skript 2.17.1: PropertyBaseExpression#acceptChange returns early for
+	# DELETE/RESET once any other type with a scale accepts the change, so the shape's change types are never stored
+
+test "shape particle accepts skript particles":
+	set {_c} to a circle with radius 1
+	set particle of {_c} to red dust particle
+	assert particle of {_c} is set with "setting a shape's particle to red dust failed"
+	set {_d} to a sphere with radius 1
+	set {_d}'s particle to particle of {_c}
+	assert particle of {_d} is set with "copying a particle between shapes failed"
+	reset particle of {_c}
+	assert particle of {_c} is set with "resetting a shape's particle failed"
 
 test "shape points are sampled":
 	set {_c} to a circle with radius 3

@@ -2,7 +2,7 @@ package com.sovdee.skriptparticles.skript.shapes.properties;
 
 import ch.njol.skript.classes.Changer.ChangeMode;
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.expressions.base.PropertyExpression;
@@ -19,11 +19,11 @@ import org.jetbrains.annotations.Nullable;
                 "Resetting this will set the side length to the default value of 1 and non-positive values will be set to 0.001.",
         "Note that changing this property will not affect custom polygons, only regular polygons and polyhedrons."
 })
-@Examples({
-        "set side length of {_shape} to 5",
-        "set {_shape}'s side length to 6",
-        "send side length of {_shape}"
-})
+@Example("set side length of {_shape} to 5")
+@Example("""
+    set {_shape}'s side length to 6
+    send side length of {_shape}
+    """)
 @Since("1.0.0")
 public class ExprShapeSideLength extends SimplePropertyExpression<PolyShape, Number> {
 

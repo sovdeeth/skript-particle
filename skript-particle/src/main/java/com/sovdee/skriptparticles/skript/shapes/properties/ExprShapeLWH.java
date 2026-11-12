@@ -2,7 +2,7 @@ package com.sovdee.skriptparticles.skript.shapes.properties;
 
 import ch.njol.skript.classes.Changer.ChangeMode;
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.expressions.base.PropertyExpression;
@@ -19,14 +19,14 @@ import org.jetbrains.annotations.Nullable;
 @Description({
         "The length, width, or height of a shape. Changing this will change the size of the shape. Resetting or deleting it will set it back to the default value of 1."
 })
-@Examples({
-        "set {_shape}'s shape length to 5",
-        "set {_shape}'s shape width to 5",
-        "set {_shape}'s shape height to 5",
-        "reset {_shape}'s shape length",
-        "reset {_shape}'s shape width",
-        "add 6 to {_shape}'s shape height"
-})
+@Example("set {_shape}'s shape length to 5")
+@Example("set {_shape}'s shape width to 5")
+@Example("""
+    set {_shape}'s shape height to 5
+    reset {_shape}'s shape length
+    reset {_shape}'s shape width
+    add 6 to {_shape}'s shape height
+    """)
 @Since("1.0.0")
 public class ExprShapeLWH extends SimplePropertyExpression<LWHShape, Number> {
 

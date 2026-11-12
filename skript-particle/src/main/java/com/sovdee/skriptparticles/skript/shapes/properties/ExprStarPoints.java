@@ -2,7 +2,7 @@ package com.sovdee.skriptparticles.skript.shapes.properties;
 
 import ch.njol.skript.classes.Changer;
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.expressions.base.PropertyExpression;
@@ -18,11 +18,11 @@ import org.jetbrains.annotations.Nullable;
         "Returns the number of points on a star. This is the number of points on the star, not the number of particles drawn.",
         "Changing this will change the number of points on the star. The number of points must be at least 2."
 })
-@Examples({
-        "set {_shape}'s star points to 5",
-        "set star points of {_shape} to 10",
-        "set star points of {_shape} to 2 * (star points of {_shape})"
-})
+@Example("""
+    set {_shape}'s star points to 5
+    set star points of {_shape} to 10
+    set star points of {_shape} to 2 * (star points of {_shape})
+    """)
 @Since("1.0.1")
 public class ExprStarPoints extends SimplePropertyExpression<Shape, Number> {
 

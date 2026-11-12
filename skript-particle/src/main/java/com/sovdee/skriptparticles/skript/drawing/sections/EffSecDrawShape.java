@@ -2,7 +2,7 @@ package com.sovdee.skriptparticles.skript.drawing.sections;
 
 import ch.njol.skript.Skript;
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Expression;
@@ -41,17 +41,18 @@ import java.util.concurrent.atomic.AtomicLong;
         "",
         "Drawing a shape for a duration is async only."
 })
-@Examples({
-        "draw the shape (sphere with radius 1) at player's location",
-        "draw the shapes of (a sphere with radius 1 and a cube with radius 1) at player's location for (all players in radius 10 of player)",
-        "synchronously draw the shape of a sphere with radius 1 at player's location",
-        "",
-        "draw the shape {_shape} at player's location:",
-            "\tset event-shape's particle to red dust",
-        "",
-        "synchronously draw shape (a sphere with radius 1 and a cube with radius 1) at player's location:",
-            "\tset event-shape's radius to 2",
-})
+@Example("draw the shape (sphere with radius 1) at player's location")
+@Example("draw the shapes of (a sphere with radius 1 and a circle with radius 2) at player's location to (all players in radius 10 around player)")
+@Example("synchronously draw the shape of a sphere with radius 1 at player's location")
+@Example("draw the shape of a circle with radius 3 at player for 5 seconds with refresh rate of 2 ticks")
+@Example("""
+    draw the shape {_shape} at player's location:
+        set event-shape's particle to red dust particle
+    """)
+@Example("""
+    synchronously draw the shapes {_shapes::*} at player's location:
+        set event-shape's radius to 2
+    """)
 @Since("1.0.0")
 public class EffSecDrawShape extends DrawShapeEffectSection {
 

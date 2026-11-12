@@ -2,7 +2,7 @@ package com.sovdee.skriptparticles.skript.shapes.expressions;
 
 
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Expression;
@@ -20,16 +20,14 @@ import org.jetbrains.annotations.Nullable;
  * Skript expression that constructs a {@link com.sovdee.skriptparticles.util.Quaternion} representing a rotation.
  * Supports two forms: axis-angle (around a vector by a given angle in degrees or radians) and
  * vector-to-vector (the shortest rotation from one direction to another).
- * Documented from the Skript side via {@code @Name}, {@code @Description}, {@code @Examples}, and {@code @Since}.
+ * Documented from the Skript side via {@code @Name}, {@code @Description}, {@code @Example}, and {@code @Since}.
  */
 @Name("Rotation")
 @Description("Describes a rotation around a vector by a given angle, or from one vector to another. An alternative to the `axisAngle` and `quaternion` functions. Returns a quaternion.")
-@Examples({
-        "set {_rotation} to rotation around vector(1, 0, 0) by an angle of 90 degrees",
-        "set {_rotation} to a rotation around vector(1, 1, 1) by 1.57 radians",
-        "set {_rotation} to a rotation from vector(1, 0, 0) to vector(0, 1, 0)",
-        "set {_rotation} to a rotation between vector(1, 0, 1) and vector(0, 1, 2)"
-})
+@Example("set {_rotation} to rotation around vector(1, 0, 0) by an angle of 90 degrees")
+@Example("set {_rotation} to a rotation around vector(1, 1, 1) by 1.57 radians")
+@Example("set {_rotation} to a rotation from vector(1, 0, 0) to vector(0, 1, 0)")
+@Example("set {_rotation} to a rotation between vector(1, 0, 1) and vector(0, 1, 2)")
 @Since("1.0.0")
 public class ExprRotation extends SimpleExpression<Quaternion> {
 

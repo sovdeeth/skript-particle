@@ -2,8 +2,9 @@ package com.sovdee.skriptparticles.skript.shapes.properties;
 
 import ch.njol.skript.classes.Changer.ChangeMode;
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
+import ch.njol.skript.doc.Since;
 import ch.njol.skript.expressions.base.PropertyExpression;
 import ch.njol.skript.expressions.base.SimplePropertyExpression;
 import com.sovdee.shapes.shapes.Shape;
@@ -20,11 +21,12 @@ import org.jetbrains.annotations.Nullable;
         "Returns the offset vector of a shape. This is the vector that is added to the location of the shape before drawing.",
         "Changing this will move the shape accordingly. Resetting or deleting it will set it back to the default offset of (0, 0, 0)."
 })
-@Examples({
-        "set {_shape}'s offset vector to vector(1, 0, 0)",
-        "set offset of {_shape} to vector(0, 10, 0)",
-        "reset {_shape}'s offset vector"
-})
+@Example("""
+    set {_shape}'s offset vector to vector(1, 0, 0)
+    set offset of {_shape} to vector(0, 10, 0)
+    reset {_shape}'s offset vector
+    """)
+@Since("1.0.0")
 public class ExprShapeOffset extends SimplePropertyExpression<Shape, Vector> {
 
     public static void register(SyntaxRegistry registry) {

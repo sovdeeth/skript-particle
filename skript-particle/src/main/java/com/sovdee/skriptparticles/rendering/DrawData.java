@@ -7,6 +7,7 @@ import com.sovdee.skriptparticles.util.Quaternion;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.skriptlang.skript.bukkit.particles.particleeffects.ParticleEffect;
 
 /**
  * Plugin-side rendering metadata attached to library shapes via {@link DrawContext}.
@@ -15,7 +16,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class DrawData implements DrawContext {
 
-    private Particle particle;
+    private ParticleEffect particle;
     private @Nullable DynamicLocation location;
     private @Nullable DynamicLocation lastLocation;
     private final Quaternion lastOrientation;
@@ -33,7 +34,9 @@ public class DrawData implements DrawContext {
      * speed, no location, and an identity last-orientation quaternion.
      */
     public DrawData() {
-        this.particle = new Particle(org.bukkit.Particle.FLAME).extra(0);
+        this.particle = ParticleEffect.of(org.bukkit.Particle.FLAME);
+        // not chained: ParticleEffect only returns itself from speed() on Skript 2.17+
+        this.particle.speed(0);
         this.lastOrientation = Quaternion.IDENTITY.clone();
     }
 
@@ -51,23 +54,13 @@ public class DrawData implements DrawContext {
     // ---- Particle ----
 
     /**
-     * Returns a clone of the particle stored in this draw data. Callers may modify the returned
+     * Returns a copy of the particle stored in this draw data. Callers may modify the returned
      * instance without affecting the stored particle.
      *
-     * @return a cloned copy of the particle
+     * @return a copy of the particle
      */
-    public Particle getParticle() {
-        return particle.clone();
-    }
-
-    /**
-     * Returns the raw (uncloned) particle stored in this draw data. Modifications to the returned
-     * instance will directly affect the stored particle.
-     *
-     * @return the stored {@link Particle} instance
-     */
-    public Particle getParticleRaw() {
-        return particle;
+    public ParticleEffect getParticle() {
+        return particle.copy();
     }
 
     /**
@@ -75,7 +68,7 @@ public class DrawData implements DrawContext {
      *
      * @param particle the new particle to store
      */
-    public void setParticle(Particle particle) {
+    public void setParticle(ParticleEffect particle) {
         this.particle = particle;
     }
 
@@ -247,7 +240,7 @@ public class DrawData implements DrawContext {
     @Override
     public DrawData copy() {
         DrawData copy = new DrawData();
-        copy.particle = this.particle.clone();
+        copy.particle = this.particle.copy();
         if (this.location != null)
             copy.location = this.location.clone();
         if (this.lastLocation != null)

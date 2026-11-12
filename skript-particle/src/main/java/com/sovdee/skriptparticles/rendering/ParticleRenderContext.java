@@ -3,6 +3,7 @@ package com.sovdee.skriptparticles.rendering;
 import com.sovdee.shapes.modifiers.PointContext;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaterniond;
+import com.destroystokyo.paper.ParticleBuilder;
 
 /**
  * Plugin-side per-point context extending shapes-lib {@link PointContext} with
@@ -60,7 +61,7 @@ public class ParticleRenderContext extends PointContext {
      */
     public boolean hasMotion;
 
-    public ParticleRenderContext(Particle particle) {
+    public ParticleRenderContext(ParticleBuilder particle) {
         this.defaultParticle = particle.particle();
         this.particle = defaultParticle;
         this.defaultData = particle.data();

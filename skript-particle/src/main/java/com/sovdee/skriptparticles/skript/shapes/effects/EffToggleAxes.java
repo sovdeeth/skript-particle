@@ -1,7 +1,7 @@
 package com.sovdee.skriptparticles.skript.shapes.effects;
 
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Effect;
@@ -18,7 +18,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Skript effect that shows or hides the local and/or global debug axes of one or more shapes.
  * Intended for debugging purposes; toggles the corresponding flag on each shape's {@link DrawData DrawData}.
- * Documented from the Skript side via {@code @Name}, {@code @Description}, {@code @Examples}, and {@code @Since}.
+ * Documented from the Skript side via {@code @Name}, {@code @Description}, {@code @Example}, and {@code @Since}.
  */
 @Name("Toggle Axes")
 @Description({
@@ -26,12 +26,10 @@ import org.jetbrains.annotations.Nullable;
         "When on, the shape will also draw its local and/or global axes when drawn.",
         "This is intended for debugging purposes."
 })
-@Examples({
-        "show local axes of {_shape}",
-        "hide global axes of {_shape}",
-        "hide local and global axes of {_shape}",
-        "show local axes of {_shape} and {_shape2}"
-})
+@Example("show local axes of {_shape}")
+@Example("hide global axes of {_shape}")
+@Example("hide local and global axes of {_shape}")
+@Example("show local axes of {_shape} and {_shape2}")
 @Since("1.0.0")
 public class EffToggleAxes extends Effect {
 

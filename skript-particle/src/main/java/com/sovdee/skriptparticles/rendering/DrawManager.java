@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import org.skriptlang.skript.bukkit.particles.particleeffects.ParticleEffect;
 
 /**
  * Static draw methods for rendering library shapes with plugin DrawData.
@@ -93,7 +94,7 @@ public class DrawManager {
         if (center.getWorld() == null) return;
 
         // a private copy: rendering reads the particle's settings while other draws may be using it too
-        Particle particle = dd.getParticle();
+        ParticleEffect particle = dd.getParticle();
         Quaterniond orientation = shape.getOrientation();
         List<Vector3d> points = shape.getPointSampler().getPoints(shape, orientation);
         if (points.isEmpty()) return;

@@ -29,8 +29,8 @@ import org.skriptlang.skript.registration.SyntaxRegistry;
     NOTE: Very eccentric elliptical sectors (those with a large difference between the x and z radii) may have many more particles than expected. Be careful.
     """)
 @Example("set {_shape} to an elliptical arc with radii 10 and 3 and cutoff angle of 90 degrees")
-@Example("set {_shape} to a elliptical sector of radius 3 and 5 and cutoff angle of 45 degrees")
-@Example("set {_shape} to a elliptical cylinder with radii 3 and 5, height 10, and cutoff angle of 3.1415 radians")
+@Example("set {_shape} to an elliptical sector of radius 3 and 5 and cutoff angle of 45 degrees")
+@Example("set {_shape} to an elliptical cylindrical sector with radii 3 and 5, height 10, and cutoff angle of 3.1415 radians")
 @Since("1.0.0")
 public class ExprEllipticalArc extends ShapeConstructorExpression {
 

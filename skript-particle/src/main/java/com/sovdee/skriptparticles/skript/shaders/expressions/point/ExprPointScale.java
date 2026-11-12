@@ -1,7 +1,7 @@
 package com.sovdee.skriptparticles.skript.shaders.expressions.point;
 
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import com.sovdee.skriptparticles.rendering.ParticleRenderContext;
@@ -12,7 +12,10 @@ import org.skriptlang.skript.registration.SyntaxRegistry;
 
 @Name("Point Scale")
 @Description("The scale of the shape being drawn. Read-only.")
-@Examples("set {_s} to point's scale")
+@Example("""
+    set {_shader} to a custom shader:
+        set {_s} to point's scale
+    """)
 @Since("2.0.0")
 public class ExprPointScale extends PointPropertyExpression<Number> {
 

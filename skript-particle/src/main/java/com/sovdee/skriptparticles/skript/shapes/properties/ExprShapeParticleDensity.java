@@ -2,7 +2,7 @@ package com.sovdee.skriptparticles.skript.shapes.properties;
 
 import ch.njol.skript.classes.Changer.ChangeMode;
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.expressions.base.PropertyExpression;
@@ -20,7 +20,7 @@ import org.jetbrains.annotations.Nullable;
 
 @Name("Shape Particle Density / Point Count")
 @Description({
-        "The density at which particles are spawned in a shape. This is in \"particles per meter\" (ppm), and defaults to 4." +
+        "The density at which particles are spawned in a shape. This is in \"particles per meter\" (ppm), and defaults to 4. " +
                 "Be careful with this property, as it can cause lag if set to a high number. It's recommended to not go above 20 or so for this reason. 1000 ppm is the maximum value.",
         "Keep in mind that this value scales with dimensions. A 1 meter line with a density of 20 will spawn 20 particles, but a 1 meter cube with a density of 20 will spawn 8,000 particles (2,400 if hollow).",
         "No shape is ever drawn with more than 100,000 points. If a density would produce more, the shape is drawn at the finest density that stays under that limit, and this expression returns that density instead.",
@@ -34,12 +34,12 @@ import org.jetbrains.annotations.Nullable;
         "",
         "Changing this will change the particle density or point count of the shape. Resetting or deleting it will set it back to the default density (4).",
 })
-@Examples({
-        "set {_shape}'s particle density to 10",
-        "set {_shape}'s point count to 100",
-        "reset {_shape}'s particle density",
-        "reset {_shape}'s point count",
-})
+@Example("set {_shape}'s particle density to 10")
+@Example("""
+    set {_shape}'s point count to 100
+    reset {_shape}'s particle density
+    reset {_shape}'s point count
+    """)
 @Since("1.0.0")
 public class ExprShapeParticleDensity extends SimplePropertyExpression<Shape, Number> {
 

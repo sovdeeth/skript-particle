@@ -2,7 +2,7 @@ package com.sovdee.skriptparticles.skript.shapes.properties;
 
 import ch.njol.skript.classes.Changer.ChangeMode;
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.expressions.base.PropertyExpression;
@@ -18,12 +18,12 @@ import org.jetbrains.annotations.Nullable;
         "Gets or sets the winding rate of a helix. The winding rate is the number of times the helix wraps around the axis per block.",
         "The default winding rate is 1 loop per block, which delete or reset will set it to. The winding rate must be positive and non-zero."
 })
-@Examples({
-        "set {_helix} to helix with radius 5, height 10, and winding rate 2 loops per block",
-        "set winding rate of {_helix} to 1",
-        "set winding rate of {_helix} to 1/10",
-        "set winding rate of {_helix} to 10.4"
-})
+@Example("""
+    set {_helix} to helix with radius 5, height 10, and winding rate 2 loops per block
+    set winding rate of {_helix} to 1
+    set winding rate of {_helix} to 1/10
+    set winding rate of {_helix} to 10.4
+    """)
 @Since("1.0.0")
 public class ExprHelixWindingRate extends SimplePropertyExpression<Shape, Number> {
 

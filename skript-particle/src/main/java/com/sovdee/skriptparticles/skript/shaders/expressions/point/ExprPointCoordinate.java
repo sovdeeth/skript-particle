@@ -2,7 +2,7 @@ package com.sovdee.skriptparticles.skript.shaders.expressions.point;
 
 import ch.njol.skript.classes.Changer.ChangeMode;
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Expression;
@@ -16,10 +16,11 @@ import org.skriptlang.skript.registration.SyntaxRegistry;
 
 @Name("Point Coordinate")
 @Description("The local X, Y, or Z coordinate of the current point. Can be read and modified.")
-@Examples({
-        "set the point's y to point's y + 1",
-        "add 0.5 to the x of point",
-})
+@Example("""
+    set {_shader} to a custom shader:
+        set the point's y to point's y + 1
+        add 0.5 to the x of point
+    """)
 @Since("2.0.0")
 public class ExprPointCoordinate extends PointPropertyExpression<Number> {
 

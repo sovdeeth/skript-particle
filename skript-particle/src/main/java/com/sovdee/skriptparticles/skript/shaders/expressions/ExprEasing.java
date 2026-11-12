@@ -1,7 +1,7 @@
 package com.sovdee.skriptparticles.skript.shaders.expressions;
 
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Expression;
@@ -24,19 +24,19 @@ import org.jetbrains.annotations.Nullable;
         "Custom: provide the name of a Skript function that takes one number and returns one number.",
         "  The function should be a pure math transformation; it runs on whatever thread the modifier runs on.",
 })
-@Examples({
-        "set {_e} to linear easing",
-        "set {_e} to ease in quadratic",
-        "set {_e} to ease out cubic",
-        "set {_e} to ease in-out sine",
-        "set {_e} to power ease in with exponent 4",
-        "set {_e} to power ease out with exponent 0.5",
-        "add taper from 0 to 1 eased with ease in quadratic to modifiers of {_shape}",
-        "add gradient from red to blue along y eased with ease in-out sine to modifiers of {_shape}",
-        "function myEase(t: number) :: number:",
-        "    return {_t} ^ 3",
-        "set {_e} to custom easing from function \"myEase\"",
-})
+@Example("set {_e} to linear easing")
+@Example("set {_e} to ease in quadratic")
+@Example("set {_e} to ease out cubic")
+@Example("set {_e} to ease in-out sine")
+@Example("set {_e} to power ease in with exponent 4")
+@Example("set {_e} to power ease out with exponent 0.5")
+@Example("add scale from 0 to 1 eased with ease in quadratic to modifiers of {_shape}")
+@Example("add gradient from red to blue along y eased with ease in-out sine to modifiers of {_shape}")
+@Example("""
+    function myEase(t: number) :: number:
+        return {_t} ^ 3
+    set {_e} to custom easing from function "myEase"
+    """)
 @Since("2.0.0")
 public class ExprEasing extends SimpleExpression<EasingFunction> {
 

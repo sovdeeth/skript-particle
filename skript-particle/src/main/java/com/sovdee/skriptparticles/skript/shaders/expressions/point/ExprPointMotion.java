@@ -2,7 +2,7 @@ package com.sovdee.skriptparticles.skript.shaders.expressions.point;
 
 import ch.njol.skript.classes.Changer.ChangeMode;
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Expression;
@@ -19,10 +19,11 @@ import org.skriptlang.skript.registration.SyntaxRegistry;
         "The X, Y, or Z motion (velocity) of the current point.",
         "Setting any motion component automatically enables motion for this point.",
 })
-@Examples({
-        "set the point's y motion to 0.5",
-        "set the x motion of point to point's x / 2",
-})
+@Example("""
+    set {_shader} to a custom shader:
+        set the point's y motion to 0.5
+        set the x motion of point to point's x / 2
+    """)
 @Since("2.0.0")
 public class ExprPointMotion extends PointPropertyExpression<Number> {
 

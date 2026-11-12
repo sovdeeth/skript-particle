@@ -1,7 +1,7 @@
 package com.sovdee.skriptparticles.skript.shaders.effects;
 
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Effect;
@@ -19,7 +19,7 @@ import org.skriptlang.skript.registration.SyntaxRegistry;
 /**
  * Skript effect that adds a color stop at a specific normalized position to a gradient modifier.
  * See {@link #init}, {@link #execute}, and {@link #toString} for behaviour details.
- * Documented from the Skript side via {@code @Name}, {@code @Description}, {@code @Examples}, and {@code @Since}.
+ * Documented from the Skript side via {@code @Name}, {@code @Description}, {@code @Example}, and {@code @Since}.
  */
 @Name("Add Gradient Color Stop")
 @Description({
@@ -27,11 +27,9 @@ import org.skriptlang.skript.registration.SyntaxRegistry;
         "Position is a number between 0 and 1.",
         "This effect is primarily used inside a section body when building a gradient with custom stop positions.",
 })
-@Examples({
-        "add color stop at 0 colored red to {_gradient}",
-        "add stop at 0.5 colored yellow to {_gradient}",
-        "add color stop at 1 colored blue to {_gradient}",
-})
+@Example("add color stop at 0 colored red to {_gradient}")
+@Example("add stop at 0.5 colored yellow to {_gradient}")
+@Example("add color stop at 1 colored blue to {_gradient}")
 @Since("2.0.0")
 public class EffAddColorStop extends Effect {
 

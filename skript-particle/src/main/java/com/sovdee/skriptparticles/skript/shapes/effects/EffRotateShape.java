@@ -2,7 +2,7 @@ package com.sovdee.skriptparticles.skript.shapes.effects;
 
 import ch.njol.skript.Skript;
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Effect;
@@ -25,7 +25,7 @@ import org.joml.Quaternionf;
  * Supports named cardinal axes (x, y, z), arbitrary vector axes, local (relative) rotation, and radians/degrees.
  * When used inside a {@link DrawShapeEffectSection.DrawEvent DrawEvent}
  * section without an explicit shape argument, it operates on the currently-being-drawn shape.
- * See {@code @Name}, {@code @Description}, {@code @Examples}, and {@code @Since} for Skript-facing documentation.
+ * See {@code @Name}, {@code @Description}, {@code @Example}, and {@code @Since} for Skript-facing documentation.
  */
 @Name("Rotate Shape")
 @Description({
@@ -34,11 +34,9 @@ import org.joml.Quaternionf;
         "The axis can also be specified as a local or relative axis, which rotate relative to the shape's current rotation.",
         "For example, you can rotate a shape around the global y axis, or around the shape's local y axis."
 })
-@Examples({
-        "rotate shape {_shape} around x axis by 90 degrees",
-        "rotate shape {_shape} around vector(0, 1, 0) by 1.4 radians",
-        "rotate shape {_shape} around local y axis by 90"
-})
+@Example("rotate shape {_shape} around x axis by 90 degrees")
+@Example("rotate shape {_shape} around vector(0, 1, 0) by 1.4 radians")
+@Example("rotate shape {_shape} around local y axis by 90")
 @Since("1.0.0")
 public class EffRotateShape extends Effect {
 

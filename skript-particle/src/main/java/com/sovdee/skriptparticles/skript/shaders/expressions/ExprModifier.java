@@ -1,7 +1,7 @@
 package com.sovdee.skriptparticles.skript.shaders.expressions;
 
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Expression;
@@ -37,16 +37,14 @@ import org.jetbrains.annotations.Nullable;
         "  frequency=1 means one full sine cycle over the full input range.",
         "  When the displacing clause is omitted, defaults to displacing y by t.",
 })
-@Examples({
-        "set {_m} to a scale from 1 to 0",
-        "add scale from 1 to 0 along the y axis to modifiers of {_shape}",
-        "add scale from 1 to 0 driven by radius scaling xyz to modifiers of {_shape}",
-        "add a twist of 360 degrees to modifiers of {_shape}",
-        "add a twist of 180 degrees in the xz plane driven by radius to modifiers of {_shape}",
-        "add a wave with amplitude 0.5 and frequency 2 displacing y by t to modifiers of {_shape}",
-        "add a wave with amplitude 0.3 and frequency 4 displacing y by x to modifiers of {_shape}",
-        "add a wave with amplitude 0.5 and frequency 1 displacing x by radius to modifiers of {_shape}",
-})
+@Example("set {_m} to a scale from 1 to 0")
+@Example("add scale from 1 to 0 along the y axis to modifiers of {_shape}")
+@Example("add scale from 1 to 0 driven by radius scaling xyz to modifiers of {_shape}")
+@Example("add a twist of 360 degrees to modifiers of {_shape}")
+@Example("add a twist of 180 degrees in the xz plane driven by radius to modifiers of {_shape}")
+@Example("add a wave with amplitude 0.5 and frequency 2 displacing y by t to modifiers of {_shape}")
+@Example("add a wave with amplitude 0.3 and frequency 4 displacing y by x to modifiers of {_shape}")
+@Example("add a wave with amplitude 0.5 and frequency 1 displacing x by radius to modifiers of {_shape}")
 @Since("2.0.0")
 public class ExprModifier extends SimpleExpression<PointModifier> {
 

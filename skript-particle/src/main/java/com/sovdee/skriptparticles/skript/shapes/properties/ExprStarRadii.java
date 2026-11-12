@@ -2,7 +2,7 @@ package com.sovdee.skriptparticles.skript.shapes.properties;
 
 import ch.njol.skript.classes.Changer;
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.expressions.base.PropertyExpression;
@@ -22,11 +22,9 @@ import org.jetbrains.annotations.Nullable;
                 "the innermost points, and likewise the outer radius is the distance to the tips of the star.",
         "Changing this will change the size of the star. Both radii must be greater than 0."
 })
-@Examples({
-        "set {_star} to a star with 5 points, inner radius 1, and outer radius 2",
-        "set {_star}'s inner radius to 2",
-        "set {_star}'s outer radius to 3"
-})
+@Example("set {_star} to a star with 5 points, inner radius 1, and outer radius 2")
+@Example("set {_star}'s inner radius to 2")
+@Example("set {_star}'s outer radius to 3")
 @Since("1.0.1")
 public class ExprStarRadii extends SimplePropertyExpression<Shape, Number> {
 

@@ -1,7 +1,7 @@
 package com.sovdee.skriptparticles.skript.shaders.expressions;
 
 import ch.njol.skript.doc.Description;
-import ch.njol.skript.doc.Examples;
+import ch.njol.skript.doc.Example;
 import ch.njol.skript.doc.Name;
 import ch.njol.skript.doc.Since;
 import ch.njol.skript.lang.Expression;
@@ -35,14 +35,12 @@ import java.util.List;
         "Angular: gradient based on angle around the Y axis.",
         "Spherical: gradient based on 3D distance from center.",
 })
-@Examples({
-        "add gradient from red to blue along the y axis to modifiers of {_shape}",
-        "add gradient from red, yellow, green, blue along the y axis to modifiers of {_shape}",
-        "add radial gradient from white to black to modifiers of {_shape}",
-        "add angular gradient from red to blue to modifiers of {_shape}",
-        "add spherical gradient from yellow to orange to modifiers of {_shape}",
-        "set modifiers of {_shape} to gradient from red to blue along the y axis",
-})
+@Example("add gradient from red to blue along the y axis to modifiers of {_shape}")
+@Example("add gradient from red, yellow, green and blue along the y axis to modifiers of {_shape}")
+@Example("add radial gradient from white to black to modifiers of {_shape}")
+@Example("add angular gradient from red to blue to modifiers of {_shape}")
+@Example("add spherical gradient from yellow to orange to modifiers of {_shape}")
+@Example("set modifiers of {_shape} to gradient from red to blue along the y axis")
 @Since("2.0.0")
 public class ExprGradientModifier extends SimpleExpression<PointModifier> {
 

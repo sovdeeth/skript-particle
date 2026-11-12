@@ -3,7 +3,7 @@ package com.sovdee.skriptparticles.rendering.shaders;
 import com.sovdee.shapes.modifiers.EasingFunction;
 import com.sovdee.shapes.modifiers.ShapeBounds;
 import com.sovdee.shapes.modifiers.StandardInput;
-import com.sovdee.skriptparticles.rendering.Particle;
+import com.destroystokyo.paper.ParticleBuilder;
 import com.sovdee.skriptparticles.rendering.ParticleRenderContext;
 import org.bukkit.Color;
 import org.bukkit.Particle.DustOptions;
@@ -24,18 +24,18 @@ class GradientModifierTest {
     /** x spans [0, 10], so StandardInput.X is x / 10. */
     private static final ShapeBounds BOUNDS = ShapeBounds.compute(List.of(new Vector3d(0, 0, 0), new Vector3d(10, 0, 0)));
 
-    private static ParticleRenderContext context(Particle particle) {
+    private static ParticleRenderContext context(ParticleBuilder particle) {
         ParticleRenderContext ctx = new ParticleRenderContext(particle);
         ctx.bounds = BOUNDS;
         return ctx;
     }
 
     private static ParticleRenderContext flame() {
-        return context(new Particle(org.bukkit.Particle.FLAME));
+        return context(new ParticleBuilder(org.bukkit.Particle.FLAME));
     }
 
     private static ParticleRenderContext dust(float size) {
-        Particle particle = new Particle(org.bukkit.Particle.DUST);
+        ParticleBuilder particle = new ParticleBuilder(org.bukkit.Particle.DUST);
         particle.data(new DustOptions(Color.RED, size));
         return context(particle);
     }
