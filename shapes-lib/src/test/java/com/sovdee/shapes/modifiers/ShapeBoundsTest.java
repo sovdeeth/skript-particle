@@ -117,4 +117,44 @@ class ShapeBoundsTest {
         ShapeBounds b2 = ShapeBounds.compute(pts2);
         assertEquals(5.0, b2.maxRadiusXZ(), 1e-9);
     }
+
+    @Test
+    void maxDistance_usesAllThreeAxes() {
+        List<Vector3d> pts = List.of(
+                new Vector3d(1, 0, 0),
+                new Vector3d(0, 10, 0),
+                new Vector3d(2, -3, 6) // distance 7
+        );
+        ShapeBounds b = ShapeBounds.compute(pts);
+        assertEquals(10.0, b.maxDistance(), 1e-9);
+        assertEquals(Math.sqrt(40), b.maxRadiusXZ(), 1e-9, "the XZ radius ignores y");
+    }
+
+    @Test
+    void normalizedSpherical_staysWithinZeroToOne() {
+        // a tall, thin shape: far taller than it is wide
+        List<Vector3d> pts = List.of(
+                new Vector3d(1, 0, 0),
+                new Vector3d(0, 0, 1),
+                new Vector3d(1, 10, 0),
+                new Vector3d(0, 5, 0)
+        );
+        PointContext ctx = new PointContext();
+        ctx.bounds = ShapeBounds.compute(pts);
+        double furthest = 0;
+        for (Vector3d p : pts) {
+            ctx.x = p.x; ctx.y = p.y; ctx.z = p.z;
+            double t = ctx.normalizedSpherical();
+            assertTrue(t >= 0 && t <= 1 + 1e-12, "normalized spherical distance out of range: " + t);
+            furthest = Math.max(furthest, t);
+        }
+        assertEquals(1.0, furthest, 1e-12, "the furthest point should normalize to 1");
+    }
+
+    @Test
+    void normalizedSpherical_isZeroForASinglePointAtTheOrigin() {
+        PointContext ctx = new PointContext();
+        ctx.bounds = ShapeBounds.compute(List.of(new Vector3d(0, 0, 0)));
+        assertEquals(0.0, ctx.normalizedSpherical(), 1e-12);
+    }
 }

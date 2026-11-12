@@ -59,12 +59,10 @@ public class PointContext {
     public double normalizedRadius() { return bounds.normalizeRadial(x, z); }
 
     /**
-     * @return Normalised 3D spherical radius [0, 1] relative to max XZ radius.
+     * @return Normalised 3D distance from the origin [0, 1], relative to the furthest point.
      */
     public double normalizedSpherical() {
-        double r = Math.sqrt(x * x + y * y + z * z);
-        double maxR = bounds.maxRadiusXZ();
-        return maxR > 1e-12 ? r / maxR : 0.0;
+        return bounds.normalizeSpherical(x, y, z);
     }
 
     /**

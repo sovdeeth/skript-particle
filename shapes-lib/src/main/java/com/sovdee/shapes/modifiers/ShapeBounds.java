@@ -14,19 +14,21 @@ public final class ShapeBounds {
     private final double maxX, maxY, maxZ;
     private final double rangeX, rangeY, rangeZ;
     private final double maxRadius;
+    private final double maxDistance;
 
     // Pre-computed inverse ranges for fast normalization (no division in hot loop)
     private final double invRangeX, invRangeY, invRangeZ, invMaxRadius;
 
     private ShapeBounds(double minX, double minY, double minZ,
                         double maxX, double maxY, double maxZ,
-                        double maxRadius) {
+                        double maxRadius, double maxDistance) {
         this.minX = minX; this.minY = minY; this.minZ = minZ;
         this.maxX = maxX; this.maxY = maxY; this.maxZ = maxZ;
         this.rangeX = maxX - minX;
         this.rangeY = maxY - minY;
         this.rangeZ = maxZ - minZ;
         this.maxRadius = maxRadius;
+        this.maxDistance = maxDistance;
         this.invRangeX = rangeX > 1e-6 ? 1.0 / rangeX : 0.0;
         this.invRangeY = rangeY > 1e-6 ? 1.0 / rangeY : 0.0;
         this.invRangeZ = rangeZ > 1e-6 ? 1.0 / rangeZ : 0.0;
@@ -39,11 +41,12 @@ public final class ShapeBounds {
      */
     public static ShapeBounds compute(List<Vector3d> points) {
         if (points.isEmpty()) {
-            return new ShapeBounds(0, 0, 0, 0, 0, 0, 0);
+            return new ShapeBounds(0, 0, 0, 0, 0, 0, 0, 0);
         }
         double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE, minZ = Double.MAX_VALUE;
         double maxX = -Double.MAX_VALUE, maxY = -Double.MAX_VALUE, maxZ = -Double.MAX_VALUE;
         double maxRadius = 0;
+        double maxDistanceSquared = 0;
         for (Vector3d p : points) {
             if (p.x < minX) minX = p.x;
             if (p.y < minY) minY = p.y;
@@ -53,8 +56,10 @@ public final class ShapeBounds {
             if (p.z > maxZ) maxZ = p.z;
             double r = Math.sqrt(p.x * p.x + p.z * p.z);
             if (r > maxRadius) maxRadius = r;
+            double distanceSquared = p.x * p.x + p.y * p.y + p.z * p.z;
+            if (distanceSquared > maxDistanceSquared) maxDistanceSquared = distanceSquared;
         }
-        return new ShapeBounds(minX, minY, minZ, maxX, maxY, maxZ, maxRadius);
+        return new ShapeBounds(minX, minY, minZ, maxX, maxY, maxZ, maxRadius, Math.sqrt(maxDistanceSquared));
     }
 
     /**
@@ -90,6 +95,22 @@ public final class ShapeBounds {
      */
     public double maxRadiusXZ() {
         return maxRadius;
+    }
+
+    /**
+     * @return the largest distance of any point from the origin, in all three dimensions
+     */
+    public double maxDistance() {
+        return maxDistance;
+    }
+
+    /**
+     * Normalizes a point's distance from the origin to {@code [0, 1]}, where 1 is the furthest point.
+     *
+     * @return the normalized distance, or {@code 0} if every point is at the origin
+     */
+    public double normalizeSpherical(double x, double y, double z) {
+        return maxDistance > 1e-6 ? Math.sqrt(x * x + y * y + z * z) / maxDistance : 0.0;
     }
 
     /**
