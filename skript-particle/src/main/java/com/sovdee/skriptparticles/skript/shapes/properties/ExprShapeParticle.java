@@ -23,11 +23,9 @@ import org.skriptlang.skript.bukkit.particles.particleeffects.ParticleEffect;
         "Each shape keeps its own copy, so changing the particle of one shape never changes another."
 })
 @Example("set {_shape}'s particle to flame particle")
-@Example("""
-    set {_shape}'s particle to red dust particle
-    set particle of {_shape} to 5 electric spark particles
-    reset {_shape}'s particle
-    """)
+@Example("set {_shape}'s particle to red dust particle")
+@Example("set particle of {_shape} to 5 electric spark particles")
+@Example("reset {_shape}'s particle")
 @Since("1.0.0")
 public class ExprShapeParticle extends SimplePropertyExpression<Shape, ParticleEffect> {
 

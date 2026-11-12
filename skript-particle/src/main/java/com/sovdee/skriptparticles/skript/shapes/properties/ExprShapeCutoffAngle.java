@@ -18,11 +18,9 @@ import org.jetbrains.annotations.Nullable;
                 "For example, a cutoff angle of 90 on an arc will create a quarter of a circle.",
         "Note that an arc can range from 0 to 360 degrees, while a spherical cap can range from 0 to 180 degrees."
 })
-@Example("""
-    set {_shape}'s cutoff angle to 90
-    set cutoff angle of {_shape} to 180
-    reset {_shape}'s cutoff angle
-    """)
+@Example("set {_shape}'s cutoff angle to 90")
+@Example("set cutoff angle of {_shape} to 180")
+@Example("reset {_shape}'s cutoff angle")
 @Since("1.0.0")
 public class ExprShapeCutoffAngle extends SimplePropertyExpression<CutoffShape, Number> {
 

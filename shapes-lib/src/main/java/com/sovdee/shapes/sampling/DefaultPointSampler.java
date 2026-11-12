@@ -26,10 +26,12 @@ public class DefaultPointSampler implements PointSampler {
     /** The point spacing used when no density has been set explicitly. */
     public static final double DEFAULT_DENSITY = 0.25;
 
-    private static final int DEFAULT_MAX_POINTS = 10_000;
+    /** The point limit of a shape at its default density, until a limit is set. */
+    public static final int DEFAULT_MAX_POINTS = 10_000;
     /**
-     * The most points any sampling may produce, explicit density or not. An explicit density that would exceed it
-     * is coarsened just enough to fit, so a single oversized shape can't exhaust the server's memory.
+     * The most points any sampling may produce, explicit density or not, and the point limit of a shape with an
+     * explicit density until a limit is set. A density that would exceed it is coarsened just enough to fit,
+     * so a single oversized shape can't exhaust the server's memory.
      */
     public static final int HARD_MAX_POINTS = 100_000;
     /** How many times a sampling may be retried at a coarser density to get under the cap. */
@@ -40,6 +42,8 @@ public class DefaultPointSampler implements PointSampler {
     private SamplingStyle style = SamplingStyle.OUTLINE;
     private double density = DEFAULT_DENSITY;
     private int maxPoints = DEFAULT_MAX_POINTS;
+    // until a limit is set, the limit depends on whether the density is explicit
+    private boolean maxPointsExplicit = false;
     private boolean densityExplicit = false;
     private Comparator<Vector3d> ordering;
     private volatile UUID uuid;
@@ -86,19 +90,26 @@ public class DefaultPointSampler implements PointSampler {
         // let the shape pick up any changes to its external inputs before checking the cache
         shape.refresh();
 
+        int cap = getMaxPoints();
         CacheState state = new CacheState(style, new Quaterniond(orientation), shape.getScale(), shape.getOffset(),
-                density, densityExplicit, maxPoints, shape.getVersion(), computeModifierHash());
+                density, densityExplicit, cap, shape.getVersion(), computeModifierHash());
         Cache cache = this.cache;
         if (cache != null && cache.state.equals(state))
             return cache.points;
 
-        // explicit densities are honoured up to the hard limit; otherwise the (lower) max points cap applies
+        // an explicit density is used exactly unless it exceeds the limit; otherwise the density is fitted to the limit
         Sample sample = densityExplicit
-                ? sampleExplicit(shape)
-                : sampleWithinCap(shape, maxPoints);
+                ? sampleExplicit(shape, cap)
+                : sampleWithinCap(shape, cap);
         List<Vector3d> points = sample.points;
 
         applyGeometryModifiers(shape, points);
+
+        // Sorted in local space, so the order turns with the shape. List#sort is stable, so points the ordering
+        // considers equal are all kept in their generated order.
+        if (ordering != null) {
+            points.sort(ordering);
+        }
 
         double scale = shape.getScale();
         Vector3d offset = shape.getOffset();
@@ -106,11 +117,6 @@ public class DefaultPointSampler implements PointSampler {
             orientation.transform(point);
             point.mul(scale);
             point.add(offset);
-        }
-
-        // List#sort is stable, so points the ordering considers equal are all kept in their generated order.
-        if (ordering != null) {
-            points.sort(ordering);
         }
 
         List<Vector3d> result = Collections.unmodifiableList(points);
@@ -137,13 +143,13 @@ public class DefaultPointSampler implements PointSampler {
 
     /**
      * Samples a shape at its explicit density, which is used exactly unless it would produce more than
-     * {@link #HARD_MAX_POINTS} points. Only then is it coarsened, just enough to fit.
+     * {@code cap} points. Only then is it coarsened, just enough to fit.
      */
-    private Sample sampleExplicit(Shape shape) {
+    private Sample sampleExplicit(Shape shape, int cap) {
         try {
-            return new Sample(generate(shape, style, density, HARD_MAX_POINTS), density);
+            return new Sample(generate(shape, style, density, cap), density);
         } catch (PointLimitExceededException e) {
-            return sampleWithinCap(shape, HARD_MAX_POINTS);
+            return sampleWithinCap(shape, cap);
         }
     }
 
@@ -218,8 +224,7 @@ public class DefaultPointSampler implements PointSampler {
 
     /**
      * Returns the density the shape is actually sampled at. This differs from {@link #getDensity()} when the
-     * density had to be coarsened to stay within {@link #getMaxPoints()} (density not explicit) or
-     * {@link #HARD_MAX_POINTS} (density explicit).
+     * density had to be coarsened to stay within {@link #getMaxPoints()}.
      */
     @Override
     public synchronized double getEffectiveDensity(Shape shape) {
@@ -408,24 +413,32 @@ public class DefaultPointSampler implements PointSampler {
     }
 
     /**
-     * @return the maximum number of points a sampling may produce while the density is not explicit
+     * Returns the point limit in effect: the limit that was set, or, until one is set,
+     * {@link #DEFAULT_MAX_POINTS} at the default density and {@link #HARD_MAX_POINTS} at an explicit density.
      */
     @Override
     public int getMaxPoints() {
-        return maxPoints;
+        if (maxPointsExplicit)
+            return maxPoints;
+        return densityExplicit ? HARD_MAX_POINTS : DEFAULT_MAX_POINTS;
     }
 
     /**
-     * Sets the target maximum number of points and switches to auto-density mode,
-     * where density is derived from the shape geometry to approximate this count.
-     * Clamps the value to at least {@code 1}. Invalidates the point cache.
+     * Sets the point limit, clamped to between {@code 1} and {@link #HARD_MAX_POINTS}. It applies whether or not
+     * the density is explicit, and the density itself is left unchanged.
      *
-     * @param maxPoints the target maximum particle count
+     * @param maxPoints the maximum particle count
      */
     @Override
     public void setMaxPoints(int maxPoints) {
         this.maxPoints = Math.clamp(maxPoints, 1, HARD_MAX_POINTS);
-        this.densityExplicit = false;
+        this.maxPointsExplicit = true;
+    }
+
+    @Override
+    public void resetMaxPoints() {
+        this.maxPoints = DEFAULT_MAX_POINTS;
+        this.maxPointsExplicit = false;
     }
 
     /**

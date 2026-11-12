@@ -20,10 +20,8 @@ import org.jetbrains.annotations.Nullable;
         "Note that changing this property will not affect custom polygons, only regular polygons and polyhedrons."
 })
 @Example("set side length of {_shape} to 5")
-@Example("""
-    set {_shape}'s side length to 6
-    send side length of {_shape}
-    """)
+@Example("set {_shape}'s side length to 6")
+@Example("send side length of {_shape}")
 @Since("1.0.0")
 public class ExprShapeSideLength extends SimplePropertyExpression<PolyShape, Number> {
 

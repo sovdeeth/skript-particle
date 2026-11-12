@@ -23,8 +23,7 @@ import org.jetbrains.annotations.Nullable;
         "The density at which particles are spawned in a shape. This is in \"particles per meter\" (ppm), and defaults to 4. " +
                 "Be careful with this property, as it can cause lag if set to a high number. It's recommended to not go above 20 or so for this reason. 1000 ppm is the maximum value.",
         "Keep in mind that this value scales with dimensions. A 1 meter line with a density of 20 will spawn 20 particles, but a 1 meter cube with a density of 20 will spawn 8,000 particles (2,400 if hollow).",
-        "No shape is ever drawn with more than 100,000 points. If a density would produce more, the shape is drawn at the finest density that stays under that limit, and this expression returns that density instead.",
-        "Without an explicit density, shapes are additionally limited to 10,000 points.",
+        "Shapes are never drawn with more points than their point limit (see Shape Point Limit). If a density would produce more, the shape is drawn at the finest density that stays within the limit, and this expression returns that density instead.",
         "Also, be aware that this may not be exact. Some shapes, like cuboids, will tweak the density a bit to ensure particles land exactly on the borders of the shape.",
         "",
         "This syntax also supports setting the point count directly, which is the amount of particles spawned in a shape.",
@@ -35,11 +34,9 @@ import org.jetbrains.annotations.Nullable;
         "Changing this will change the particle density or point count of the shape. Resetting or deleting it will set it back to the default density (4).",
 })
 @Example("set {_shape}'s particle density to 10")
-@Example("""
-    set {_shape}'s point count to 100
-    reset {_shape}'s particle density
-    reset {_shape}'s point count
-    """)
+@Example("set {_shape}'s point count to 100")
+@Example("reset {_shape}'s particle density")
+@Example("reset {_shape}'s point count")
 @Since("1.0.0")
 public class ExprShapeParticleDensity extends SimplePropertyExpression<Shape, Number> {
 

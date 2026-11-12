@@ -18,11 +18,9 @@ import org.jetbrains.annotations.Nullable;
                 "For shapes like regular polygons, this is the distance from the center to a corner.",
         "Changing this will change the size of the shape. Resetting or deleting it will set it back to the default radius of 1."
 })
-@Example("""
-    set {_shape}'s radius to 5
-    set radius of {_shape} to 10
-    reset {_shape}'s radius
-    """)
+@Example("set {_shape}'s radius to 5")
+@Example("set radius of {_shape} to 10")
+@Example("reset {_shape}'s radius")
 @Since("1.0.0")
 public class ExprShapeRadius extends SimplePropertyExpression<RadialShape, Number> {
 

@@ -20,10 +20,8 @@ import org.jetbrains.annotations.Nullable;
         "Polyhedrons will return their face count, and can only be set to 4, 8, 12, or 20."
 })
 @Example("set sides of {_shape} to 5")
-@Example("""
-    set {_shape}'s side count to 6
-    send sides of {_shape}
-    """)
+@Example("set {_shape}'s side count to 6")
+@Example("send sides of {_shape}")
 @Since("1.0.0")
 public class ExprShapeSides extends SimplePropertyExpression<PolyShape, Integer> {
 

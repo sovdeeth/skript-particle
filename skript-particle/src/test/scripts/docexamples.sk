@@ -340,7 +340,12 @@ parse:
 	code:
 		command /spdoc-effsetordering:
 			trigger:
-				set the animation order of {_circle} to lowest-to-highest
+				set the draw order of {_helix} to y axis
+				set the animation order of {_sphere} to reversed spherical distance
+				set the draw order of {_circle} to angle
+				set the drawing order of {_cube} to random
+				set the animation order of {_cube} to lowest-to-highest
+				set the draw order of {_shape} to default
 
 parse:
 	results: {sp::doc::EffToggleAxes::*}
@@ -379,6 +384,16 @@ parse:
 				set winding rate of {_helix} to 1
 				set winding rate of {_helix} to 1/10
 				set winding rate of {_helix} to 10.4
+
+parse:
+	results: {sp::doc::ExprShapeBounds::*}
+	code:
+		command /spdoc-exprshapebounds:
+			trigger:
+				set {_low} to {_location} ~ shape minimum corner of {_shape}
+				set {_high} to {_location} ~ shape maximum corner of {_shape}
+				set {_size} to shape size of {_shape}
+				send "The shape is %x component of {_size}% by %y component of {_size}% by %z component of {_size}% blocks"
 
 parse:
 	results: {sp::doc::ExprShapeCutoffAngle::*}
@@ -472,6 +487,15 @@ parse:
 				reset {_shape}'s point count
 
 parse:
+	results: {sp::doc::ExprShapePointLimit::*}
+	code:
+		command /spdoc-exprshapepointlimit:
+			trigger:
+				set the shape point limit of {_sphere} to 500
+				add 1000 to {_shape}'s shape point limit
+				reset the shape point limit of {_shape}
+
+parse:
 	results: {sp::doc::ExprShapePoints::*}
 	code:
 		command /spdoc-exprshapepoints:
@@ -488,6 +512,15 @@ parse:
 				set {_shape}'s radius to 5
 				set radius of {_shape} to 10
 				reset {_shape}'s radius
+
+parse:
+	results: {sp::doc::ExprShapeReach::*}
+	code:
+		command /spdoc-exprshapereach:
+			trigger:
+				set {_reach} to shape reach of {_shape}
+				loop all players in radius {_reach} + 32 of {_location}:
+					send "Look up!" to loop-player
 
 parse:
 	results: {sp::doc::ExprShapeRelativeAxis::*}
@@ -697,6 +730,10 @@ test "docs of ExprHelixWindingRate parse":
 	assert {sp::doc::ExprHelixWindingRate::*} is not set with "%{sp::doc::ExprHelixWindingRate::*}%"
 	delete {sp::doc::ExprHelixWindingRate::*}
 
+test "docs of ExprShapeBounds parse":
+	assert {sp::doc::ExprShapeBounds::*} is not set with "%{sp::doc::ExprShapeBounds::*}%"
+	delete {sp::doc::ExprShapeBounds::*}
+
 test "docs of ExprShapeCutoffAngle parse":
 	assert {sp::doc::ExprShapeCutoffAngle::*} is not set with "%{sp::doc::ExprShapeCutoffAngle::*}%"
 	delete {sp::doc::ExprShapeCutoffAngle::*}
@@ -733,6 +770,10 @@ test "docs of ExprShapeParticleDensity parse":
 	assert {sp::doc::ExprShapeParticleDensity::*} is not set with "%{sp::doc::ExprShapeParticleDensity::*}%"
 	delete {sp::doc::ExprShapeParticleDensity::*}
 
+test "docs of ExprShapePointLimit parse":
+	assert {sp::doc::ExprShapePointLimit::*} is not set with "%{sp::doc::ExprShapePointLimit::*}%"
+	delete {sp::doc::ExprShapePointLimit::*}
+
 test "docs of ExprShapePoints parse":
 	assert {sp::doc::ExprShapePoints::*} is not set with "%{sp::doc::ExprShapePoints::*}%"
 	delete {sp::doc::ExprShapePoints::*}
@@ -740,6 +781,10 @@ test "docs of ExprShapePoints parse":
 test "docs of ExprShapeRadius parse":
 	assert {sp::doc::ExprShapeRadius::*} is not set with "%{sp::doc::ExprShapeRadius::*}%"
 	delete {sp::doc::ExprShapeRadius::*}
+
+test "docs of ExprShapeReach parse":
+	assert {sp::doc::ExprShapeReach::*} is not set with "%{sp::doc::ExprShapeReach::*}%"
+	delete {sp::doc::ExprShapeReach::*}
 
 test "docs of ExprShapeRelativeAxis parse":
 	assert {sp::doc::ExprShapeRelativeAxis::*} is not set with "%{sp::doc::ExprShapeRelativeAxis::*}%"

@@ -22,11 +22,9 @@ import org.jetbrains.annotations.Nullable;
                 "If the shape is rotated, this will be the vector that is pointing up after the rotation. Treat it as what the shape thinks is \"up\".",
         "Changing this will rotate the shape accordingly. Resetting or deleting it will set it back to the default orientation.",
 })
-@Example("""
-    set {_shape}'s normal vector to vector(1, 0, 0)
-    set {_v} to {_shape}'s normal
-    reset {_shape}'s normal vector
-    """)
+@Example("set {_shape}'s normal vector to vector(1, 0, 0)")
+@Example("set {_v} to {_shape}'s normal")
+@Example("reset {_shape}'s normal vector")
 @Since("1.0.0")
 public class ExprShapeNormal extends SimplePropertyExpression<Shape, Vector> {
 

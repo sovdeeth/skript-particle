@@ -34,6 +34,7 @@ import com.sovdee.skriptparticles.skript.shapes.effects.EffRotateShape;
 import com.sovdee.skriptparticles.skript.shapes.effects.EffSetOrdering;
 import com.sovdee.skriptparticles.skript.shapes.effects.EffToggleAxes;
 import com.sovdee.skriptparticles.skript.shapes.properties.ExprHelixWindingRate;
+import com.sovdee.skriptparticles.skript.shapes.properties.ExprShapeBounds;
 import com.sovdee.skriptparticles.skript.shapes.properties.ExprShapeCutoffAngle;
 import com.sovdee.skriptparticles.skript.shapes.properties.ExprShapeLWH;
 import com.sovdee.skriptparticles.skript.shapes.properties.ExprShapeLocations;
@@ -43,7 +44,9 @@ import com.sovdee.skriptparticles.skript.shapes.properties.ExprShapeOffset;
 import com.sovdee.skriptparticles.skript.shapes.properties.ExprShapeOrientation;
 import com.sovdee.skriptparticles.skript.shapes.properties.ExprShapeParticle;
 import com.sovdee.skriptparticles.skript.shapes.properties.ExprShapeParticleDensity;
+import com.sovdee.skriptparticles.skript.shapes.properties.ExprShapePointLimit;
 import com.sovdee.skriptparticles.skript.shapes.properties.ExprShapePoints;
+import com.sovdee.skriptparticles.skript.shapes.properties.ExprShapeReach;
 import com.sovdee.skriptparticles.skript.shapes.properties.ExprShapeRadius;
 import com.sovdee.skriptparticles.skript.shapes.properties.ExprShapeRelativeAxis;
 import com.sovdee.skriptparticles.skript.shapes.properties.ExprShapeSideLength;
@@ -234,6 +237,9 @@ public class ShapesModule extends HierarchicalAddonModule {
                 ExprShapeOrientation::register,
                 ExprShapeNormal::register,
                 ExprShapeParticleDensity::register,
+                ExprShapePointLimit::register,
+                ExprShapeBounds::register,
+                ExprShapeReach::register,
                 ExprShapeRelativeAxis::register,
                 ExprShapeLWH::register,
                 ExprShapeCutoffAngle::register,

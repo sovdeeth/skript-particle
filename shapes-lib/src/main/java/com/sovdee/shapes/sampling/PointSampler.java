@@ -46,17 +46,24 @@ public interface PointSampler extends Cloneable {
     void setDensity(double density);
 
     /**
-     * @return the maximum number of points a sampling may produce while the density is not explicit
+     * Returns the most points a sampling may currently produce. A shape whose density would produce more is
+     * sampled at a coarser density, just fine enough to stay within this limit.
+     *
+     * @return the point limit in effect
      */
     int getMaxPoints();
 
     /**
-     * Sets the maximum number of points and makes the density non-explicit, so that the cap applies:
-     * the shape is sampled at {@link #getDensity()}, or coarser if that would exceed the cap.
+     * Sets the point limit. It applies whether or not the density is explicit, and does not change the density.
      *
      * @param maxPoints the maximum particle count
      */
     void setMaxPoints(int maxPoints);
+
+    /**
+     * Returns to the implementation's default point limit, which may depend on whether the density is explicit.
+     */
+    void resetMaxPoints();
 
     /**
      * Returns whether density was set explicitly via {@link #setDensity}.
@@ -72,7 +79,9 @@ public interface PointSampler extends Cloneable {
     Comparator<Vector3d> getOrdering();
 
     /**
-     * Sets the comparator used to sort sampled points after generation.
+     * Sets the comparator used to sort sampled points after generation. Points are sorted in the shape's local
+     * space (after geometry modifiers, before orientation, scale and offset), so the order rotates with the shape.
+     * See {@link PointOrder} for common orderings.
      *
      * @param ordering a comparator over {@link Vector3d}, or {@code null} to disable sorting
      */
@@ -100,9 +109,7 @@ public interface PointSampler extends Cloneable {
     /**
      * Returns to the implementation's default density, limited by {@link #getMaxPoints()}.
      */
-    default void resetDensity() {
-        setMaxPoints(getMaxPoints());
-    }
+    void resetDensity();
 
     /**
      * Returns the density the given shape is actually sampled at, which may be coarser than

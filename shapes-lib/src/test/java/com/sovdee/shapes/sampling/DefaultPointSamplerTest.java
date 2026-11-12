@@ -335,33 +335,60 @@ class DefaultPointSamplerTest {
     }
 
     @Test
-    void explicitDensity_overridesAutoCap() {
-        Circle large = new Circle(10.0);
+    void explicitDensity_isNotLimitedByTheDefaultLimit() {
+        // radius 100 at density 0.05 is ~12 500 points: over the default limit, under the explicit-density one
+        Circle large = new Circle(100.0);
         DefaultPointSampler s = new DefaultPointSampler();
-        s.setMaxPoints(50);           // very tight auto cap
-        s.setDensity(0.5);            // explicit density
-        assertTrue(s.isDensityExplicit());
-
-        List<Vector3d> points = s.getPoints(large);
-        // With radius 10 and density 0.5, we expect ~125 points (2π*10 / (1/0.5)).
-        // The auto cap of 50 must NOT be applied.
-        assertTrue(points.size() > 50,
-                "Explicit density must not be limited by maxPoints, got " + points.size());
+        s.setDensity(0.05);
+        assertEquals(DefaultPointSampler.HARD_MAX_POINTS, s.getMaxPoints());
+        assertTrue(s.getPoints(large).size() > DefaultPointSampler.DEFAULT_MAX_POINTS,
+                "an explicit density should only be limited by the hard limit until a limit is set");
     }
 
     @Test
-    void setMaxPoints_resetsToAutoMode() {
+    void setLimit_appliesToAnExplicitDensityToo() {
         Circle large = new Circle(10.0);
         DefaultPointSampler s = new DefaultPointSampler();
-        s.setDensity(0.5);             // explicit
-        assertTrue(s.isDensityExplicit());
+        s.setDensity(0.5);             // ~125 points
+        s.setMaxPoints(50);
+        assertTrue(s.isDensityExplicit(), "setting the limit must not change the density");
+        assertEquals(0.5, s.getDensity(), 1e-12);
+        assertTrue(s.getPoints(large).size() <= 50, "the limit should apply to an explicit density");
+    }
 
-        s.setMaxPoints(50);            // resets to auto
-        assertFalse(s.isDensityExplicit(), "setMaxPoints should reset densityExplicit to false");
+    @Test
+    void setLimit_appliesToTheDefaultDensity() {
+        Circle large = new Circle(10.0);
+        DefaultPointSampler s = new DefaultPointSampler();
+        s.setMaxPoints(50);
+        assertFalse(s.isDensityExplicit());
+        assertEquals(50, s.getMaxPoints());
+        assertTrue(s.getPoints(large).size() <= 50);
+    }
 
-        List<Vector3d> points = s.getPoints(large);
-        assertTrue(points.size() <= 53,
-                "After setMaxPoints auto-mode should be re-enabled, got " + points.size());
+    @Test
+    void defaultLimit_dependsOnTheDensityUntilALimitIsSet() {
+        DefaultPointSampler s = new DefaultPointSampler();
+        assertEquals(DefaultPointSampler.DEFAULT_MAX_POINTS, s.getMaxPoints());
+        s.setDensity(0.1);
+        assertEquals(DefaultPointSampler.HARD_MAX_POINTS, s.getMaxPoints());
+        s.setMaxPoints(2_000);
+        assertEquals(2_000, s.getMaxPoints());
+        s.resetDensity();
+        assertEquals(2_000, s.getMaxPoints(), "a set limit outlives a density reset");
+        s.resetMaxPoints();
+        assertEquals(DefaultPointSampler.DEFAULT_MAX_POINTS, s.getMaxPoints());
+    }
+
+    @Test
+    void changingTheLimit_resamples() {
+        Circle large = new Circle(10.0);
+        DefaultPointSampler s = new DefaultPointSampler();
+        int before = s.getPoints(large).size();
+        s.setMaxPoints(20);
+        assertTrue(s.getPoints(large).size() <= 20);
+        s.resetMaxPoints();
+        assertEquals(before, s.getPoints(large).size());
     }
 
     @Test

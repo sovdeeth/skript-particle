@@ -21,11 +21,9 @@ import org.jetbrains.annotations.Nullable;
         "Returns the offset vector of a shape. This is the vector that is added to the location of the shape before drawing.",
         "Changing this will move the shape accordingly. Resetting or deleting it will set it back to the default offset of (0, 0, 0)."
 })
-@Example("""
-    set {_shape}'s offset vector to vector(1, 0, 0)
-    set offset of {_shape} to vector(0, 10, 0)
-    reset {_shape}'s offset vector
-    """)
+@Example("set {_shape}'s offset vector to vector(1, 0, 0)")
+@Example("set offset of {_shape} to vector(0, 10, 0)")
+@Example("reset {_shape}'s offset vector")
 @Since("1.0.0")
 public class ExprShapeOffset extends SimplePropertyExpression<Shape, Vector> {
 

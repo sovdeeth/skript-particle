@@ -18,11 +18,9 @@ import org.jetbrains.annotations.Nullable;
         "Returns the number of points on a star. This is the number of points on the star, not the number of particles drawn.",
         "Changing this will change the number of points on the star. The number of points must be at least 2."
 })
-@Example("""
-    set {_shape}'s star points to 5
-    set star points of {_shape} to 10
-    set star points of {_shape} to 2 * (star points of {_shape})
-    """)
+@Example("set {_shape}'s star points to 5")
+@Example("set star points of {_shape} to 10")
+@Example("set star points of {_shape} to 2 * (star points of {_shape})")
 @Since("1.0.1")
 public class ExprStarPoints extends SimplePropertyExpression<Shape, Number> {
 

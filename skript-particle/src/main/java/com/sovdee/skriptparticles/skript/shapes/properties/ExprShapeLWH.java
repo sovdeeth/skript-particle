@@ -21,12 +21,10 @@ import org.jetbrains.annotations.Nullable;
 })
 @Example("set {_shape}'s shape length to 5")
 @Example("set {_shape}'s shape width to 5")
-@Example("""
-    set {_shape}'s shape height to 5
-    reset {_shape}'s shape length
-    reset {_shape}'s shape width
-    add 6 to {_shape}'s shape height
-    """)
+@Example("set {_shape}'s shape height to 5")
+@Example("reset {_shape}'s shape length")
+@Example("reset {_shape}'s shape width")
+@Example("add 6 to {_shape}'s shape height")
 @Since("1.0.0")
 public class ExprShapeLWH extends SimplePropertyExpression<LWHShape, Number> {
 
