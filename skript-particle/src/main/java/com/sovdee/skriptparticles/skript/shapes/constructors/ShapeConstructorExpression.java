@@ -52,9 +52,16 @@ public abstract class ShapeConstructorExpression extends SectionExpression<Shape
 
     @Override
     protected Shape @Nullable [] get(Event event) {
-        List<Shape> shapes = getShapes(event);
+        List<Shape> shapes;
+        try {
+            shapes = getShapes(event);
+        } catch (IllegalArgumentException e) {
+            // the shapes library rejects impossible shapes, such as a line between two identical points
+            error("Could not create a shape: " + e.getMessage());
+            return new Shape[0];
+        }
         if (shapes == null)
-            return null;
+            return new Shape[0];
         // run section code to modify shapes
         if (hasSection) {
             for (Shape shape : shapes) {

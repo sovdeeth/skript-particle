@@ -14,6 +14,8 @@ import com.sovdee.skriptparticles.rendering.DrawData;
 import com.sovdee.skriptparticles.util.DynamicLocation;
 import com.sovdee.skriptparticles.util.MathUtil;
 import com.sovdee.skriptparticles.util.VectorConversion;
+import org.joml.Vector3d;
+import com.sovdee.skriptparticles.util.RelativePoints;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
@@ -82,6 +84,7 @@ public class ExprCuboid extends ShapeConstructorExpression {
     @Override
     protected @Nullable List<Shape> getShapes(Event event) {
         Shape shape;
+        DynamicLocation anchor = null;
         if (matchedPattern == 0) {
             if (width == null || length == null || height == null) return null;
             Number width = this.width.getSingle(event);
@@ -107,14 +110,20 @@ public class ExprCuboid extends ShapeConstructorExpression {
                 DynamicLocation dl2 = DynamicLocation.fromLocationEntity(corner2);
                 if (dl1 == null || dl2 == null)
                     return null;
-                shape = new Cuboid(
-                        () -> VectorConversion.toJOML(dl1.getLocation().toVector()),
-                        () -> VectorConversion.toJOML(dl2.getLocation().toVector())
-                );
+                // The cuboid is anchored at its first corner: its corners are relative to it,
+                // and it is stored as the location the cuboid is drawn at by default.
+                if (dl1.isDynamic() || dl2.isDynamic()) {
+                    shape = new Cuboid(RelativePoints.origin(), RelativePoints.supplier(dl1, dl2));
+                } else {
+                    shape = new Cuboid(new Vector3d(), RelativePoints.offset(dl1, dl2));
+                }
+                anchor = dl1;
             }
         }
         shape.getPointSampler().setStyle(style);
         shape.getPointSampler().setDrawContext(new DrawData());
+        if (anchor != null)
+            DrawData.of(shape).setLocation(anchor);
         return List.of(shape);
     }
 

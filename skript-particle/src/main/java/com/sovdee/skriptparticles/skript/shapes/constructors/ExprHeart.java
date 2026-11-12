@@ -86,7 +86,7 @@ public class ExprHeart extends ShapeConstructorExpression {
         length = Math.max(length.doubleValue(), MathUtil.EPSILON);
         eccentricity = Math.max(eccentricity.doubleValue(), 1);
 
-        Heart shape = new Heart(width.doubleValue(), length.doubleValue(), eccentricity.doubleValue());
+        Heart shape = new Heart(length.doubleValue(), width.doubleValue(), eccentricity.doubleValue());
         if (isSolid) {
             shape.getPointSampler().setStyle(SamplingStyle.SURFACE);
         }

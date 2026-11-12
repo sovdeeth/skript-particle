@@ -15,6 +15,8 @@ import com.sovdee.skriptparticles.rendering.DrawData;
 import com.sovdee.skriptparticles.util.DynamicLocation;
 import com.sovdee.skriptparticles.util.MathUtil;
 import com.sovdee.skriptparticles.util.VectorConversion;
+import org.joml.Vector3d;
+import com.sovdee.skriptparticles.util.RelativePoints;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
@@ -80,6 +82,7 @@ public class ExprRectangle extends ShapeConstructorExpression {
     @Override
     protected @Nullable List<Shape> getShapes(Event event) {
         Shape shape;
+        DynamicLocation anchor = null;
         if (matchedPattern == 0) {
             if (lengthExpr == null || widthExpr == null) return null;
             Number length = lengthExpr.getSingle(event);
@@ -103,15 +106,20 @@ public class ExprRectangle extends ShapeConstructorExpression {
                 DynamicLocation dl2 = DynamicLocation.fromLocationEntity(corner2);
                 if (dl1 == null || dl2 == null)
                     return null;
-                shape = new Rectangle(
-                        () -> VectorConversion.toJOML(dl1.getLocation().toVector()),
-                        () -> VectorConversion.toJOML(dl2.getLocation().toVector()),
-                        plane
-                );
+                // The rectangle is anchored at its first corner: its corners are relative to it,
+                // and it is stored as the location the rectangle is drawn at by default.
+                if (dl1.isDynamic() || dl2.isDynamic()) {
+                    shape = new Rectangle(RelativePoints.origin(), RelativePoints.supplier(dl1, dl2), plane);
+                } else {
+                    shape = new Rectangle(new Vector3d(), RelativePoints.offset(dl1, dl2), plane);
+                }
+                anchor = dl1;
             }
         }
         shape.getPointSampler().setStyle(style);
         shape.getPointSampler().setDrawContext(new DrawData());
+        if (anchor != null)
+            DrawData.of(shape).setLocation(anchor);
         return List.of(shape);
     }
 

@@ -13,6 +13,7 @@ import com.sovdee.skriptparticles.rendering.DrawData;
 import com.sovdee.skriptparticles.util.Point;
 import com.sovdee.skriptparticles.util.VectorConversion;
 import org.bukkit.Location;
+import org.bukkit.util.Vector;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -22,6 +23,7 @@ import org.skriptlang.skript.registration.SyntaxRegistry;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 @Name("Particle Bezier Curve")
 @Description("""
@@ -61,20 +63,41 @@ public class ExprBezierCurve extends ShapeConstructorExpression {
         for (Object value : this.controlPoints.getArray(event)) {
             controlPts.add(Point.of(value));
         }
-        return List.of(getBezierCurve(startPt, controlPts, endPt));
+        BezierCurve curve = getBezierCurve(startPt, controlPts, endPt);
+        if (curve == null)
+            return null;
+        return List.of(curve);
     }
 
-    private static @NotNull BezierCurve getBezierCurve(@NotNull Point<?> startPt, List<Point<?>> controlPts, @NotNull Point<?> endPt) {
-        BezierCurve curve = new BezierCurve(() -> {
+    private static @Nullable BezierCurve getBezierCurve(@NotNull Point<?> startPt, List<Point<?>> controlPts, @NotNull Point<?> endPt) {
+        List<Point<?>> others = new ArrayList<>(controlPts);
+        others.add(endPt);
+
+        // The curve is anchored at its start. A vector start has no place in the world,
+        // so the other points cannot be world positions then.
+        boolean relative = startPt.getType() == Vector.class;
+        boolean dynamic = startPt.isDynamic();
+        for (Point<?> point : others) {
+            if (point == null || (relative && point.getType() != Vector.class))
+                return null;
+            dynamic |= point.isDynamic();
+        }
+
+        // every point as an offset from the start
+        Supplier<List<Vector3d>> points = () -> {
             Location origin = startPt.getLocation();
-            List<Vector3d> result = new ArrayList<>();
+            List<Vector3d> result = new ArrayList<>(others.size() + 1);
             result.add(VectorConversion.toJOML(startPt.getVector(origin)));
-            for (Point<?> cp : controlPts)
-                result.add(VectorConversion.toJOML(cp.getVector(origin)));
-            result.add(VectorConversion.toJOML(endPt.getVector(origin)));
+            for (Point<?> point : others)
+                result.add(VectorConversion.toJOML(point.getVector(origin)));
             return result;
-        });
+        };
+
+        // only follow the points if any of them can actually move
+        BezierCurve curve = dynamic ? new BezierCurve(points) : new BezierCurve(points.get());
         curve.getPointSampler().setDrawContext(new DrawData());
+        if (!relative)
+            DrawData.of(curve).setLocation(startPt.getDynamicLocation());
         return curve;
     }
 

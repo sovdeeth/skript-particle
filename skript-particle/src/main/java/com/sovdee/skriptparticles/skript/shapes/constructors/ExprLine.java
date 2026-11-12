@@ -15,6 +15,8 @@ import com.sovdee.skriptparticles.rendering.DrawData;
 import com.sovdee.skriptparticles.util.DynamicLocation;
 import com.sovdee.skriptparticles.util.MathUtil;
 import com.sovdee.skriptparticles.util.VectorConversion;
+import org.joml.Vector3d;
+import com.sovdee.skriptparticles.util.RelativePoints;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
@@ -108,10 +110,9 @@ public class ExprLine extends ShapeConstructorExpression {
                         if (endPoint == null || startPoint == null) {
                             continue;
                         }
-                        lines.add(attachDrawData(new Line(
-                                () -> VectorConversion.toJOML(startPoint.getLocation().toVector()),
-                                () -> VectorConversion.toJOML(endPoint.getLocation().toVector())
-                        )));
+                        Shape line = lineBetween(startPoint, endPoint);
+                        if (line != null)
+                            lines.add(line);
                     }
                 }
             }
@@ -145,10 +146,9 @@ public class ExprLine extends ShapeConstructorExpression {
                     for (int i = 0; i < locations.size() - 1; i++) {
                         DynamicLocation startLoc = locations.get(i);
                         DynamicLocation endLoc = locations.get(i + 1);
-                        lines.add(attachDrawData(new Line(
-                                () -> VectorConversion.toJOML(startLoc.getLocation().toVector()),
-                                () -> VectorConversion.toJOML(endLoc.getLocation().toVector())
-                        )));
+                        Shape line = lineBetween(startLoc, endLoc);
+                        if (line != null)
+                            lines.add(line);
                     }
                 }
             }
@@ -162,6 +162,27 @@ public class ExprLine extends ShapeConstructorExpression {
     private Shape attachDrawData(Shape shape) {
         shape.getPointSampler().setDrawContext(new DrawData());
         return shape;
+    }
+
+    /**
+     * Creates a line between two world positions. The line is anchored at its start: its points are relative
+     * to the start, and the start is stored as the location the line is drawn at by default.
+     *
+     * @return the line, or null if both positions are currently the same and neither can move
+     */
+    private @Nullable Shape lineBetween(DynamicLocation start, DynamicLocation end) {
+        Line line;
+        if (start.isDynamic() || end.isDynamic()) {
+            line = new Line(RelativePoints.origin(), RelativePoints.supplier(start, end));
+        } else {
+            Vector3d offset = RelativePoints.offset(start, end);
+            if (offset.lengthSquared() == 0)
+                return null;
+            line = new Line(new Vector3d(), offset);
+        }
+        attachDrawData(line);
+        DrawData.of(line).setLocation(start);
+        return line;
     }
 
     @Override
