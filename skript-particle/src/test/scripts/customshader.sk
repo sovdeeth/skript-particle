@@ -1,0 +1,63 @@
+# Tests for the custom point modifier (shader) section and its point expressions.
+
+test "custom point modifier section parses and creates a modifier":
+	set {_shader} to a custom point modifier:
+		add 0.5 to point's y
+		if mod(point's index, 2) = 0:
+			set point's visibility to false
+	assert {_shader} is set with "custom point modifier section did not produce a modifier"
+
+	set {_c} to a circle with radius 3
+	add {_shader} to modifiers of {_c}
+	assert size of modifiers of {_c} is 1 with "custom modifier was not added to the shape"
+
+test "point expressions parse inside the section":
+	set {_shader} to a custom point modifier:
+		set {_x} to point's x
+		set {_i} to point's index
+		set {_n} to the point count
+		set point's z to {_x} * 2
+	assert {_shader} is set with "section using point expressions did not produce a modifier"
+
+# point expressions must be rejected outside a custom point modifier section
+parse:
+	results: {sp::parse::outside::*}
+	code:
+		on load:
+			set {_x} to point's x
+
+test "point expressions error outside the section":
+	set {_found} to false
+	loop {sp::parse::outside::*}:
+		if loop-value contains "custom point modifier":
+			set {_found} to true
+	assert {_found} is true with "expected a parse error using point expressions outside the section, got: %{sp::parse::outside::*}%"
+	delete {sp::parse::outside::*}
+
+# delays must be rejected inside the section
+parse:
+	results: {sp::parse::delay::*}
+	code:
+		on load:
+			set {_s} to a custom point modifier:
+				wait 1 tick
+				set point's visibility to false
+
+test "delays are rejected inside the section":
+	set {_found} to false
+	loop {sp::parse::delay::*}:
+		if loop-value contains "delays can't be used":
+			set {_found} to true
+	assert {_found} is true with "expected a parse error for a delay inside the section, got: %{sp::parse::delay::*}%"
+	delete {sp::parse::delay::*}
+
+# the expression requires a section
+parse:
+	results: {sp::parse::nosection::*}
+	code:
+		on load:
+			set {_s} to a custom point modifier
+
+test "custom point modifier without a section errors":
+	assert size of {sp::parse::nosection::*} is greater than 0 with "expected a parse error using the expression without a section, got: %{sp::parse::nosection::*}%"
+	delete {sp::parse::nosection::*}

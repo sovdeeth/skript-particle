@@ -7,26 +7,27 @@ import org.bukkit.Particle;
 import org.bukkit.Particle.DustOptions;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
+import org.skriptlang.skript.bukkit.particles.particleeffects.ParticleEffect;
 
 import java.util.Collection;
-import java.util.Set;
+import java.util.List;
 
-/*
- * Thanks to ShaneBee at SkBee for the original code.
- */
 public class ParticleUtil {
     private static final ParticleBuilder Y_AXIS = new ParticleBuilder(Particle.DUST).data(new DustOptions(DyeColor.LIME.getColor(), 0.5f));
     private static final ParticleBuilder X_AXIS = new ParticleBuilder(Particle.DUST).data(new DustOptions(DyeColor.RED.getColor(), 0.5f));
     private static final ParticleBuilder Z_AXIS = new ParticleBuilder(Particle.DUST).data(new DustOptions(DyeColor.BLUE.getColor(), 0.5f));
 
-    public static com.sovdee.skriptparticles.particles.Particle getDefaultParticle() {
-        return (com.sovdee.skriptparticles.particles.Particle) new com.sovdee.skriptparticles.particles.Particle(Particle.FLAME).count(1).extra(0);
+    public static ParticleEffect getDefaultParticle() {
+        ParticleEffect particle = ParticleEffect.of(Particle.FLAME).count(1);
+        // not chained: ParticleEffect only returns itself from speed() on Skript 2.17+
+        particle.speed(0);
+        return particle;
     }
 
     public static void drawAxes(Location location, Quaternion orientation, Collection<Player> recipients) {
-        Set<Vector> yAxis = MathUtil.calculateLine(new Vector(0, 0, 0), new Vector(0, 1, 0), 0.2);
-        Set<Vector> xAxis = MathUtil.calculateLine(new Vector(0, 0, 0), new Vector(1, 0, 0), 0.2);
-        Set<Vector> zAxis = MathUtil.calculateLine(new Vector(0, 0, 0), new Vector(0, 0, 1), 0.2);
+        List<Vector> yAxis = MathUtil.calculateLine(new Vector(0, 0, 0), new Vector(0, 1, 0), 0.2);
+        List<Vector> xAxis = MathUtil.calculateLine(new Vector(0, 0, 0), new Vector(1, 0, 0), 0.2);
+        List<Vector> zAxis = MathUtil.calculateLine(new Vector(0, 0, 0), new Vector(0, 0, 1), 0.2);
 
         yAxis = orientation.transform(yAxis);
         xAxis = orientation.transform(xAxis);

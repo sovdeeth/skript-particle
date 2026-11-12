@@ -1,13 +1,13 @@
 package com.sovdee.shapes.shapes;
 
 import com.sovdee.shapes.sampling.SamplingStyle;
+import com.sovdee.shapes.util.VectorUtil;
 import org.joml.Vector3d;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
+
 
 public class IrregularPolygon extends AbstractShape implements LWHShape {
 
@@ -46,17 +46,25 @@ public class IrregularPolygon extends AbstractShape implements LWHShape {
     }
 
     @Override
-    public void generateOutline(Set<Vector3d> points, double density) {
-        points.addAll(Line.connectPoints(vertices, density));
-        points.addAll(Line.calculateLine(vertices.get(0), vertices.get(vertices.size() - 1), density));
+    public void generateOutline(List<Vector3d> points, double density) {
+        int start = points.size();
+        // one edge per vertex, each without its end point, so every vertex appears exactly once
+        int count = vertices.size();
+        for (int i = 0; i < count; i++) {
+            Line.calculateLine(points, vertices.get(i), vertices.get((i + 1) % count), density, false);
+        }
         if (height != 0) {
-            Set<Vector3d> upperPoints = new LinkedHashSet<>();
-            for (Vector3d v : points) {
-                upperPoints.add(new Vector3d(v.x, height, v.z));
+            int end = points.size();
+            for (int i = start; i < end; i++) {
+                Vector3d v = points.get(i);
+                points.add(new Vector3d(v.x, height, v.z));
             }
-            points.addAll(upperPoints);
+            // vertical edges, without the vertices that the two outlines already contain
+            int layers = segments(height, density);
             for (Vector3d v : vertices) {
-                points.addAll(Line.calculateLine(v, new Vector3d(v.x, height, v.z), density));
+                for (int layer = 1; layer < layers; layer++) {
+                    points.add(new Vector3d(v.x, height * layer / layers, v.z));
+                }
             }
         }
     }
@@ -65,31 +73,24 @@ public class IrregularPolygon extends AbstractShape implements LWHShape {
     public double computeDensity(SamplingStyle style, int targetPointCount) {
         int count = Math.max(targetPointCount, 1);
         double perimeter = 0;
-        for (int i = 0; i < vertices.size() - 1; i++) {
-            perimeter += vertices.get(i).distance(vertices.get(i + 1));
+        for (int i = 0; i < vertices.size(); i++) {
+            perimeter += vertices.get(i).distance(vertices.get((i + 1) % vertices.size()));
         }
-        perimeter += vertices.get(0).distance(vertices.get(vertices.size() - 1));
-        perimeter *= 2;
-        perimeter += vertices.size() * height;
-        return perimeter / count;
+        if (height == 0)
+            return perimeter / count;
+        // both outlines plus one vertical edge per vertex
+        return (2 * perimeter + vertices.size() * height) / count;
     }
 
     @Override
-    public boolean contains(Vector3d point) {
-        if (height > 0 && (point.y < 0 || point.y > height)) return false;
-        if (height == 0 && Math.abs(point.y) > EPSILON) return false;
-        // Ray casting algorithm on XZ plane
-        int n = vertices.size();
-        boolean inside = false;
-        for (int i = 0, j = n - 1; i < n; j = i++) {
-            double xi = vertices.get(i).x, zi = vertices.get(i).z;
-            double xj = vertices.get(j).x, zj = vertices.get(j).z;
-            if ((zi > point.z) != (zj > point.z) &&
-                    point.x < (xj - xi) * (point.z - zi) / (zj - zi) + xi) {
-                inside = !inside;
-            }
+    protected boolean containsLocal(Vector3d point, double tolerance) {
+        if (height > 0) {
+            if (point.y < -tolerance || point.y > height + tolerance) return false;
+        } else if (Math.abs(point.y) > tolerance) {
+            return false;
         }
-        return inside;
+        return VectorUtil.isInPolygonXZ(vertices, point.x, point.z)
+                || VectorUtil.isNearPolygonXZ(vertices, point.x, point.z, tolerance);
     }
 
     @Override

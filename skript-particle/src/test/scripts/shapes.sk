@@ -1,0 +1,70 @@
+# Basic parsing and behavior tests for shape constructors and properties.
+
+test "circle constructor and radius property":
+	set {_c} to a circle with radius 3
+	assert {_c} is set with "circle constructor did not produce a shape"
+	assert radius of {_c} is 3 with "radius of new circle should be 3"
+	set radius of {_c} to 5
+	assert radius of {_c} is 5 with "setting the radius of a circle failed"
+
+test "shape constructor section runs its body":
+	set {_c} to a circle with radius 2:
+		set radius of the current shape to 4
+	assert {_c} is set with "circle constructor with section did not produce a shape"
+	assert radius of {_c} is 4 with "constructor section body did not modify the shape"
+
+test "line constructor":
+	set {_l} to a line from vector(0, 0, 0) to vector(0, 5, 0)
+	assert {_l} is set with "line constructor did not produce a shape"
+
+test "cylinder constructor and lwh properties":
+	set {_cyl} to a cylinder with radius 2 and height 4
+	assert {_cyl} is set with "cylinder constructor did not produce a shape"
+	assert radius of {_cyl} is 2 with "radius of new cylinder should be 2"
+	assert shape height of {_cyl} is 4 with "height of new cylinder should be 4"
+
+test "shape scale property":
+	set {_c} to a circle with radius 1
+	assert scale of {_c} is 1 with "default shape scale should be 1"
+	set scale of {_c} to 2
+	assert scale of {_c} is 2 with "setting shape scale failed"
+	add 0.5 to {_c}'s scale
+	assert scale of {_c} is 2.5 with "adding to shape scale failed"
+
+test "shape style property":
+	# the shape is in a variable, so this must not be taken for a boss bar style
+	set {_s} to a sphere with radius 2
+	set style of {_s} to solid
+	set {_solid} to size of points of {_s}
+	set {_s}'s style to wireframe
+	set {_wireframe} to size of points of {_s}
+	assert {_solid} is greater than {_wireframe} with "changing the style of a shape in a variable had no effect (solid %{_solid}%, wireframe %{_wireframe}%)"
+
+test "shape scale reset":
+	set {_c} to a circle with radius 1
+	set scale of {_c} to 3
+	delete scale of {_c}
+	assert scale of {_c} is 1 with "deleting shape scale failed"
+	# 'reset' does not reach shapes on Skript 2.17.1: PropertyBaseExpression#acceptChange returns early for
+	# DELETE/RESET once any other type with a scale accepts the change, so the shape's change types are never stored
+
+test "shape particle accepts skript particles":
+	set {_c} to a circle with radius 1
+	set particle of {_c} to red dust particle
+	assert particle of {_c} is set with "setting a shape's particle to red dust failed"
+	set {_d} to a sphere with radius 1
+	set {_d}'s particle to particle of {_c}
+	assert particle of {_d} is set with "copying a particle between shapes failed"
+	reset particle of {_c}
+	assert particle of {_c} is set with "resetting a shape's particle failed"
+
+test "shape points are sampled":
+	set {_c} to a circle with radius 3
+	assert size of points of {_c} is greater than 0 with "a circle should sample at least one point"
+
+test "skript quaternions work as shape orientations":
+	set {_q} to axisAngle(180, vector(0, 1, 0))
+	assert {_q} is set with "axisAngle did not return a quaternion"
+	set {_c} to a circle with radius 1
+	set orientation of {_c} to {_q}
+	assert orientation of {_c} is set with "quaternion from axisAngle could not be used as a shape orientation"

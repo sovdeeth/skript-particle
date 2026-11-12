@@ -1,2 +1,12 @@
+pluginManagement {
+    repositories {
+        mavenLocal()
+        gradlePluginPortal()
+        maven {
+            url 'https://repo.papermc.io/repository/maven-public/'
+        }
+    }
+}
+
 rootProject.name = 'skript-particle-root'
 include 'shapes-lib', 'skript-particle'

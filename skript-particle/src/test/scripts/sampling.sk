@@ -1,0 +1,49 @@
+# Tests for sampling syntax: point limit, draw order, bounds and reach.
+
+test "shape point limit":
+	set {_s} to a sphere with radius 10
+	assert shape point limit of {_s} is 10000 with "the default point limit should be 10,000"
+	set shape point limit of {_s} to 200
+	assert shape point limit of {_s} is 200 with "setting the point limit failed"
+	assert size of points of {_s} is less than or equal to 200 with "a shape should never have more points than its limit"
+	add 100 to {_s}'s shape point limit
+	assert shape point limit of {_s} is 300 with "adding to the point limit failed"
+	delete shape point limit of {_s}
+	assert shape point limit of {_s} is 10000 with "deleting the point limit should restore the default"
+	set particle density of {_s} to 2
+	assert shape point limit of {_s} is 100000 with "an explicit density should raise the default limit"
+
+test "shape draw order along an input":
+	set {_l} to a line from vector(0, 0, 0) to vector(0, 5, 0)
+	set the draw order of {_l} to reversed y axis
+	set {_points::*} to points of {_l}
+	assert y component of {_points::1} is greater than y component of {_points::%size of {_points::*}%} with "reversed y axis should start at the top"
+	set the animation order of {_l} to y axis
+	set {_points::*} to points of {_l}
+	assert y component of {_points::1} is less than y component of {_points::%size of {_points::*}%} with "y axis should start at the bottom"
+
+test "shape draw order keywords parse and keep every point":
+	set {_s} to a sphere with radius 2
+	set {_count} to size of points of {_s}
+	set the drawing order of {_s} to random
+	assert size of points of {_s} is {_count} with "random order changed the number of points"
+	set the draw order of {_s} to angle
+	set the draw order of {_s} to spherical distance
+	set the draw order of {_s} to radius
+	set the draw order of {_s} to lowest-to-highest
+	set the draw order of {_s} to highest-to-lowest
+	set the draw order of {_s} to default
+	assert size of points of {_s} is {_count} with "resetting the order changed the number of points"
+
+test "shape bounds and reach":
+	set {_c} to a circle with radius 2
+	set {_min} to shape minimum corner of {_c}
+	set {_max} to shape max corner of {_c}
+	assert x component of {_min} is between -2.01 and -1.99 with "the minimum corner of a circle should be at -radius (got %{_min}%)"
+	assert x component of {_max} is between 1.99 and 2.01 with "the maximum corner of a circle should be at +radius (got %{_max}%)"
+	set {_size} to shape size of {_c}
+	assert x component of {_size} is between 3.99 and 4.01 with "the size of a circle should be its diameter (got %{_size}%)"
+	assert y component of {_size} is 0 with "a circle should be flat"
+	assert shape reach of {_c} is between 1.99 and 2.01 with "the reach of a circle should be its radius"
+	set offset of {_c} to vector(0, 3, 0)
+	assert y component of shape minimum corner of {_c} is between 2.99 and 3.01 with "the bounds should include the offset"

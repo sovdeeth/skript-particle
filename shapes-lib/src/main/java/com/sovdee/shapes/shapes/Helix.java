@@ -3,8 +3,8 @@ package com.sovdee.shapes.shapes;
 import com.sovdee.shapes.sampling.SamplingStyle;
 import org.joml.Vector3d;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Helix extends AbstractShape implements RadialShape, LWHShape {
 
@@ -30,52 +30,62 @@ public class Helix extends AbstractShape implements RadialShape, LWHShape {
         this.direction = direction;
     }
 
-    private static Set<Vector3d> calculateHelix(double radius, double height, double slope, int direction, double density) {
-        Set<Vector3d> points = new LinkedHashSet<>();
+    private static void calculateHelix(List<Vector3d> points, double radius, double height, double slope, int direction, double density) {
         if (radius <= 0 || height <= 0) {
-            return points;
+            return;
         }
-        double loops = Math.abs(height / slope);
-        double length = slope * slope + radius * radius;
-        double stepSize = density / length;
-        for (double t = 0; t < loops; t += stepSize) {
+        // the helix is parameterised by its angle: one radian covers this much arc length
+        double totalAngle = Math.abs(height / slope);
+        double lengthPerRadian = Math.sqrt(slope * slope + radius * radius);
+        int steps = segments(totalAngle * lengthPerRadian, density);
+        if (points instanceof ArrayList<?> al)
+            al.ensureCapacity(points.size() + steps + 1);
+        for (int i = 0; i <= steps; i++) {
+            double t = totalAngle * i / steps;
             double x = radius * Math.cos(direction * t);
             double z = radius * Math.sin(direction * t);
             points.add(new Vector3d(x, t * slope, z));
         }
-        return points;
     }
 
     @Override
-    public void generateOutline(Set<Vector3d> points, double density) {
-        points.addAll(calculateHelix(radius, height, slope, direction, density));
+    public void generateOutline(List<Vector3d> points, double density) {
+        calculateHelix(points, radius, height, slope, direction, density);
     }
 
     @Override
-    public void generateSurface(Set<Vector3d> points, double density) {
-        for (double r = radius; r > 0; r -= density) {
-            points.addAll(calculateHelix(r, height, slope, direction, density));
+    public void generateSurface(List<Vector3d> points, double density) {
+        int rings = segments(radius, density);
+        for (int i = rings; i >= 1; i--) {
+            calculateHelix(points, radius * i / rings, height, slope, direction, density);
         }
     }
 
     @Override
     public double computeDensity(SamplingStyle style, int targetPointCount) {
         int count = Math.max(targetPointCount, 1);
+        double totalAngle = height / slope;
         return switch (style) {
-            case OUTLINE -> Math.sqrt(slope * slope + radius * radius) * (height / slope) / count;
-            case FILL, SURFACE -> Math.sqrt(slope * slope + radius * radius * (height / slope) / count);
+            case OUTLINE -> Math.sqrt(slope * slope + radius * radius) * totalAngle / count;
+            case FILL, SURFACE -> {
+                // area of the helicoid swept between the axis and the helix
+                double area = totalAngle * 0.5 * (radius * Math.sqrt(slope * slope + radius * radius)
+                        + slope * slope * Math.log((radius + Math.sqrt(slope * slope + radius * radius)) / slope));
+                yield Math.sqrt(area / count);
+            }
         };
     }
 
     @Override
-    public boolean contains(Vector3d point) {
-        // Approximate: check distance to nearest helix point
-        if (point.y < 0 || point.y > height) return false;
-        double t = point.y / slope;
-        double helixX = radius * Math.cos(direction * t);
-        double helixZ = radius * Math.sin(direction * t);
-        double dist = Math.sqrt((point.x - helixX) * (point.x - helixX) + (point.z - helixZ) * (point.z - helixZ));
-        return dist <= EPSILON;
+    protected boolean containsLocal(Vector3d point, double tolerance) {
+        // Approximate: compare against the point of the helix at the same height
+        if (point.y < -tolerance || point.y > height + tolerance) return false;
+        double y = Math.clamp(point.y, 0.0, height);
+        double t = y / slope;
+        double dx = point.x - radius * Math.cos(direction * t);
+        double dz = point.z - radius * Math.sin(direction * t);
+        double dy = point.y - y;
+        return dx * dx + dy * dy + dz * dz <= tolerance * tolerance;
     }
 
     public double getSlope() { return slope; }

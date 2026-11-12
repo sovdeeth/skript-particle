@@ -1,13 +1,27 @@
 package com.sovdee.shapes.shapes;
 
 import com.sovdee.shapes.sampling.SamplingStyle;
+import com.sovdee.shapes.util.VectorUtil;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
 
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.List;
 
+/**
+ * One of the five Platonic solids (regular convex polyhedra), specifically the subset with
+ * triangular or pentagonal faces: tetrahedron (4 faces), octahedron (8 faces), dodecahedron
+ * (12 faces), and icosahedron (20 faces). The shape is centred at the origin and scaled so that
+ * the circumscribed sphere has the given {@code radius}.
+ * <p>
+ * Each face is generated independently using pre-computed quaternion rotations ({@code TETRAHEDRON_FACES},
+ * etc.) that orient a canonical face into its correct position. Surface and outline points per face
+ * are produced via {@link RegularPolygon#calculateRegularPolygon}.
+ * </p>
+ * <p>
+ * The {@link #contains(Vector3d)} check uses a conservative inscribed-sphere test rather than an
+ * exact half-plane test.
+ * </p>
+ */
 public class RegularPolyhedron extends AbstractShape implements RadialShape, PolyShape {
 
     private static final Quaterniond[] TETRAHEDRON_FACES = {
@@ -43,7 +57,10 @@ public class RegularPolyhedron extends AbstractShape implements RadialShape, Pol
             new Quaterniond(0.8090169943749475, 0.0, -0.46708617948135794, 0.35682208977309),
             new Quaterniond(-0.5, -0.5, -0.6454972243679027, 0.288675134594813),
             new Quaterniond(0.0, 0.0, 0.9341723589627157, 0.35682208977309),
-            new Quaterniond(-0.8090169943749475, 0.5, 0.110264089708268, -0.288675134594813)
+            new Quaterniond(-0.8090169943749475, 0.5, 0.110264089708268, -0.288675134594813),
+            new Quaterniond(0.8090169943749477, 0.0, 0.11026408970826802, 0.5773502691896257),
+            new Quaterniond(-0.8090169943749475, -0.5, -0.110264089708268, 0.288675134594813),
+            new Quaterniond(0.8090169943749475, -0.5, 0.110264089708268, -0.288675134594813)
     };
     private static final Quaterniond[] DODECAHEDRON_FACES = {
             new Quaterniond(0.0, 0.3090169943749475, 0.0, 0.9510565162951536),
@@ -72,6 +89,13 @@ public class RegularPolyhedron extends AbstractShape implements RadialShape, Pol
     private double radius;
     private int faces;
 
+    /**
+     * Constructs a regular polyhedron with the given circumscribed radius and face count.
+     * Only face counts of 4, 8, 12, and 20 are valid; any other value defaults to 4 (tetrahedron).
+     *
+     * @param radius the circumscribed sphere radius; clamped to at least {@link Shape#EPSILON}
+     * @param faces  the number of faces; must be 4, 8, 12, or 20 (defaults to 4 otherwise)
+     */
     public RegularPolyhedron(double radius, int faces) {
         super();
         this.radius = Math.max(radius, Shape.EPSILON);
@@ -81,45 +105,64 @@ public class RegularPolyhedron extends AbstractShape implements RadialShape, Pol
         };
     }
 
+    /**
+     * Generates wireframe (edge) outline points for each face of the polyhedron by applying
+     * the face-specific quaternion rotation to outline points of a regular polygon face.
+     *
+     * @param points  the list to which outline points are appended
+     * @param density the approximate spacing between consecutive points
+     */
     @Override
-    public void generateOutline(Set<Vector3d> points, double density) {
-        points.addAll(switch (faces) {
-            case 4 -> generatePolyhedron(TETRAHEDRON_FACES, radius, density, SamplingStyle.OUTLINE);
-            case 8 -> generatePolyhedron(OCTAHEDRON_FACES, radius, density, SamplingStyle.OUTLINE);
-            case 20 -> generatePolyhedron(ICOSAHEDRON_FACES, radius, density, SamplingStyle.OUTLINE);
-            case 12 -> generatePolyhedron(DODECAHEDRON_FACES, radius, density, SamplingStyle.OUTLINE);
-            default -> new HashSet<>();
-        });
+    public void generateOutline(List<Vector3d> points, double density) {
+        Quaterniond[] rotations = getFaceRotations();
+        if (rotations != null)
+            generatePolyhedron(points, rotations, radius, density, SamplingStyle.OUTLINE);
     }
 
+    /**
+     * Generates surface points covering all faces of the polyhedron. Each face is filled
+     * with a concentric-ring polygon pattern and then rotated into place.
+     *
+     * @param points  the list to which surface points are appended
+     * @param density the approximate spacing between consecutive points
+     */
     @Override
-    public void generateSurface(Set<Vector3d> points, double density) {
-        points.addAll(switch (faces) {
-            case 4 -> generatePolyhedron(TETRAHEDRON_FACES, radius, density, SamplingStyle.SURFACE);
-            case 8 -> generatePolyhedron(OCTAHEDRON_FACES, radius, density, SamplingStyle.SURFACE);
-            case 20 -> generatePolyhedron(ICOSAHEDRON_FACES, radius, density, SamplingStyle.SURFACE);
-            case 12 -> generatePolyhedron(DODECAHEDRON_FACES, radius, density, SamplingStyle.SURFACE);
-            default -> new HashSet<>();
-        });
+    public void generateSurface(List<Vector3d> points, double density) {
+        Quaterniond[] rotations = getFaceRotations();
+        if (rotations != null)
+            generatePolyhedron(points, rotations, radius, density, SamplingStyle.SURFACE);
     }
 
+    /**
+     * Generates filled interior points by stacking concentric scaled copies of the surface from
+     * {@code radius} down to {@code 0} in steps of {@code radius / round(radius / density)}.
+     *
+     * @param points  the list to which filled points are appended
+     * @param density the approximate spacing between consecutive points
+     */
     @Override
-    public void generateFilled(Set<Vector3d> points, double density) {
-        double step = radius / Math.round(radius / density);
-        Quaterniond[] rotations = switch (faces) {
+    public void generateFilled(List<Vector3d> points, double density) {
+        Quaterniond[] rotations = getFaceRotations();
+        if (rotations == null) return;
+        // concentric shells from the surface inwards, plus the center
+        int shells = segments(radius, density);
+        for (int shell = shells; shell >= 1; shell--) {
+            generatePolyhedron(points, rotations, radius * shell / shells, density, SamplingStyle.SURFACE);
+        }
+        points.add(new Vector3d(0, 0, 0));
+    }
+
+    private Quaterniond[] getFaceRotations() {
+        return switch (faces) {
             case 4 -> TETRAHEDRON_FACES;
             case 8 -> OCTAHEDRON_FACES;
             case 12 -> DODECAHEDRON_FACES;
             case 20 -> ICOSAHEDRON_FACES;
-            default -> new Quaterniond[0];
+            default -> null;
         };
-        for (double i = radius; i > 0; i -= step) {
-            points.addAll(generatePolyhedron(rotations, i, density, SamplingStyle.SURFACE));
-        }
     }
 
-    private Set<Vector3d> generatePolyhedron(Quaterniond[] rotations, double radius, double density, SamplingStyle style) {
-        Set<Vector3d> points = new LinkedHashSet<>();
+    private void generatePolyhedron(List<Vector3d> points, Quaterniond[] rotations, double radius, double density, SamplingStyle style) {
         int sides = this.faces == 12 ? 5 : 3;
         double sideLength = switch (faces) {
             case 4 -> radius / TETRA_R2SL;
@@ -135,51 +178,69 @@ public class RegularPolyhedron extends AbstractShape implements RadialShape, Pol
             case 20 -> sideLength * ICOSA_INSC;
             default -> 1;
         };
+        int polyhedronStart = points.size();
         Vector3d offset = new Vector3d(0, inscribedRadius, 0);
         double faceRadius = sideLength / (2 * Math.sin(Math.PI / sides));
         for (Quaterniond rotation : rotations) {
-            Set<Vector3d> facePoints = new LinkedHashSet<>(switch (style) {
-                case OUTLINE -> generateFaceOutline(sides, faceRadius, density);
-                case FILL, SURFACE -> generateFaceSurface(sides, faceRadius, density);
-            });
-            facePoints.forEach(point -> rotation.transform(point.add(offset)));
-            points.addAll(facePoints);
+            int faceStart = points.size();
+            switch (style) {
+                case OUTLINE -> RegularPolygon.calculateRegularPolygon(points, faceRadius, 2 * Math.PI / sides, density, true);
+                case FILL, SURFACE -> generateFaceSurface(points, sides, faceRadius, density);
+            }
+            for (int i = faceStart; i < points.size(); i++) {
+                rotation.transform(points.get(i).add(offset));
+            }
         }
-        return points;
+        // neighbouring faces share their edges, so those points were generated once per face
+        VectorUtil.removeDuplicates(points, polyhedronStart, Math.min(density, radius) / 100);
     }
 
-    private Set<Vector3d> generateFaceOutline(int sides, double radius, double density) {
-        return new LinkedHashSet<>(RegularPolygon.calculateRegularPolygon(radius, 2 * Math.PI / sides, density, true));
-    }
-
-    private Set<Vector3d> generateFaceSurface(int sides, double radius, double density) {
-        Set<Vector3d> facePoints = new LinkedHashSet<>();
-        double apothem = radius * Math.cos(Math.PI / sides);
-        double radiusStep = radius / Math.round(apothem / density);
-        for (double subRadius = radius; subRadius > 0; subRadius -= radiusStep) {
-            facePoints.addAll(RegularPolygon.calculateRegularPolygon(subRadius, 2 * Math.PI / sides, density, false));
-        }
-        facePoints.add(new Vector3d(0, 0, 0));
-        return facePoints;
+    private void generateFaceSurface(List<Vector3d> points, int sides, double radius, double density) {
+        // a non-wireframe polygon is already filled from its outline down to its center
+        RegularPolygon.calculateRegularPolygon(points, radius, 2 * Math.PI / sides, density, false);
     }
 
     @Override
     public double computeDensity(SamplingStyle style, int targetPointCount) {
-        return 0.25; // No good formula available
+        int count = Math.max(targetPointCount, 1);
+        int faceSides = faces == 12 ? 5 : 3;
+        double sideLength = getSideLength();
+        double inscribedRadius = sideLength * switch (faces) {
+            case 4 -> TETRA_INSC;
+            case 8 -> OCTA_INSC;
+            case 12 -> DODECA_INSC;
+            case 20 -> ICOSA_INSC;
+            default -> 0;
+        };
+        // every edge is shared by exactly two faces
+        int edges = faces * faceSides / 2;
+        double faceArea = faceSides * sideLength * sideLength / (4 * Math.tan(Math.PI / faceSides));
+        return switch (style) {
+            case OUTLINE -> edges * sideLength / count;
+            case SURFACE -> Math.sqrt(faces * faceArea / count);
+            case FILL -> Math.cbrt(faces * faceArea * inscribedRadius / 3 / count);
+        };
     }
 
     @Override
-    public boolean contains(Vector3d point) {
-        // Conservative: check if within inscribed sphere
-        double sideLength = getSideLength();
-        double inscribedRadius = switch (faces) {
-            case 4 -> sideLength * TETRA_INSC;
-            case 8 -> sideLength * OCTA_INSC;
-            case 12 -> sideLength * DODECA_INSC;
-            case 20 -> sideLength * ICOSA_INSC;
+    protected boolean containsLocal(Vector3d point, double tolerance) {
+        Quaterniond[] rotations = getFaceRotations();
+        if (rotations == null) return false;
+        double inscribedRadius = getSideLength() * switch (faces) {
+            case 4 -> TETRA_INSC;
+            case 8 -> OCTA_INSC;
+            case 12 -> DODECA_INSC;
+            case 20 -> ICOSA_INSC;
             default -> 0;
         };
-        return point.length() <= inscribedRadius;
+        // a convex polyhedron is the space behind all of its faces
+        Vector3d normal = new Vector3d();
+        for (Quaterniond rotation : rotations) {
+            rotation.transform(normal.set(0, 1, 0));
+            if (point.dot(normal) > inscribedRadius + tolerance)
+                return false;
+        }
+        return true;
     }
 
     @Override

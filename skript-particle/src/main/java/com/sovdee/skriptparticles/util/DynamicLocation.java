@@ -3,7 +3,8 @@ package com.sovdee.skriptparticles.util;
 import ch.njol.skript.util.Direction;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
-import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Contract;
 
 /**
@@ -22,7 +23,7 @@ public class DynamicLocation {
      * Creates a dynamic location with the given entity
      * @param entity the entity to create the dynamic location from
      */
-    public DynamicLocation(Entity entity) {
+    public DynamicLocation(@NotNull Entity entity) {
         this.entity = entity;
     }
 
@@ -49,7 +50,7 @@ public class DynamicLocation {
      * @param entity the entity to create the dynamic location from
      * @param direction the direction to create the dynamic location from
      */
-    public DynamicLocation(Entity entity, @Nullable Direction direction) {
+    public DynamicLocation(@NotNull Entity entity, @Nullable Direction direction) {
         this.entity = entity;
         this.direction = direction;
     }
@@ -157,7 +158,7 @@ public class DynamicLocation {
      *
      * @param direction the direction to set the dynamic location to
      */
-    public void setDirection(Direction direction) {
+    public void setDirection(@Nullable Direction direction) {
         this.direction = direction;
     }
 
@@ -179,6 +180,15 @@ public class DynamicLocation {
         return new DynamicLocation(this);
     }
 
+    /**
+     * Compares this {@code DynamicLocation} to another object for equality. Two instances are
+     * equal when they reference the same entity (by {@link Entity#equals}) or the same location
+     * (by {@link Location#equals}), and both have equal directions (or both have no direction).
+     *
+     * @param obj the object to compare against
+     * @return {@code true} if {@code obj} is a {@code DynamicLocation} with the same entity or
+     *         location and the same direction
+     */
     @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof DynamicLocation dynamicLocation))

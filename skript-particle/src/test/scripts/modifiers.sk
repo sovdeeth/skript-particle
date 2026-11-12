@@ -1,0 +1,161 @@
+# Parsing and list-behavior tests for point modifiers, gradients, and easings.
+
+test "scale modifier constructor":
+	set {_m} to a scale from 1 to 0 along the y axis
+	assert {_m} is set with "scale modifier constructor failed"
+	set {_m} to a scale from 1 to 2 along the spherical distance scaling the xyz axes
+	assert {_m} is set with "scale modifier with axes failed"
+
+test "twist modifier constructor":
+	set {_m} to a twist of 90 degrees along the y axis in the xz plane
+	assert {_m} is set with "twist modifier constructor failed"
+	assert twist angle of {_m} is 90 with "the twist angle should be in degrees"
+	set {_m} to a twist of 3.14159 radians
+	assert twist angle of {_m} is between 179.9 and 180.1 with "a twist in radians should be converted"
+	set twist angle of {_m} to 1.5708 radians
+	assert twist angle of {_m} is between 89.9 and 90.1 with "setting the twist angle in radians should be converted"
+
+test "wave modifier constructor":
+	set {_m} to a wave with amplitude 0.5 and frequency 2
+	assert {_m} is set with "wave modifier constructor failed"
+	set {_m} to a wave with amplitude 0.5 and frequency 2 along the draw order displacing the x axis
+	assert {_m} is set with "wave modifier with input and axis failed"
+
+test "gradient modifier constructors":
+	set {_g} to a gradient from red to blue along the y axis
+	assert {_g} is set with "two colour gradient constructor failed"
+	set {_g} to a colour gradient of red, yellow and blue along the angle
+	assert {_g} is set with "colour list gradient constructor failed"
+	set {_g} to a radial gradient of white and black
+	assert {_g} is set with "radial gradient constructor failed"
+	set {_g} to an angular gradient from red to blue
+	assert {_g} is set with "angular gradient constructor failed"
+	set {_g} to a spherical gradient from yellow to orange
+	assert {_g} is set with "spherical gradient constructor failed"
+
+test "motion modifier velocity":
+	set {_m} to a motion modifier with relative velocity vector(-1, 0.5, 2)
+	assert motion velocity of {_m} is vector(-1, 0.5, 2) with "a relative motion modifier should keep its velocity"
+	set {_m} to a motion modifier with velocity vector(0, 1, 0):
+		add vector(1, 0, 0) to motion velocity
+	assert motion velocity of {_m} is vector(1, 1, 0) with "changing the velocity in the section failed"
+	set {_m} to a motion modifier outwards
+	assert motion velocity of {_m} is not set with "a named motion has no velocity"
+
+test "easing constructors":
+	set {_e} to linear easing
+	assert {_e} is set with "linear easing constructor failed"
+	set {_e} to ease in quadratic
+	assert {_e} is set with "quadratic ease in constructor failed"
+	set {_e} to a power ease in with exponent 3
+	assert {_e} is set with "power easing constructor failed"
+
+test "modifier constructor sections":
+	set {_m} to a wave with amplitude 0.5 and frequency 2:
+		set wave amplitude of the new modifier to 1.5
+		set wave phase to 90
+	assert wave amplitude of {_m} is 1.5 with "'the new modifier' should be the modifier being created"
+	assert wave phase of {_m} is 90 with "modifier properties should default to the new modifier in its section"
+
+	set {_m} to a scale from 1 to 0 along the y axis:
+		set modifier easing to ease in-out sine
+	assert modifier easing of {_m} is set with "setting the easing in the section failed"
+
+	set {_outer} to a twist of 90 degrees:
+		set {_inner} to a wave with amplitude 1 and frequency 1:
+			set wave frequency to 3
+		add 90 to twist angle
+	assert twist angle of {_outer} is 180 with "a nested section should not change which modifier the outer section uses"
+	assert wave frequency of {_inner} is 3 with "the nested section should change its own modifier"
+
+parse:
+	results: {sp::parse::newmodifier::*}
+	code:
+		on load:
+			set {_x} to the new modifier
+
+test "new modifier errors outside a section":
+	set {_found} to false
+	loop {sp::parse::newmodifier::*}:
+		if loop-value contains "modifier constructor":
+			set {_found} to true
+	assert {_found} is true with "expected a parse error using 'the new modifier' outside a section, got: %{sp::parse::newmodifier::*}%"
+	delete {sp::parse::newmodifier::*}
+
+parse:
+	results: {sp::parse::modifierdelay::*}
+	code:
+		on load:
+			set {_m} to a twist of 90 degrees:
+				wait 1 tick
+
+test "delays are rejected inside a modifier section":
+	set {_found} to false
+	loop {sp::parse::modifierdelay::*}:
+		if loop-value contains "Delays":
+			set {_found} to true
+	assert {_found} is true with "expected a parse error for a delay in a modifier section, got: %{sp::parse::modifierdelay::*}%"
+	delete {sp::parse::modifierdelay::*}
+
+test "wave modifier properties":
+	set {_w} to a wave with amplitude 0.5 and frequency 2
+	assert wave amplitude of {_w} is 0.5 with "wave amplitude should match the constructor"
+	assert wave frequency of {_w} is 2 with "wave frequency should match the constructor"
+	assert wave phase of {_w} is 0 with "wave phase should start at 0"
+	add 1 to wave frequency of {_w}
+	assert wave frequency of {_w} is 3 with "adding to the wave frequency failed"
+	set wave phase of {_w} to 45
+	reset wave phase of {_w}
+	assert wave phase of {_w} is 0 with "resetting the wave phase failed"
+	set {_t} to a twist of 90 degrees
+	assert wave amplitude of {_t} is not set with "a twist has no wave amplitude"
+
+test "scale modifier properties":
+	set {_s} to a scale from 1 to 0
+	assert scale start of {_s} is 1 with "scale start should match the constructor"
+	assert scale end of {_s} is 0 with "scale end should match the constructor"
+	set scale end of {_s} to 0.5
+	assert {_s}'s scale end is 0.5 with "setting the scale end failed"
+	delete scale start of {_s}
+	assert scale start of {_s} is 1 with "deleting the scale start should set it to 1"
+
+test "modifier easing":
+	set {_s} to a scale from 1 to 0
+	set modifier easing of {_s} to ease in cubic
+	assert modifier easing of {_s} is set with "setting the modifier easing failed"
+	set {_g} to a gradient from red to blue
+	set modifier easing of {_g} to ease out cubic
+	assert modifier easing of {_g} is set with "gradients should have an easing"
+	set {_w} to a wave with amplitude 1 and frequency 1
+	assert modifier easing of {_w} is not set with "waves have no easing"
+
+test "gradient colours":
+	set {_g} to a gradient of red, white and blue
+	assert size of gradient colours of {_g} is 3 with "a gradient of three colours should have three colours"
+	add black to gradient colours of {_g}
+	assert size of gradient colours of {_g} is 4 with "adding a gradient colour failed"
+	set gradient colors of {_g} to red and blue
+	assert size of gradient colours of {_g} is 2 with "setting the gradient colours failed"
+
+test "shape modifier list behavior":
+	set {_c} to a circle with radius 3
+	assert modifiers of {_c} is not set with "a new shape should have no modifiers"
+
+	add a scale from 1 to 0 along the y axis to modifiers of {_c}
+	assert size of modifiers of {_c} is 1 with "adding a modifier should result in 1 modifier"
+
+	add a gradient from red to blue along the y axis to modifiers of {_c}
+	assert size of modifiers of {_c} is 2 with "adding a second modifier should result in 2 modifiers"
+
+	set modifiers of {_c} to a wave with amplitude 1 and frequency 2
+	assert size of modifiers of {_c} is 1 with "setting modifiers should replace the list"
+
+	delete modifiers of {_c}
+	assert modifiers of {_c} is not set with "deleting modifiers should clear the list"
+
+test "geometry modifier affects sampled points":
+	set {_c} to a circle with radius 3
+	add a scale from 0 to 0 along the y axis to modifiers of {_c}
+	loop points of {_c}:
+		assert x of loop-value is between -0.001 and 0.001 with "scale-to-zero modifier should collapse x coordinates"
+		assert z of loop-value is between -0.001 and 0.001 with "scale-to-zero modifier should collapse z coordinates"

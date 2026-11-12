@@ -6,8 +6,7 @@ import com.sovdee.shapes.sampling.SamplingStyle;
 import org.joml.Quaterniond;
 import org.joml.Vector3d;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.List;
 
 /**
  * Base implementation of {@link Shape} providing spatial transform, versioning,
@@ -17,11 +16,16 @@ public abstract class AbstractShape implements Shape {
 
     private final Quaterniond orientation;
     private double scale;
-    private Vector3d offset;
+    private final Vector3d offset;
     private boolean dynamic = false;
     private long version = 0;
     private PointSampler pointSampler;
 
+    /**
+     * Initialises a new shape with an identity orientation, scale {@code 1.0}, zero offset,
+     * and a fresh {@link DefaultPointSampler}. Subclasses must call {@code super()} before
+     * setting dimension-specific fields.
+     */
     public AbstractShape() {
         this.orientation = new Quaterniond();
         this.scale = 1;
@@ -31,46 +35,80 @@ public abstract class AbstractShape implements Shape {
 
     // --- Spatial transform ---
 
+    /**
+     * {@inheritDoc}
+     * Returns a defensive copy so callers cannot mutate the internal quaternion.
+     */
     @Override
     public Quaterniond getOrientation() {
         return new Quaterniond(orientation);
     }
 
+    /**
+     * {@inheritDoc}
+     * The value is copied into the internal quaternion; the argument is not retained.
+     */
     @Override
     public void setOrientation(Quaterniond orientation) {
         this.orientation.set(orientation);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public double getScale() { return scale; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setScale(double scale) {
         this.scale = scale;
     }
 
+    /**
+     * {@inheritDoc}
+     * Returns a defensive copy so callers cannot mutate the internal offset.
+     */
     @Override
     public Vector3d getOffset() {
         return new Vector3d(offset);
     }
 
+    /**
+     * {@inheritDoc}
+     * The provided vector is stored directly (not copied); callers should not mutate it afterward.
+     */
     @Override
     public void setOffset(Vector3d offset) {
-        this.offset = offset;
+        this.offset.set(offset);
     }
 
     // --- Oriented axes ---
 
+    /**
+     * {@inheritDoc}
+     * Computed by rotating {@code (1, 0, 0)} with the internal orientation quaternion.
+     */
     @Override
     public Vector3d getRelativeXAxis() {
         return orientation.transform(new Vector3d(1, 0, 0));
     }
 
+    /**
+     * {@inheritDoc}
+     * Computed by rotating {@code (0, 1, 0)} with the internal orientation quaternion.
+     */
     @Override
     public Vector3d getRelativeYAxis() {
         return orientation.transform(new Vector3d(0, 1, 0));
     }
 
+    /**
+     * {@inheritDoc}
+     * Computed by rotating {@code (0, 0, 1)} with the internal orientation quaternion.
+     */
     @Override
     public Vector3d getRelativeZAxis() {
         return orientation.transform(new Vector3d(0, 0, 1));
@@ -78,6 +116,10 @@ public abstract class AbstractShape implements Shape {
 
     // --- Change detection ---
 
+    /**
+     * {@inheritDoc}
+     * The counter starts at {@code 0} and is incremented each time {@link #invalidate()} is called.
+     */
     @Override
     public long getVersion() { return version; }
 
@@ -91,24 +133,55 @@ public abstract class AbstractShape implements Shape {
 
     // --- Dynamic support ---
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isDynamic() { return dynamic; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setDynamic(boolean dynamic) { this.dynamic = dynamic; }
 
     // --- Point generation defaults ---
 
+    /**
+     * Default surface implementation that delegates to {@link #generateOutline(List, double)}.
+     * Subclasses with a meaningful surface representation (e.g. {@link Circle}, {@link Sphere})
+     * should override this method.
+     *
+     * @param points  the list to append generated points to; must not be null
+     * @param density the desired spacing between points
+     */
     @Override
-    public void generateSurface(Set<Vector3d> points, double density) {
+    public void generateSurface(List<Vector3d> points, double density) {
         generateOutline(points, density);
     }
 
+    /**
+     * Default filled implementation that delegates to {@link #generateSurface(List, double)}.
+     * Subclasses that can meaningfully fill their volume (e.g. {@link Circle}, {@link Sphere})
+     * should override this method.
+     *
+     * @param points  the list to append generated points to; must not be null
+     * @param density the desired spacing between points
+     */
     @Override
-    public void generateFilled(Set<Vector3d> points, double density) {
+    public void generateFilled(List<Vector3d> points, double density) {
         generateSurface(points, density);
     }
 
+    /**
+     * Generic fallback implementation that always returns a density of {@code 0.25}.
+     * Subclasses should override this with a formula appropriate to their geometry so that
+     * {@link PointSampler#setParticleCount(Shape, int)} produces accurate results.
+     *
+     * @param style            the {@link SamplingStyle} being used (OUTLINE, SURFACE, or FILL)
+     * @param targetPointCount the desired number of points
+     * @return {@code 0.25} as a safe, conservative default
+     */
     @Override
     public double computeDensity(SamplingStyle style, int targetPointCount) {
         // Generic fallback — subclasses should override for accuracy
@@ -117,34 +190,129 @@ public abstract class AbstractShape implements Shape {
 
     // --- Geometry query ---
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public abstract boolean contains(Vector3d point);
+    public boolean contains(Vector3d point) {
+        return contains(point, EPSILON);
+    }
+
+    /**
+     * Returns {@code true} if the given point lies within the volume of this shape, grown by {@code tolerance}.
+     * For shapes with no volume of their own (curves and flat shapes), the tolerance is how thick they are
+     * treated as being.
+     *
+     * @param point     the point to test, in the same space as the sampled points
+     * @param tolerance how far outside the exact shape still counts as contained, in the shape's local units
+     * @return {@code true} if the point is contained by this shape
+     */
+    public boolean contains(Vector3d point, double tolerance) {
+        if (scale == 0)
+            return false;
+        refresh();
+        // undo the transform the sampler applies: orientation, then scale, then offset
+        Vector3d local = new Vector3d(point).sub(offset).div(scale);
+        orientation.transformInverse(local);
+        return containsLocal(local, Math.max(tolerance, 0));
+    }
+
+    /**
+     * Tests a point in this shape's local space, before orientation, scale and offset are applied.
+     * Concrete subclasses implement the containment test appropriate to their geometry.
+     *
+     * @param point     the point to test, in local coordinates. Implementations may modify it.
+     * @param tolerance a non-negative distance outside the exact shape that still counts as contained
+     * @return {@code true} if the point is contained by this shape
+     */
+    protected abstract boolean containsLocal(Vector3d point, double tolerance);
 
     // --- PointSampler ---
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public PointSampler getPointSampler() { return pointSampler; }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setPointSampler(PointSampler sampler) { this.pointSampler = sampler; }
 
     // --- Vertical fill helper ---
 
-    protected static void fillVertically(Set<Vector3d> points, double height, double density) {
-        Set<Vector3d> base = new LinkedHashSet<>(points);
-        double heightStep = height / Math.round(height / density);
-        for (double y = 0; y < height; y += heightStep) {
-            for (Vector3d v : base) {
-                points.add(new Vector3d(v.x, y, v.z));
+    /**
+     * Duplicates an existing slice of {@code points} at successive Y offsets to fill a vertical
+     * column of the given {@code height}. The Y step is derived from {@code density} so that
+     * layer spacing is as uniform as possible.
+     * <p>
+     * The method reads all points in the range {@code [startIndex, points.size())} at the time
+     * of the call and appends copies of them in evenly spaced layers, up to and including {@code height}.
+     *
+     * @param points     the list of points to extend; the existing slice is treated as the base layer
+     * @param startIndex the index of the first point in the base layer
+     * @param height     the total vertical extent to fill; must be positive
+     * @param density    the desired spacing between vertical layers
+     */
+    protected static void fillVertically(List<Vector3d> points, int startIndex, double height, double density) {
+        fillVertically(points, startIndex, height, density, true);
+    }
+
+    /**
+     * Duplicates an existing slice of {@code points} in evenly spaced layers along the y-axis.
+     * The existing slice is the base layer and is not duplicated.
+     *
+     * @param points     the list of points to extend
+     * @param startIndex the index of the first point in the base layer
+     * @param height     the total vertical extent to fill; must be positive
+     * @param density    the desired spacing between vertical layers
+     * @param includeTop whether to add a layer at exactly {@code height}. Pass {@code false} when the top
+     *                   is generated separately, to avoid duplicate points.
+     */
+    protected static void fillVertically(List<Vector3d> points, int startIndex, double height, double density, boolean includeTop) {
+        int end = points.size();
+        int layers = segments(height, density);
+        int last = includeTop ? layers : layers - 1;
+        for (int layer = 1; layer <= last; layer++) {
+            double y = height * layer / layers;
+            for (int i = startIndex; i < end; i++) {
+                Vector3d v = points.get(i);
+                points.add(new Vector3d(v.x, v.y + y, v.z));
             }
         }
     }
 
+    /**
+     * Returns how many segments of roughly {@code density} length fit into {@code length}.
+     * Always at least 1, so that dividing a length by the result is safe.
+     */
+    protected static int segments(double length, double density) {
+        double count = Math.round(Math.abs(length) / density);
+        if (!(count >= 1)) // also covers NaN
+            return 1;
+        return (int) Math.min(count, Integer.MAX_VALUE - 1);
+    }
+
     // --- Replication ---
 
+    /**
+     * {@inheritDoc}
+     * Concrete subclasses must create a new instance with the same dimension-specific state and
+     * then call {@link #copyTo(Shape)} to propagate the base transform fields.
+     */
     @Override
     public abstract Shape clone();
 
+    /**
+     * {@inheritDoc}
+     * Copies orientation, scale, offset, dynamic flag, and a clone of the point sampler into
+     * {@code shape}. Dimension-specific fields are not touched.
+     *
+     * @param shape the target shape; must not be null
+     * @return {@code shape}, for chaining convenience
+     */
     @Override
     public Shape copyTo(Shape shape) {
         shape.setOrientation(new Quaterniond(this.orientation));
@@ -152,14 +320,11 @@ public abstract class AbstractShape implements Shape {
         shape.setOffset(new Vector3d(this.offset));
         shape.setDynamic(this.dynamic);
 
-        // Clone sampler config
-        PointSampler srcSampler = this.pointSampler;
-        PointSampler destSampler = shape.getPointSampler();
-        destSampler.setStyle(srcSampler.getStyle());
-        destSampler.setDensity(srcSampler.getDensity());
-        destSampler.setOrdering(srcSampler.getOrdering());
-        if (srcSampler.getDrawContext() != null)
-            destSampler.setDrawContext(srcSampler.getDrawContext().copy());
+        shape.setPointSampler(this.pointSampler.clone());
+        // The copy has the same geometry, so give it the same version: the cloned sampler's cached points
+        // then stay valid until either shape actually changes.
+        if (shape instanceof AbstractShape abstractShape)
+            abstractShape.version = this.version;
 
         return shape;
     }

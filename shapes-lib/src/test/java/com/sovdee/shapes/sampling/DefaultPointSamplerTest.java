@@ -1,0 +1,416 @@
+package com.sovdee.shapes.sampling;
+
+import com.sovdee.shapes.modifiers.PointContext;
+import com.sovdee.shapes.modifiers.PointModifier;
+import com.sovdee.shapes.modifiers.ShapeBounds;
+import com.sovdee.shapes.modifiers.ScalingModifier;
+import com.sovdee.shapes.modifiers.ScaleAxes;
+import com.sovdee.shapes.modifiers.StandardInput;
+import com.sovdee.shapes.shapes.Circle;
+import org.joml.Quaterniond;
+import org.joml.Vector3d;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+class DefaultPointSamplerTest {
+
+    // ----- Minimal ShapeRenderer helpers -----
+
+    static class CountingRenderer implements ShapeRenderer<PointContext> {
+        int beginCount, endCount, renderCount;
+        int lastBeginTotal;
+        final PointContext ctx = new PointContext();
+
+        @Override public void begin(int total) { beginCount++; lastBeginTotal = total; }
+        @Override public void renderPoint(PointContext p) { renderCount++; }
+        @Override public PointContext getContext() { return ctx; }
+        @Override public void end() { endCount++; }
+    }
+
+    /** A render modifier (not PreRender) that counts prepare() and modify() calls. */
+    static class CountingRenderModifier implements PointModifier<PointContext> {
+        int prepareCount, modifyCount;
+
+        @Override public void prepare(ShapeBounds b) { prepareCount++; }
+        @Override public void modify(PointContext p) { modifyCount++; }
+        @Override public int modifierHash() { return 42; }
+        @Override public PointModifier<PointContext> clone() {
+            try { return (CountingRenderModifier) super.clone(); }
+            catch (CloneNotSupportedException e) { throw new RuntimeException(e); }
+        }
+    }
+
+    /** A geometry modifier (PreRender) that counts calls. */
+    static class CountingGeoModifier extends PointModifier.PreRenderPointModifier {
+        int modifyCount;
+        @Override public void modify(PointContext p) { modifyCount++; }
+        @Override public int modifierHash() { return 7; }
+    }
+
+    // A PointContext subclass for context-type validation tests
+    static class SubContext extends PointContext {
+        int extra;
+        @Override public void reset() { extra = 0; }
+    }
+
+    static class SubContextModifier implements PointModifier<SubContext> {
+        @Override public void modify(SubContext p) { p.extra = 99; }
+        @Override public int modifierHash() { return 1; }
+        @Override public Class<? extends PointContext> contextType() { return SubContext.class; }
+        @Override public PointModifier<SubContext> clone() {
+            try { return (SubContextModifier) super.clone(); }
+            catch (CloneNotSupportedException e) { throw new RuntimeException(e); }
+        }
+    }
+
+    static class SubContextRenderer implements ShapeRenderer<SubContext> {
+        final SubContext ctx = new SubContext();
+        int renderCount;
+        @Override public void begin(int total) {}
+        @Override public void renderPoint(SubContext p) { renderCount++; }
+        @Override public SubContext getContext() { return ctx; }
+        @Override public void end() {}
+    }
+
+    // ----- Test setup -----
+
+    Circle circle;
+    DefaultPointSampler sampler;
+
+    @BeforeEach
+    void setUp() {
+        circle = new Circle(1.0);
+        sampler = new DefaultPointSampler();
+        sampler.setDensity(0.5); // coarse for speed
+    }
+
+    // ----- Caching tests -----
+
+    @Test
+    void cacheHit_sameState() {
+        List<Vector3d> first = sampler.getPoints(circle);
+        List<Vector3d> second = sampler.getPoints(circle);
+        assertSame(first, second, "Same state should return cached list");
+    }
+
+    @Test
+    void cacheMiss_onDensityChange() {
+        List<Vector3d> first = sampler.getPoints(circle);
+        sampler.setDensity(0.2);
+        List<Vector3d> second = sampler.getPoints(circle);
+        assertNotSame(first, second, "Density change should invalidate cache");
+    }
+
+    @Test
+    void cacheMiss_onStyleChange() {
+        List<Vector3d> first = sampler.getPoints(circle);
+        sampler.setStyle(SamplingStyle.SURFACE);
+        List<Vector3d> second = sampler.getPoints(circle);
+        assertNotSame(first, second, "Style change should invalidate cache");
+    }
+
+    @Test
+    void cacheMiss_onShapeInvalidate() {
+        List<Vector3d> first = sampler.getPoints(circle);
+        circle.setRadius(2.0); // bumps version
+        List<Vector3d> second = sampler.getPoints(circle);
+        assertNotSame(first, second, "Shape geometry change should invalidate cache");
+    }
+
+    @Test
+    void cacheHit_renderModifierAdded() {
+        List<Vector3d> first = sampler.getPoints(circle);
+        // Render modifiers don't affect geometry; cache should survive
+        sampler.addModifier(new CountingRenderModifier());
+        List<Vector3d> second = sampler.getPoints(circle);
+        assertSame(first, second, "Adding a render modifier must not invalidate geometry cache");
+    }
+
+    @Test
+    void cacheMiss_geoModifierAdded() {
+        List<Vector3d> first = sampler.getPoints(circle);
+        sampler.addModifier(new CountingGeoModifier()); // PreRenderPointModifier → calls markDirty
+        List<Vector3d> second = sampler.getPoints(circle);
+        assertNotSame(first, second, "Adding a geo modifier must invalidate cache");
+    }
+
+    // ----- Geometry modifier dispatch -----
+
+    @Test
+    void geoModifier_appliedToPoints() {
+        // Scale from 0 to 0 collapses all XZ to zero
+        sampler.addModifier(new ScalingModifier(0.0, 0.0, StandardInput.Y, ScaleAxes.XZ));
+        List<Vector3d> points = sampler.getPoints(circle);
+        for (Vector3d p : points) {
+            assertEquals(0.0, p.x, 1e-9, "ScalingModifier(0,0) should zero all X");
+            assertEquals(0.0, p.z, 1e-9, "ScalingModifier(0,0) should zero all Z");
+        }
+    }
+
+    @Test
+    void geoModifier_notCalledDuringRender() {
+        CountingGeoModifier geoMod = new CountingGeoModifier();
+        sampler.addModifier(geoMod);
+
+        int pointCount = sampler.getPoints(circle).size();
+        int afterGetPoints = geoMod.modifyCount;
+        assertEquals(pointCount, afterGetPoints, "Geo modifier should be called once per point in getPoints()");
+
+        // render() should NOT re-invoke the geo modifier
+        CountingRenderer renderer = new CountingRenderer();
+        sampler.render(circle, circle.getOrientation(), renderer);
+        assertEquals(afterGetPoints, geoMod.modifyCount, "Geo modifier must not run again during render()");
+    }
+
+    // ----- Render loop -----
+
+    @Test
+    void render_callsBeginAndEnd() {
+        CountingRenderer renderer = new CountingRenderer();
+        sampler.render(circle, circle.getOrientation(), renderer);
+        assertEquals(1, renderer.beginCount);
+        assertEquals(1, renderer.endCount);
+    }
+
+    @Test
+    void render_callsRenderPointForEachPoint() {
+        CountingRenderer renderer = new CountingRenderer();
+        sampler.render(circle, circle.getOrientation(), renderer);
+        int pointCount = sampler.getPoints(circle).size();
+        assertEquals(pointCount, renderer.renderCount,
+                "renderPoint() should be called exactly once per point");
+    }
+
+    @Test
+    void render_preparesModifier() {
+        CountingRenderModifier renderMod = new CountingRenderModifier();
+        sampler.addModifier(renderMod);
+        CountingRenderer renderer = new CountingRenderer();
+
+        sampler.render(circle, circle.getOrientation(), renderer);
+        assertEquals(1, renderMod.prepareCount, "Render modifier prepare() must be called once per render()");
+
+        sampler.render(circle, circle.getOrientation(), renderer);
+        assertEquals(2, renderMod.prepareCount, "Prepare must be called once per render() invocation");
+    }
+
+    // ----- Context type validation -----
+
+    @Test
+    void render_rejectsIncompatibleModifier() {
+        // SubContextModifier requires SubContext, but renderer provides plain PointContext
+        sampler.addModifier(new SubContextModifier());
+        CountingRenderer renderer = new CountingRenderer(); // provides PointContext
+        assertThrows(IllegalStateException.class,
+                () -> sampler.render(circle, circle.getOrientation(), renderer),
+                "Should throw when modifier context type is not assignable from renderer context type");
+    }
+
+    @Test
+    void render_acceptsCompatibleModifier() {
+        sampler.addModifier(new CountingRenderModifier()); // contextType=PointContext
+        CountingRenderer renderer = new CountingRenderer(); // provides PointContext
+        assertDoesNotThrow(() -> sampler.render(circle, circle.getOrientation(), renderer));
+    }
+
+    @Test
+    void render_acceptsSubtypeContext() {
+        // Modifier needs PointContext; renderer provides SubContext (which IS a PointContext)
+        sampler.addModifier(new CountingRenderModifier()); // contextType=PointContext
+        SubContextRenderer renderer = new SubContextRenderer(); // provides SubContext
+        assertDoesNotThrow(() -> sampler.render(circle, circle.getOrientation(), renderer));
+    }
+
+    // ----- Batched render pass -----
+
+    /** Records the context index of every rendered point. */
+    static class IndexRecordingRenderer implements ShapeRenderer<PointContext> {
+        int beginCount, endCount;
+        final List<Integer> indices = new ArrayList<>();
+        final List<Integer> totals = new ArrayList<>();
+        final PointContext ctx = new PointContext();
+
+        @Override public void begin(int total) { beginCount++; }
+        @Override public void renderPoint(PointContext p) { indices.add(p.index); totals.add(p.totalPoints); }
+        @Override public PointContext getContext() { return ctx; }
+        @Override public void end() { endCount++; }
+    }
+
+    @Test
+    void preparePass_batchedIndicesAreContinuous() {
+        CountingRenderModifier renderMod = new CountingRenderModifier();
+        sampler.addModifier(renderMod);
+        IndexRecordingRenderer renderer = new IndexRecordingRenderer();
+
+        List<Vector3d> points = sampler.getPoints(circle);
+        RenderPass<PointContext> pass = sampler.preparePass(circle, points, renderer.getContext());
+        assertEquals(1, renderMod.prepareCount, "prepare() must run once per pass, not per batch");
+
+        int mid = points.size() / 2;
+        pass.renderBatch(points.subList(0, mid), renderer);
+        pass.renderBatch(points.subList(mid, points.size()), renderer);
+
+        assertEquals(points.size(), renderer.indices.size());
+        for (int i = 0; i < points.size(); i++) {
+            assertEquals(i, renderer.indices.get(i), "Point index must stay continuous across batches");
+            assertEquals(points.size(), renderer.totals.get(i), "totalPoints must reflect the full pass, not the batch");
+        }
+        assertEquals(points.size(), renderMod.modifyCount, "Render modifier must run once per point across all batches");
+        assertEquals(2, renderer.beginCount, "begin() should run once per batch");
+        assertEquals(2, renderer.endCount, "end() should run once per batch");
+        assertEquals(1, renderMod.prepareCount, "prepare() must not run again for later batches");
+    }
+
+    @Test
+    void preparePass_rejectsIncompatibleModifier() {
+        sampler.addModifier(new SubContextModifier());
+        List<Vector3d> points = sampler.getPoints(circle);
+        assertThrows(IllegalStateException.class,
+                () -> sampler.preparePass(circle, points, new PointContext()),
+                "preparePass must validate modifier context types like render()");
+    }
+
+    // ----- Transform pipeline -----
+
+    @Test
+    void getPoints_appliesScale() {
+        circle.setScale(2.0);
+        List<Vector3d> points = sampler.getPoints(circle, new Quaterniond());
+        for (Vector3d p : points) {
+            double dist = Math.sqrt(p.x * p.x + p.z * p.z);
+            assertEquals(2.0, dist, 1e-6, "Scale=2 on radius=1 circle → points at distance 2");
+        }
+    }
+
+    @Test
+    void getPoints_appliesOffset() {
+        double offsetX = 5.0;
+        circle.setOffset(new Vector3d(offsetX, 0, 0));
+
+        // Get points without offset for comparison
+        Circle baseCircle = new Circle(1.0);
+        DefaultPointSampler baseSampler = new DefaultPointSampler();
+        baseSampler.setDensity(0.5);
+        List<Vector3d> base = new ArrayList<>(baseSampler.getPoints(baseCircle, new Quaterniond()));
+
+        List<Vector3d> offset = sampler.getPoints(circle, new Quaterniond());
+        assertEquals(base.size(), offset.size());
+        for (int i = 0; i < base.size(); i++) {
+            assertEquals(base.get(i).x + offsetX, offset.get(i).x, 1e-6,
+                    "Offset X should shift all points");
+        }
+    }
+
+    // ----- Auto-density (max-points) -----
+
+    @Test
+    void autoDensity_capsPointCount() {
+        // Fresh sampler — no explicit density. Large circle should be capped.
+        Circle large = new Circle(10.0);
+        DefaultPointSampler fresh = new DefaultPointSampler();
+        // Default cap is 10 000; default density (0.25) on radius-10 circle = ~628 points — well under cap.
+        // Use a tiny cap so the test doesn't depend on default density math.
+        fresh.setMaxPoints(100);
+        List<Vector3d> points = fresh.getPoints(large);
+        // Allow a 5% overshoot: computeDensity is an approximation and loop arithmetic
+        // can produce 1-2 extra points due to floating-point step accumulation.
+        assertTrue(points.size() <= 105,
+                "Auto-density should cap point count near maxPoints (≤105), got " + points.size());
+    }
+
+    @Test
+    void autoDensity_defaultCapIsApplied() {
+        // A very large circle with default sampler (no explicit density, default cap = 10 000).
+        Circle huge = new Circle(1000.0);
+        DefaultPointSampler fresh = new DefaultPointSampler();
+        assertFalse(fresh.isDensityExplicit());
+        List<Vector3d> points = fresh.getPoints(huge);
+        assertTrue(points.size() <= 10_500,
+                "Default 10 000 cap should be respected (≤10 500 allowing FP overshoot), got " + points.size());
+    }
+
+    @Test
+    void explicitDensity_isNotLimitedByTheDefaultLimit() {
+        // radius 100 at density 0.05 is ~12 500 points: over the default limit, under the explicit-density one
+        Circle large = new Circle(100.0);
+        DefaultPointSampler s = new DefaultPointSampler();
+        s.setDensity(0.05);
+        assertEquals(DefaultPointSampler.HARD_MAX_POINTS, s.getMaxPoints());
+        assertTrue(s.getPoints(large).size() > DefaultPointSampler.DEFAULT_MAX_POINTS,
+                "an explicit density should only be limited by the hard limit until a limit is set");
+    }
+
+    @Test
+    void setLimit_appliesToAnExplicitDensityToo() {
+        Circle large = new Circle(10.0);
+        DefaultPointSampler s = new DefaultPointSampler();
+        s.setDensity(0.5);             // ~125 points
+        s.setMaxPoints(50);
+        assertTrue(s.isDensityExplicit(), "setting the limit must not change the density");
+        assertEquals(0.5, s.getDensity(), 1e-12);
+        assertTrue(s.getPoints(large).size() <= 50, "the limit should apply to an explicit density");
+    }
+
+    @Test
+    void setLimit_appliesToTheDefaultDensity() {
+        Circle large = new Circle(10.0);
+        DefaultPointSampler s = new DefaultPointSampler();
+        s.setMaxPoints(50);
+        assertFalse(s.isDensityExplicit());
+        assertEquals(50, s.getMaxPoints());
+        assertTrue(s.getPoints(large).size() <= 50);
+    }
+
+    @Test
+    void defaultLimit_dependsOnTheDensityUntilALimitIsSet() {
+        DefaultPointSampler s = new DefaultPointSampler();
+        assertEquals(DefaultPointSampler.DEFAULT_MAX_POINTS, s.getMaxPoints());
+        s.setDensity(0.1);
+        assertEquals(DefaultPointSampler.HARD_MAX_POINTS, s.getMaxPoints());
+        s.setMaxPoints(2_000);
+        assertEquals(2_000, s.getMaxPoints());
+        s.resetDensity();
+        assertEquals(2_000, s.getMaxPoints(), "a set limit outlives a density reset");
+        s.resetMaxPoints();
+        assertEquals(DefaultPointSampler.DEFAULT_MAX_POINTS, s.getMaxPoints());
+    }
+
+    @Test
+    void changingTheLimit_resamples() {
+        Circle large = new Circle(10.0);
+        DefaultPointSampler s = new DefaultPointSampler();
+        int before = s.getPoints(large).size();
+        s.setMaxPoints(20);
+        assertTrue(s.getPoints(large).size() <= 20);
+        s.resetMaxPoints();
+        assertEquals(before, s.getPoints(large).size());
+    }
+
+    @Test
+    void setMaxPoints_clampedToOne() {
+        DefaultPointSampler s = new DefaultPointSampler();
+        s.setMaxPoints(0);
+        assertEquals(1, s.getMaxPoints(), "setMaxPoints(0) should clamp to 1");
+        s.setMaxPoints(-5);
+        assertEquals(1, s.getMaxPoints(), "setMaxPoints(-5) should clamp to 1");
+    }
+
+    @Test
+    void autoDensity_cacheInvalidatesOnShapeChange() {
+        Circle large = new Circle(10.0);
+        DefaultPointSampler s = new DefaultPointSampler();
+        s.setMaxPoints(200);
+
+        List<Vector3d> first = s.getPoints(large);
+        large.setRadius(20.0); // geometry change
+        List<Vector3d> second = s.getPoints(large);
+        assertNotSame(first, second, "Cache must invalidate when shape geometry changes in auto-density mode");
+        assertTrue(second.size() <= 210,
+                "After geometry change auto-density should still cap near maxPoints, got " + second.size());
+    }
+}

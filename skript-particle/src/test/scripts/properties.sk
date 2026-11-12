@@ -1,0 +1,88 @@
+# Tests for shape property expressions: particle density and count, cutoff angle, particles, and modifier lists.
+
+test "default particle density is not driven by the point cap":
+	set {_c} to a circle with radius 1
+	assert size of points of {_c} is less than 100 with "a small circle should use the default density, not fill up to the point cap"
+	assert particle density of {_c} is 4 with "the default particle density should be 4 per block"
+
+test "point count matches the sampled points":
+	set {_c} to a circle with radius 3
+	assert point count of {_c} is size of points of {_c} with "point count should be the number of sampled points"
+	set point count of {_c} to 100
+	assert point count of {_c} is size of points of {_c} with "point count should still match after being set"
+	assert point count of {_c} is between 90 and 110 with "setting the point count should land near the target"
+	add 50 to point count of {_c}
+	assert point count of {_c} is between 140 and 160 with "adding to the point count should add to the actual count"
+
+test "point count on a filled flat shape":
+	set {_s} to a sector with radius 2 and cutoff angle 90
+	set point count of {_s} to 200
+	assert point count of {_s} is between 150 and 250 with "a filled flat shape should accept a point count"
+
+test "resetting particle density":
+	set {_c} to a circle with radius 3
+	set particle density of {_c} to 20
+	assert particle density of {_c} is 20 with "setting the particle density failed"
+	reset particle density of {_c}
+	assert particle density of {_c} is 4 with "resetting should return to the default particle density"
+
+test "cutoff angle is in degrees both ways":
+	set {_a} to an arc with radius 2 and cutoff angle 90
+	assert cutoff angle of {_a} is 90 with "cutoff angle should be read back in degrees"
+	set cutoff angle of {_a} to 45
+	assert cutoff angle of {_a} is 45 with "cutoff angle should round-trip in degrees"
+	add 15 to cutoff angle of {_a}
+	assert cutoff angle of {_a} is 60 with "adding to the cutoff angle should work in degrees"
+
+test "heart width and length":
+	set {_h} to a heart with width 2 and length 5
+	assert shape width of {_h} is 2 with "heart width should be the given width"
+	assert shape length of {_h} is 5 with "heart length should be the given length"
+
+test "side counts survive conversion":
+	set {_p} to a regular polygon with 25 sides and radius 3
+	assert sides of {_p} is 25 with "a 25-sided polygon should report 25 sides"
+	set {_s} to a star with 25 points, inner radius 1 and outer radius 2
+	assert star points of {_s} is 25 with "a 25-pointed star should report 25 points"
+
+test "modifiers can be removed again":
+	set {_c} to a circle with radius 3
+	set {_twist} to a twist of 90 degrees
+	set {_wave} to a wave with amplitude 1 and frequency 2
+
+	add {_twist} to modifiers of {_c}
+	add {_wave} to modifiers of {_c}
+	remove {_twist} from modifiers of {_c}
+	assert size of modifiers of {_c} is 1 with "removing an added modifier should remove it"
+
+	set modifiers of {_c} to {_twist} and {_wave}
+	remove {_wave} from modifiers of {_c}
+	assert size of modifiers of {_c} is 1 with "removing a modifier after setting the list should remove it"
+
+test "shapes do not share added modifiers":
+	set {_a} to a circle with radius 3
+	set {_b} to a circle with radius 3
+	set {_twist} to a twist of 90 degrees
+	add {_twist} to modifiers of {_a}
+	add {_twist} to modifiers of {_b}
+	remove {_twist} from modifiers of {_a}
+	assert size of modifiers of {_a} is 0 with "the modifier should be removed from the first shape"
+	assert size of modifiers of {_b} is 1 with "the second shape should keep its own copy of the modifier"
+
+test "shapes from two locations are anchored at the first":
+	set {_a} to location(10, 64, 10, world "world")
+	set {_b} to location(10, 70, 10, world "world")
+	set {_l} to a line from {_a} to {_b}
+	assert {_l} is set with "line between two locations did not produce a shape"
+	loop points of {_l}:
+		assert x of loop-value is between -0.001 and 0.001 with "line points should be relative to the line's start"
+		assert y of loop-value is between -0.001 and 6.001 with "line points should span from the start to the end"
+
+test "animation ordering sorts the points without dropping any":
+	set {_c} to a solid cuboid with length 2, width 2 and height 2
+	set {_count} to size of points of {_c}
+	set the animation order of {_c} to lowest-to-highest
+	assert size of points of {_c} is {_count} with "ordering the points should not drop any of them"
+	set {_points::*} to points of {_c}
+	set {_first} to {_points::1}
+	assert (x of {_first} + y of {_first} + z of {_first}) is -3 with "lowest-to-highest should start at the lowest corner"
