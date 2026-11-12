@@ -40,6 +40,7 @@ import com.sovdee.skriptparticles.skript.shapes.constructors.ExprSphere;
 import com.sovdee.skriptparticles.skript.shapes.constructors.ExprSphericalCap;
 import com.sovdee.skriptparticles.skript.shapes.constructors.ExprStar;
 import com.sovdee.skriptparticles.skript.shapes.effects.EffRotateShape;
+import com.sovdee.skriptparticles.skript.shapes.effects.EffSetOrdering;
 import com.sovdee.skriptparticles.skript.shapes.effects.EffToggleAxes;
 import com.sovdee.skriptparticles.skript.shapes.properties.ExprHelixWindingRate;
 import com.sovdee.skriptparticles.skript.shapes.properties.ExprShapeCutoffAngle;
@@ -373,6 +374,7 @@ public class ShapesModule extends HierarchicalAddonModule {
                 ExprStarRadii::register,
                 // shape effects
                 EffRotateShape::register,
+                EffSetOrdering::register,
                 EffToggleAxes::register
         );
     }

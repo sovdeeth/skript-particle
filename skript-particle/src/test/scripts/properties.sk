@@ -5,17 +5,19 @@ test "default particle density is not driven by the point cap":
 	assert size of points of {_c} is less than 100 with "a small circle should use the default density, not fill up to the point cap"
 	assert particle density of {_c} is 4 with "the default particle density should be 4 per block"
 
-test "particle count matches the sampled points":
+test "point count matches the sampled points":
 	set {_c} to a circle with radius 3
-	assert particle count of {_c} is size of points of {_c} with "particle count should be the number of sampled points"
-	set particle count of {_c} to 100
-	assert particle count of {_c} is size of points of {_c} with "particle count should still match after being set"
-	assert particle count of {_c} is between 90 and 110 with "setting the particle count should land near the target"
+	assert point count of {_c} is size of points of {_c} with "point count should be the number of sampled points"
+	set point count of {_c} to 100
+	assert point count of {_c} is size of points of {_c} with "point count should still match after being set"
+	assert point count of {_c} is between 90 and 110 with "setting the point count should land near the target"
+	add 50 to point count of {_c}
+	assert point count of {_c} is between 140 and 160 with "adding to the point count should add to the actual count"
 
-test "particle count on a filled flat shape":
+test "point count on a filled flat shape":
 	set {_s} to a sector with radius 2 and cutoff angle 90
-	set particle count of {_s} to 200
-	assert particle count of {_s} is between 150 and 250 with "a filled flat shape should accept a particle count"
+	set point count of {_s} to 200
+	assert point count of {_s} is between 150 and 250 with "a filled flat shape should accept a point count"
 
 test "resetting particle density":
 	set {_c} to a circle with radius 3
@@ -75,3 +77,12 @@ test "shapes from two locations are anchored at the first":
 	loop points of {_l}:
 		assert x of loop-value is between -0.001 and 0.001 with "line points should be relative to the line's start"
 		assert y of loop-value is between -0.001 and 6.001 with "line points should span from the start to the end"
+
+test "animation ordering sorts the points without dropping any":
+	set {_c} to a solid cuboid with length 2, width 2 and height 2
+	set {_count} to size of points of {_c}
+	set the animation order of {_c} to lowest-to-highest
+	assert size of points of {_c} is {_count} with "ordering the points should not drop any of them"
+	set {_points::*} to points of {_c}
+	set {_first} to {_points::1}
+	assert (x of {_first} + y of {_first} + z of {_first}) is -3 with "lowest-to-highest should start at the lowest corner"

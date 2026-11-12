@@ -18,34 +18,36 @@ import com.sovdee.skriptparticles.util.MathUtil;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
 
-@Name("Shape Particle Density / Particle Count")
+@Name("Shape Particle Density / Point Count")
 @Description({
         "The density at which particles are spawned in a shape. This is in \"particles per meter\" (ppm), and defaults to 4." +
                 "Be careful with this property, as it can cause lag if set to a high number. It's recommended to not go above 20 or so for this reason. 1000 ppm is the maximum value.",
         "Keep in mind that this value scales with dimensions. A 1 meter line with a density of 20 will spawn 20 particles, but a 1 meter cube with a density of 20 will spawn 8,000 particles (2,400 if hollow).",
         "Also, be aware that this may not be exact. Some shapes, like cuboids, will tweak the density a bit to ensure particles land exactly on the borders of the shape.",
         "",
-        "This syntax also supports setting the particle count directly, which is the amount of particles spawned in a shape.",
-        "Note that this is NOT exact. The actual amount of particles spawned will be the closest multiple of the particle count to the amount of particles needed to draw the shape.",
-        "For example, if the particle count of a solid cube is set to 100, the actual amount of particles spawned will be 125, which is the nearest cubic number.",
+        "This syntax also supports setting the point count directly, which is the amount of particles spawned in a shape.",
+        "Note that this is NOT exact. The actual amount of particles spawned will be the closest amount to the point count that the shape can be drawn with.",
+        "For example, if the point count of a solid cube is set to 100, the actual amount of particles spawned will be 125, which is the nearest cubic number.",
         "The returned value of this expression will always be the accurate amount of particles spawned in a shape.",
         "",
-        "Changing this will change the particle density or count of the shape. Resetting or deleting it will set it back to the default density (4).",
+        "Changing this will change the particle density or point count of the shape. Resetting or deleting it will set it back to the default density (4).",
 })
 @Examples({
         "set {_shape}'s particle density to 10",
-        "set {_shape}'s particle count to 100",
+        "set {_shape}'s point count to 100",
         "reset {_shape}'s particle density",
-        "reset {_shape}'s particle count",
+        "reset {_shape}'s point count",
 })
 @Since("1.0.0")
 public class ExprShapeParticleDensity extends SimplePropertyExpression<Shape, Number> {
 
     public static void register(SyntaxRegistry registry) {
-        // most shapes kinda disregard the particle count, but it's still useful for some
+        // "point count" rather than "particle count": Skript has its own "particle count of %particles%" expression,
+        // which would be chosen over this one whenever the type of the shape is not known at parse time.
+        // most shapes kinda disregard the point count, but it's still useful for some
         // every shape responds to the particle density property pretty well though
         registry.register(SyntaxRegistry.EXPRESSION,
-                PropertyExpression.infoBuilder(ExprShapeParticleDensity.class, Number.class, "particle (:density|:count)", "shapes", false)
+                PropertyExpression.infoBuilder(ExprShapeParticleDensity.class, Number.class, "(density:(particle|point) density|point count)", "shapes", false)
                         .supplier(ExprShapeParticleDensity::new)
                         .build());
     }
@@ -137,7 +139,7 @@ public class ExprShapeParticleDensity extends SimplePropertyExpression<Shape, Nu
 
     @Override
     protected String getPropertyName() {
-        return "particle " + (isDensity ? "density" : "count");
+        return isDensity ? "particle density" : "point count";
     }
 
 }

@@ -3,8 +3,8 @@ import org.apache.tools.ant.filters.ReplaceTokens
 plugins {
     id 'java'
     id 'com.gradleup.shadow' version '8.3.5'
-    id 'io.papermc.paperweight.userdev' version '2.0.0-beta.19'
-//    id 'skript-test' version '1.0.1'
+    id("io.papermc.paperweight.userdev") version "2.0.0-beta.24"
+    id 'skript-test' version '1.0.1'
 }
 
 group 'com.sovdee'
@@ -26,8 +26,8 @@ repositories {
 
 dependencies {
     implementation project(':shapes-lib')
-    paperweight.paperDevBundle("1.21.11-R0.1-SNAPSHOT")
-    compileOnly("com.github.SkriptLang:Skript:2.16.0")
+    paperweight.paperDevBundle("26.3.build.+")
+    compileOnly("com.github.SkriptLang:Skript:2.17.1")
     compileOnly "org.joml:joml:${jomlVersion}"
 }
 
@@ -60,13 +60,13 @@ tasks.named('build') {
     dependsOn shadowJar
 }
 
-//skriptTest {
-//    dependsOn build
-//    testScriptDirectory = file("src/test/scripts")
-//    extraPluginsDirectory = layout.buildDirectory.dir("libs")
-//    skriptRepoRef = "2.16.0"
-//    runVanillaTests = false
-//}
+skriptTest {
+    dependsOn build
+    testScriptDirectory = file("src/test/scripts")
+    extraPluginsDirectory = layout.buildDirectory.dir("libs")
+    skriptRepoRef = "2.17.1"
+    runVanillaTests = false
+}
 
 tasks.register('copyJar', Copy) {
     dependsOn shadowJar

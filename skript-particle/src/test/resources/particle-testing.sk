@@ -199,11 +199,11 @@ command /full-test:
         set style of {_shapes::*} to outline
 
         # --- Particle density ---
-        set particle count of {_shapes::*} to 50
+        set point count of {_shapes::*} to 50
         loop 10 times:
             draw shapes {_shapes::*} at {_loc}
             wait 1 tick
-        reset particle count of {_shapes::*}
+        reset point count of {_shapes::*}
 
         # --- Timed draw + animation ordering ---
         set the animation order of {_shapes::*} to lowest-to-highest

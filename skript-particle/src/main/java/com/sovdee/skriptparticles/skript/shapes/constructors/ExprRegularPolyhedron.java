@@ -25,7 +25,6 @@ import org.skriptlang.skript.registration.SyntaxRegistry;
     Creates a regular polyhedron shape with the given radius. The radius must be greater than 0.
     Valid polyhedra are tetrahedra (4 faces), octahedra (8), dodecahedra (12), and icosahedra (20).
 
-    Polyhedra currently do not support the particle count expression, only particle density.
     """)
 @Example("set {_shape} to a tetrahedron with radius 1")
 @Example("set {_shape} to a solid icosahedron with radius 2")

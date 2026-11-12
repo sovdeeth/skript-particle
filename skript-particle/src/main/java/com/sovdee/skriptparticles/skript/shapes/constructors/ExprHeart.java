@@ -26,7 +26,7 @@ import org.skriptlang.skript.registration.SyntaxRegistry;
     Creates a heart shape with the given width and height, and optionally eccentricity. The width (x) and length (z) must be greater than 0.
     The eccentricity defaults to 3, but must be at least 1. This determines how round/pointy the heart is. Values between 1 and 5 are recommended.
     Note that the width and length are not exact, but they're roughly the width and length of the heart.
-    Finally, this shape does not support the particle count expression and its particle density is not uniform.
+    Finally, the particle density of this shape is not uniform.
     If anyone knows a good way to compute the complete elliptic integral of the second kind, please let me know.
     """)
 @Example("set {_heart} to heart with width 5 and length 4")

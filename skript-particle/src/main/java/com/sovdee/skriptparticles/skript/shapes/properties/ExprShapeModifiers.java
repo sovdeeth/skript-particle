@@ -70,7 +70,8 @@ public class ExprShapeModifiers extends SimpleExpression<PointModifier> {
     @Override
     public Class<?> @Nullable [] acceptChange(ChangeMode mode) {
         return switch (mode) {
-            case SET, REMOVE, ADD -> new Class[]{PointModifier.class};
+            // an array type, so that several modifiers can be given at once
+            case SET, REMOVE, ADD -> new Class[]{PointModifier[].class};
             case DELETE -> new Class[0];
             default -> null;
         };
